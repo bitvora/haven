@@ -67,17 +67,6 @@ func makeNewRelay(relayType string) *khatru.Relay {
 			khatru.RequestAuth(ctx)
 		})
 
-		privateRelay.RejectConnection = append(privateRelay.RejectConnection, func(r *http.Request) bool {
-			ctx := r.Context()
-			authenticatedUser := khatru.GetAuthed(ctx)
-
-			if authenticatedUser == nPubToPubkey(config.OwnerNpub) {
-				return false
-			}
-
-			return true
-		})
-
 		privateRelay.StoreEvent = append(privateRelay.StoreEvent, privateDB.SaveEvent)
 		privateRelay.QueryEvents = append(privateRelay.QueryEvents, privateDB.QueryEvents)
 		privateRelay.DeleteEvent = append(privateRelay.DeleteEvent, privateDB.DeleteEvent)
@@ -97,17 +86,6 @@ func makeNewRelay(relayType string) *khatru.Relay {
 	case "/chat":
 		chatRelay.OnConnect = append(chatRelay.OnConnect, func(ctx context.Context) {
 			khatru.RequestAuth(ctx)
-		})
-
-		chatRelay.RejectConnection = append(chatRelay.RejectConnection, func(r *http.Request) bool {
-			ctx := r.Context()
-			authenticatedUser := khatru.GetAuthed(ctx)
-
-			if !wotMap[authenticatedUser] {
-				return true
-			}
-
-			return false
 		})
 
 		chatRelay.StoreEvent = append(chatRelay.StoreEvent, chatDB.SaveEvent)
