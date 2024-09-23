@@ -75,12 +75,21 @@ func makeNewRelay(relayType string) *khatru.Relay {
 
 		privateRelay.RejectFilter = append(privateRelay.RejectFilter, func(ctx context.Context, filter nostr.Filter) (bool, string) {
 			authenticatedUser := khatru.GetAuthed(ctx)
+			if authenticatedUser == nPubToPubkey(config.OwnerNpub) {
+				return false, ""
+			}
+
+			return true, "auth-required: this query requires you to be authenticated"
+		})
+
+		privateRelay.RejectEvent = append(privateRelay.RejectEvent, func(ctx context.Context, event *nostr.Event) (bool, string) {
+			authenticatedUser := khatru.GetAuthed(ctx)
 
 			if authenticatedUser == nPubToPubkey(config.OwnerNpub) {
 				return false, ""
 			}
 
-			return true, "only the owner can access this relay"
+			return true, "auth-required: publishing this event requires authentication"
 		})
 
 		return privateRelay
