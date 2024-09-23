@@ -56,6 +56,8 @@ If you want to use custom relay files for import and blastr, you can specify IMP
    
 ```bash
 cp import_seed_relays.example.json import_seed_relays.json
+```
+```bash
 cp blastr_relays.example.json blastr_relays.json
 ```
 
