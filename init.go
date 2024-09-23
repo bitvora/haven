@@ -79,4 +79,11 @@ func initRelays() {
 	outboxRelay.Info.Icon = config.OutboxRelayIcon
 	outboxRelay.Info.Version = config.RelayVersion
 	outboxRelay.Info.Software = config.RelaySoftware
+
+	inboxRelay.Info.Name = config.InboxRelayName
+	inboxRelay.Info.PubKey = nPubToPubkey(config.InboxRelayNpub)
+	inboxRelay.Info.Description = config.InboxRelayDescription
+	inboxRelay.Info.Icon = config.InboxRelayIcon
+	inboxRelay.Info.Version = config.RelayVersion
+	inboxRelay.Info.Software = config.RelaySoftware
 }
