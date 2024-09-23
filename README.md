@@ -163,7 +163,12 @@ If you want to import your old notes and notes you're tagged in from other relay
 
 ### 9. Access the relay
 
-Once everything is set up, the relay will be running on `localhost:3355` or your domain name if you set up nginx.
+Once everything is set up, the relay will be running on `localhost:3355` with the following endpoints:
+
+- `localhost:3355` (outbox)
+- `localhost:3355/private`
+- `localhost:3355/chat`
+- `localhost:3355/inbox`
 
 ## License
 
