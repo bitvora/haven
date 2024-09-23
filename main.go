@@ -38,6 +38,7 @@ func main() {
 
 	go refreshTrustNetwork()
 	go subscribeInbox()
+	go backupDatabase()
 
 	handler := http.HandlerFunc(dynamicRelayHandler)
 

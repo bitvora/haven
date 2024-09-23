@@ -170,6 +170,30 @@ Once everything is set up, the relay will be running on `localhost:3355` with th
 - `localhost:3355/chat`
 - `localhost:3355/inbox`
 
+## Cloud Backups
+
+The relay automatically backs up your database to a cloud provider of your choice.
+
+### AWS
+
+To back up your database to AWS, you'll need to first install and configure the awscli. You can do this by running the following commands:
+
+```bash
+sudo python3 -m pip install awscli
+aws configure
+```
+
+After configuring the awscli, you can set the following environment variables in your `.env` file:
+
+```bash
+AWS_ACCESS_KEY_ID=your_access_key_id
+AWS_SECRET_ACCESS_KEY=your_secret_access_key
+AWS_REGION=your_region
+AWS_BUCKET=your_bucket
+```
+
+Replace `your_access_key_id`, `your_secret_access_key`, `your_region`, and `your_bucket` with your actual AWS credentials.
+
 ## License
 
 This project is licensed under the MIT License.

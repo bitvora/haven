@@ -37,6 +37,7 @@ type Config struct {
 	ImportQueryIntervalSeconds       int      `json:"import_query_interval_seconds"`
 	ImportSeedRelays                 []string `json:"import_seed_relays"`
 	BackupProvider                   string   `json:"backup_provider"`
+	BackupIntervalHours              int      `json:"backup_interval_hours"`
 	BlastrRelays                     []string `json:"blastr_relays"`
 }
 
@@ -78,6 +79,7 @@ func loadConfig() Config {
 		ImportQueryIntervalSeconds:       getEnvInt("IMPORT_QUERY_INTERVAL_SECONDS", 360000),
 		ImportSeedRelays:                 getRelayList(getEnv("IMPORT_SEED_RELAYS")),
 		BackupProvider:                   getEnv("BACKUP_PROVIDER"),
+		BackupIntervalHours:              getEnvInt("BACKUP_INTERVAL_HOURS", 24),
 		BlastrRelays:                     getRelayList(getEnv("BLASTR_RELAYS")),
 	}
 }
