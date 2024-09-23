@@ -53,13 +53,14 @@ type AwsConfig struct {
 
 func getRelayListFromEnvOrFile(envKey, fileKey string) []string {
 	envValue := getEnv(envKey)
-	if envValue != "" {
-		return getRelayList(envValue)
-	}
-
 	filePath := getEnv(fileKey)
+
 	if filePath != "" {
 		return getRelayListFromFile(filePath)
+	}
+
+	if envValue != "" {
+		return getRelayList(envValue)
 	}
 
 	return []string{}
