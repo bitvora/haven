@@ -73,7 +73,7 @@ func initRelays() {
 	chatRelay.Info.Icon = config.ChatRelayIcon
 	chatRelay.Info.Version = config.RelayVersion
 	chatRelay.Info.Software = config.RelaySoftware
-	privateRelay.ServiceURL = "https://" + config.RelayURL + "/chat"
+	chatRelay.ServiceURL = "https://" + config.RelayURL + "/chat"
 
 	outboxRelay.Info.Name = config.OutboxRelayName
 	outboxRelay.Info.PubKey = nPubToPubkey(config.OutboxRelayNpub)
