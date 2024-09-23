@@ -120,7 +120,11 @@ func getRelayListFromFile(filePath string) []string {
 	}
 
 	for i, relay := range relayList {
-		relayList[i] = "wss://" + strings.TrimSpace(relay)
+		relay = strings.TrimSpace(relay)
+		if !strings.HasPrefix(relay, "wss://") {
+			relay = "wss://" + relay
+		}
+		relayList[i] = relay
 	}
 	return relayList
 }
