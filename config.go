@@ -5,6 +5,8 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"encoding/json"
+	"io/ioutil"
 
 	"github.com/joho/godotenv"
 )
@@ -48,6 +50,20 @@ type AwsConfig struct {
 	Bucket          string `json:"bucket"`
 }
 
+func getRelayListFromEnvOrFile(envKey, fileKey string) []string {
+	envValue := getEnv(envKey)
+	if envValue != "" {
+		return getRelayList(envValue)
+	}
+
+	filePath := getEnv(fileKey)
+	if filePath != "" {
+		return getRelayListFromFile(filePath)
+	}
+
+	return []string{}
+}
+
 func loadConfig() Config {
 	godotenv.Load(".env")
 
@@ -77,15 +93,32 @@ func loadConfig() Config {
 		InboxPullIntervalSeconds:         getEnvInt("INBOX_PULL_INTERVAL_SECONDS", 3600),
 		ImportStartDate:                  getEnv("IMPORT_START_DATE"),
 		ImportQueryIntervalSeconds:       getEnvInt("IMPORT_QUERY_INTERVAL_SECONDS", 360000),
-		ImportSeedRelays:                 getRelayList(getEnv("IMPORT_SEED_RELAYS")),
+		ImportSeedRelays:                 getRelayListFromEnvOrFile("IMPORT_SEED_RELAYS", "IMPORT_SEED_RELAYS_FILE"),
 		BackupProvider:                   getEnv("BACKUP_PROVIDER"),
 		BackupIntervalHours:              getEnvInt("BACKUP_INTERVAL_HOURS", 24),
-		BlastrRelays:                     getRelayList(getEnv("BLASTR_RELAYS")),
+		BlastrRelays:                     getRelayListFromEnvOrFile("BLASTR_RELAYS", "BLASTR_RELAYS_FILE"),
 	}
 }
 
 func getRelayList(commaList string) []string {
 	relayList := strings.Split(commaList, ",")
+	for i, relay := range relayList {
+		relayList[i] = "wss://" + strings.TrimSpace(relay)
+	}
+	return relayList
+}
+
+func getRelayListFromFile(filePath string) []string {
+	file, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		log.Fatalf("Failed to read file: %s", err)
+	}
+
+	var relayList []string
+	if err := json.Unmarshal(file, &relayList); err != nil {
+		log.Fatalf("Failed to parse JSON: %s", err)
+	}
+
 	for i, relay := range relayList {
 		relayList[i] = "wss://" + strings.TrimSpace(relay)
 	}
