@@ -29,6 +29,8 @@ func main() {
 	log.Println("🚀 haven is booting up")
 	initRelays()
 
+	refreshTrustNetwork()
+
 	if *importFlag {
 		log.Println("📦 importing notes")
 		importOwnerNotes()
@@ -36,7 +38,6 @@ func main() {
 		return
 	}
 
-	go refreshTrustNetwork()
 	go subscribeInbox()
 	go backupDatabase()
 

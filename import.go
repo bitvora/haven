@@ -85,22 +85,29 @@ func importTaggedNotes() {
 		}}
 
 		for ev := range pool.SubManyEose(ctx, config.ImportSeedRelays, filters) {
+			if !wotMap[ev.Event.PubKey] {
+				continue
+			}
+
 			for _, tag := range ev.Event.Tags.GetAll([]string{"p"}) {
+				if len(tag) < 2 {
+					continue
+				}
 				if tag[1] == nPubToPubkey(config.OwnerNpub) {
 					wdb.Publish(ctx, *ev.Event)
 					taggedImportedNotes++
 				}
 			}
-		}
-		log.Println("📦 imported", taggedImportedNotes, "tagged notes")
-		time.Sleep(5 * time.Second)
+			log.Println("📦 imported", taggedImportedNotes, "tagged notes")
+			time.Sleep(5 * time.Second)
 
-		startTime = startTime.Add(240 * time.Hour)
-		endTime = endTime.Add(240 * time.Hour)
+			startTime = startTime.Add(240 * time.Hour)
+			endTime = endTime.Add(240 * time.Hour)
 
-		if startTime.After(time.Now()) {
-			log.Println("✅ tagged import complete. please restart the relay")
-			break
+			if startTime.After(time.Now()) {
+				log.Println("✅ tagged import complete. please restart the relay")
+				break
+			}
 		}
 	}
 }
@@ -120,23 +127,30 @@ func subscribeInbox() {
 		if !wotMap[ev.Event.PubKey] {
 			continue
 		}
-
-		wdb.Publish(ctx, *ev.Event)
-		switch ev.Event.Kind {
-		case nostr.KindTextNote:
-			log.Println("📰 new note in your inbox")
-		case nostr.KindReaction:
-			log.Println(ev.Event.Content, "new reaction in your inbox")
-		case nostr.KindZap:
-			log.Println("⚡️ new zap in your inbox")
-		case nostr.KindEncryptedDirectMessage:
-			log.Println("🔒 new encrypted message in your inbox")
-		case nostr.KindRepost:
-			log.Println("🔁 new repost in your inbox")
-		case nostr.KindFollowList:
-			// do nothing
-		default:
-			log.Println("📦 new event in your inbox")
+		for _, tag := range ev.Event.Tags.GetAll([]string{"p"}) {
+			if len(tag) < 2 {
+				continue
+			}
+			if tag[1] == nPubToPubkey(config.OwnerNpub) {
+				wdb.Publish(ctx, *ev.Event)
+				switch ev.Event.Kind {
+				case nostr.KindTextNote:
+					log.Println("📰 new note in your inbox")
+				case nostr.KindReaction:
+					log.Println(ev.Event.Content, "new reaction in your inbox")
+				case nostr.KindZap:
+					log.Println("⚡️ new zap in your inbox")
+				case nostr.KindEncryptedDirectMessage:
+					log.Println("🔒 new encrypted message in your inbox")
+				case nostr.KindRepost:
+					log.Println("🔁 new repost in your inbox")
+				case nostr.KindFollowList:
+					// do nothing
+				default:
+					log.Println("📦 new event in your inbox")
+				}
+				taggedImportedNotes++
+			}
 		}
 	}
 }
