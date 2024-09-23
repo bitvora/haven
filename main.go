@@ -67,6 +67,17 @@ func makeNewRelay(relayType string) *khatru.Relay {
 			khatru.RequestAuth(ctx)
 		})
 
+		privateRelay.RejectConnection = append(privateRelay.RejectConnection, func(r *http.Request) bool {
+			ctx := r.Context()
+			authenticatedUser := khatru.GetAuthed(ctx)
+
+			if authenticatedUser == nPubToPubkey(config.OwnerNpub) {
+				return false
+			}
+
+			return true
+		})
+
 		privateRelay.StoreEvent = append(privateRelay.StoreEvent, privateDB.SaveEvent)
 		privateRelay.QueryEvents = append(privateRelay.QueryEvents, privateDB.QueryEvents)
 		privateRelay.DeleteEvent = append(privateRelay.DeleteEvent, privateDB.DeleteEvent)
@@ -74,7 +85,7 @@ func makeNewRelay(relayType string) *khatru.Relay {
 		privateRelay.RejectFilter = append(privateRelay.RejectFilter, func(ctx context.Context, filter nostr.Filter) (bool, string) {
 			authenticatedUser := khatru.GetAuthed(ctx)
 
-			if authenticatedUser == privateRelay.Info.PubKey {
+			if authenticatedUser == nPubToPubkey(config.OwnerNpub) {
 				return false, ""
 			}
 
@@ -86,6 +97,17 @@ func makeNewRelay(relayType string) *khatru.Relay {
 	case "/chat":
 		chatRelay.OnConnect = append(chatRelay.OnConnect, func(ctx context.Context) {
 			khatru.RequestAuth(ctx)
+		})
+
+		chatRelay.RejectConnection = append(chatRelay.RejectConnection, func(r *http.Request) bool {
+			ctx := r.Context()
+			authenticatedUser := khatru.GetAuthed(ctx)
+
+			if !wotMap[authenticatedUser] {
+				return true
+			}
+
+			return false
 		})
 
 		chatRelay.StoreEvent = append(chatRelay.StoreEvent, chatDB.SaveEvent)
@@ -166,10 +188,10 @@ func makeNewRelay(relayType string) *khatru.Relay {
 		outboxRelay.DeleteEvent = append(outboxRelay.DeleteEvent, outboxDB.DeleteEvent)
 
 		outboxRelay.RejectEvent = append(outboxRelay.RejectEvent, func(ctx context.Context, event *nostr.Event) (bool, string) {
-			if event.PubKey == outboxRelay.Info.PubKey {
+			if event.PubKey == nPubToPubkey(config.OwnerNpub) {
 				return false, ""
 			}
-			return true, "you are not allowed to post to this relay"
+			return true, "only notes signed by the owner of this relay are allowed"
 		})
 
 		return outboxRelay

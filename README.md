@@ -1,16 +1,16 @@
 # HAVEN
 
-HAVEN (High Availability Vault for Events on Nostr) is the most comprehensive personal relay for the Nostr network. It provides it's owner with a variety of different relays to connect to, and a web of trust to filter out bad actors.
+HAVEN (High Availability Vault for Events on Nostr) is the most sovereign personal relay for the Nostr protocol, for storing and backing up sensitive notes like eCash, private chats and drafts. It is a relay that is not so dumb, with features like web of trust, inbox relay, cloud backups, blastr and the ability to import old notes.
 
 ## Four Relays in One
 
-**Private Relay**: This relay is only accessible by the owner of the relay. It is used for drafts, ecash and other private notes that nobody can read or write to.haven
+**Private Relay**: This relay is only accessible by the owner of the relay. It is used for drafts, ecash and other private notes that nobody can read or write to. It is protected by Auth.
 
-**Chat Relay**: This relay is used to contact the owner by DM. Only people in the web of trust can send notes that are private chat kinds.
+**Chat Relay**: This relay is used to contact the owner by DM. Only people in the web of trust can interact with this relay, protected by Auth. It only accepts encrypted DMs and group chat kinds.
 
-**Inbox Relay**: This relay is used to send notes to the owner. Only people in the web of trust can send notes that are inbox kinds. Notes are pulled from other relays and stored in the inbox relay.
+**Inbox Relay**: This relay is where the owner of the relay reads from. Send your zaps, reactions and replies to this relay when you're tagging the owner. You can also pull notes from this relay if you want notes where the owner is tagged. This relay automatically pulls notes from other relays. Only notes where the owner is tagged will be accepted to this relay.
 
-**Outbox Relay**: This relay is used to send notes to other people. Anyone can read to this relay but only the owner can write to it. Notes sent to the outbox are also blasted to other relays.
+**Outbox Relay**: This relay is where the owner's notes all live and are publicly accessible. You can import all your old notes to this relay. All notes sent to this relay are blasted to other relays. Only the owner can send to this relay, but anyone can read.
 
 ## Not So Dumb Relay Features
 
