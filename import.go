@@ -104,6 +104,7 @@ func importTaggedNotes() {
 func subscribeInbox() {
 	ctx := context.Background()
 	wdb := eventstore.RelayWrapper{Store: &inboxDB}
+	pool = nostr.NewSimplePool(ctx)
 	filters := []nostr.Filter{{
 		Tags: nostr.TagMap{
 			"p": {nPubToPubkey(config.OwnerNpub)},
