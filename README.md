@@ -55,7 +55,7 @@ Open the `.env` file and set the necessary environment variables.
 If you want to use custom relay files for import and blastr, you can specify IMPORT_SEED_RELAYS_FILE and BLASTR_RELAYS_FILE in the .env file. First, copy the example JSON files:
    
 ```bash
-cp import_seed_relays.example.json import_seed_relays.json
+cp relays_import.example.json relays_import.json
 ```
 ```bash
 cp blastr_relays.example.json blastr_relays.json
@@ -64,7 +64,7 @@ cp blastr_relays.example.json blastr_relays.json
 Then, set the paths to the files in the .env file:
 
 ```bash
-IMPORT_SEED_RELAYS_FILE=import_seed_relays.json
+IMPORT_SEED_RELAYS_FILE=relays_import.json
 BLASTR_RELAYS_FILE=blastr_relays.json
 ```
 
