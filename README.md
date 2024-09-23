@@ -53,12 +53,13 @@ cp .env.example .env
 Open the `.env` file and set the necessary environment variables.
 
 If you want to use custom relay files for import and blastr, you can specify IMPORT_SEED_RELAYS_FILE and BLASTR_RELAYS_FILE in the .env file. First, copy the example JSON files:
-   
+
 ```bash
 cp relays_import.example.json relays_import.json
 ```
+
 ```bash
-cp blastr_relays.example.json blastr_relays.json
+cp relays_blastr.example.json relays_blastr.json
 ```
 
 Then, set the paths to the files in the .env file:
@@ -71,10 +72,7 @@ BLASTR_RELAYS_FILE=blastr_relays.json
 The JSON should contain an array of relay URLs:
 
 ```json
-[
-  "relay.damus.io",
-  "nos.lol",
-]
+["relay.damus.io", "nos.lol"]
 ```
 
 ### 4. Build the project
@@ -201,7 +199,7 @@ To start the project using Docker Compose, follow these steps:
 
 1. Ensure Docker and Docker Compose are installed on your system.
 2. Navigate to the project directory.
-3. Ensure the `.env` file is present in the project directory and has the necessary environment variables set. 
+3. Ensure the `.env` file is present in the project directory and has the necessary environment variables set.
 4. You can also change the paths of the `db` folder and `haven` folder in the `docker-compose.yml` file.
 
    ```yaml

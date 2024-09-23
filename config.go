@@ -13,6 +13,7 @@ import (
 
 type Config struct {
 	OwnerNpub                        string   `json:"owner_npub"`
+	RelayURL                         string   `json:"relay_url"`
 	RelaySoftware                    string   `json:"relay_software"`
 	RelayVersion                     string   `json:"relay_version"`
 	PrivateRelayName                 string   `json:"private_relay_name"`
@@ -69,6 +70,7 @@ func loadConfig() Config {
 
 	return Config{
 		OwnerNpub:                        getEnv("OWNER_NPUB"),
+		RelayURL:                         getEnv("RELAY_URL"),
 		RelaySoftware:                    "https://github.com/bitvora/haven",
 		RelayVersion:                     "v0.1.0",
 		PrivateRelayName:                 getEnv("PRIVATE_RELAY_NAME"),

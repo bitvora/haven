@@ -65,6 +65,7 @@ func initRelays() {
 	privateRelay.Info.Icon = config.PrivateRelayIcon
 	privateRelay.Info.Version = config.RelayVersion
 	privateRelay.Info.Software = config.RelaySoftware
+	privateRelay.ServiceURL = "https://" + config.RelayURL + "/private"
 
 	chatRelay.Info.Name = config.ChatRelayName
 	chatRelay.Info.PubKey = nPubToPubkey(config.ChatRelayNpub)
@@ -72,6 +73,7 @@ func initRelays() {
 	chatRelay.Info.Icon = config.ChatRelayIcon
 	chatRelay.Info.Version = config.RelayVersion
 	chatRelay.Info.Software = config.RelaySoftware
+	chatRelay.ServiceURL = "https://" + config.RelayURL + "/chat"
 
 	outboxRelay.Info.Name = config.OutboxRelayName
 	outboxRelay.Info.PubKey = nPubToPubkey(config.OutboxRelayNpub)
@@ -86,4 +88,5 @@ func initRelays() {
 	inboxRelay.Info.Icon = config.InboxRelayIcon
 	inboxRelay.Info.Version = config.RelayVersion
 	inboxRelay.Info.Software = config.RelaySoftware
+	inboxRelay.ServiceURL = "https://" + config.RelayURL + "/inbox"
 }
