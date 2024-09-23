@@ -85,8 +85,12 @@ func importTaggedNotes() {
 		}}
 
 		for ev := range pool.SubManyEose(ctx, config.ImportSeedRelays, filters) {
-			wdb.Publish(ctx, *ev.Event)
-			taggedImportedNotes++
+			for _, tag := range ev.Event.Tags.GetAll([]string{"p"}) {
+				if tag[1] == nPubToPubkey(config.OwnerNpub) {
+					wdb.Publish(ctx, *ev.Event)
+					taggedImportedNotes++
+				}
+			}
 		}
 		log.Println("📦 imported", taggedImportedNotes, "tagged notes")
 		time.Sleep(5 * time.Second)
