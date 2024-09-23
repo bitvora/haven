@@ -52,6 +52,31 @@ cp .env.example .env
 
 Open the `.env` file and set the necessary environment variables.
 
+If you want to use custom relay files for import and blastr, you can specify IMPORT_SEED_RELAYS_FILE and BLASTR_RELAYS_FILE in the .env file. First, copy the example JSON files:
+   
+```bash
+cp relays_import.example.json relays_import.json
+```
+```bash
+cp blastr_relays.example.json blastr_relays.json
+```
+
+Then, set the paths to the files in the .env file:
+
+```bash
+IMPORT_SEED_RELAYS_FILE=relays_import.json
+BLASTR_RELAYS_FILE=blastr_relays.json
+```
+
+The JSON should contain an array of relay URLs (without ws:// or wss://):
+
+```json
+[
+  "relay.damus.io",
+  "nos.lol",
+]
+```
+
 ### 4. Build the project
 
 Run the following command to build the relay:
@@ -169,6 +194,56 @@ Once everything is set up, the relay will be running on `localhost:3355` with th
 - `localhost:3355/private`
 - `localhost:3355/chat`
 - `localhost:3355/inbox`
+
+## Start the Project with Docker Compose
+
+To start the project using Docker Compose, follow these steps:
+
+1. Ensure Docker and Docker Compose are installed on your system.
+2. Navigate to the project directory.
+3. Ensure the `.env` file is present in the project directory and has the necessary environment variables set. 
+4. You can also change the paths of the `db` folder and `haven` folder in the `docker-compose.yml` file.
+
+   ```yaml
+   volumes:
+     - "./db:/app/db" # only change the left side before the colon
+     - "./haven:/app/haven" # only change the left side before the colon
+   ```
+
+5. Run the following command:
+
+   ```sh
+   # in foreground
+   docker compose up --build
+   # in background
+   docker compose up --build -d
+   ```
+
+6. For updating the relay, run the following command:
+
+   ```sh
+   git pull
+   docker compose build --no-cache
+   # in foreground
+   docker compose up
+   # in background
+   docker compose up -d
+   ```
+
+This will build the Docker image and start the `haven-relay` service as defined in the `docker-compose.yml` file. The application will be accessible on port 3335.
+
+### Hidden Service with Tor and Docker (optional)
+
+Same as the step 6, but with the following command:
+
+```sh
+# in foreground
+docker compose -f docker-compose.tor.yml up --build
+# in background
+docker compose -f docker-compose.tor.yml up --build -d
+```
+
+You can find the onion address here: `tor/data/haven/hostname`
 
 ## Cloud Backups
 

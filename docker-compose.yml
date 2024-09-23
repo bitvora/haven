@@ -1,0 +1,14 @@
+services:
+  relay:
+    container_name: haven-relay
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    volumes:
+      - "./db:/app/db"
+      - "./haven:/app/haven"
+    ports:
+      - "3335:3335"
+    user: "${DOCKER_UID:-1000}:${DOCKER_GID:-1000}"

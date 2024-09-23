@@ -1,0 +1,2 @@
+HiddenServiceDir /var/lib/tor/haven
+HiddenServicePort 80 relay:3355
