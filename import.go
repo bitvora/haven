@@ -46,6 +46,7 @@ func importOwnerNotes() {
 			ownerImportedNotes++
 		}
 		log.Println("📦 imported", ownerImportedNotes, "owner notes")
+		time.Sleep(5 * time.Second)
 
 		startTime = startTime.Add(240 * time.Hour)
 		endTime = endTime.Add(240 * time.Hour)
@@ -66,15 +67,21 @@ func importTaggedNotes() {
 		fmt.Println("Error parsing start date:", err)
 		return
 	}
+	endTime := startTime.Add(240 * time.Hour)
 
 	for {
 		ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 		defer cancel()
 
+		startTimestamp := nostr.Timestamp(startTime.Unix())
+		endTimestamp := nostr.Timestamp(endTime.Unix())
+
 		filters := []nostr.Filter{{
 			Tags: nostr.TagMap{
 				"p": {nPubToPubkey(config.OwnerNpub)},
 			},
+			Since: &startTimestamp,
+			Until: &endTimestamp,
 		}}
 
 		for ev := range pool.SubManyEose(ctx, config.ImportSeedRelays, filters) {
@@ -92,6 +99,10 @@ func importTaggedNotes() {
 				}
 			}
 			log.Println("📦 imported", taggedImportedNotes, "tagged notes")
+			time.Sleep(5 * time.Second)
+
+			startTime = startTime.Add(240 * time.Hour)
+			endTime = endTime.Add(240 * time.Hour)
 
 			if startTime.After(time.Now()) {
 				log.Println("✅ tagged import complete. please restart the relay")
