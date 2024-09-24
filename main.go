@@ -47,8 +47,6 @@ func main() {
 
 	handler := http.HandlerFunc(dynamicRelayHandler)
 
-	chatRelay.ServiceURL = "http://localhost:3355/chat"
-
 	log.Printf("🔗 listening at http://localhost:3355")
 	http.ListenAndServe("0.0.0.0:3355", handler)
 }
