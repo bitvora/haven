@@ -13,10 +13,12 @@ import (
 	"github.com/puzpuzpuz/xsync/v3"
 )
 
-var mainRelay = khatru.NewRelay()
-var subRelays = xsync.NewMapOf[string, *khatru.Relay]()
-var pool *nostr.SimplePool
-var config = loadConfig()
+var (
+	mainRelay = khatru.NewRelay()
+	subRelays = xsync.NewMapOf[string, *khatru.Relay]()
+	pool      = nostr.NewSimplePool(context.Background())
+	config    = loadConfig()
+)
 
 func main() {
 	importFlag := flag.Bool("import", false, "Run the importNotes function after initializing relays")
@@ -29,19 +31,23 @@ func main() {
 	log.Println("🚀 haven is booting up")
 	initRelays()
 
-	refreshTrustNetwork()
+	go func() {
+		refreshTrustNetwork()
 
-	if *importFlag {
-		log.Println("📦 importing notes")
-		importOwnerNotes()
-		importTaggedNotes()
-		return
-	}
+		if *importFlag {
+			log.Println("📦 importing notes")
+			importOwnerNotes()
+			importTaggedNotes()
+			return
+		}
 
-	go subscribeInbox()
-	go backupDatabase()
+		go subscribeInbox()
+		go backupDatabase()
+	}()
 
 	handler := http.HandlerFunc(dynamicRelayHandler)
+
+	chatRelay.ServiceURL = "http://localhost:3355/chat"
 
 	log.Printf("🔗 listening at http://localhost:3355")
 	http.ListenAndServe("0.0.0.0:3355", handler)

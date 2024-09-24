@@ -3,22 +3,23 @@ package main
 import (
 	"context"
 	"log"
+	"time"
 
 	"github.com/nbd-wtf/go-nostr"
 )
 
 func blast(ev *nostr.Event) {
 	ctx := context.Background()
-	for _, relay := range config.BlastrRelays {
-		go blastRoutine(ctx, relay, ev)
+	for _, url := range config.BlastrRelays {
+		ctx, cancel := context.WithTimeout(ctx, time.Second*5)
+		relay, err := pool.EnsureRelay(url)
+		if err != nil {
+			cancel()
+			log.Println("error connecting to relay", relay, err)
+			return
+		}
+		relay.Publish(ctx, *ev)
+		log.Println("🔫 blasted to", relay)
+		cancel()
 	}
-}
-
-func blastRoutine(ctx context.Context, relay string, ev *nostr.Event) {
-	connect, err := nostr.RelayConnect(ctx, relay)
-	if err != nil {
-		log.Println("error connecting to relay", relay, err)
-	}
-	connect.Publish(ctx, *ev)
-	log.Println("🔫 blasted to", relay)
 }

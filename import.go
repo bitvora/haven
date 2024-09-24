@@ -12,12 +12,13 @@ import (
 
 const layout = "2006-01-02"
 
-var ownerImportedNotes = 0
-var taggedImportedNotes = 0
+var (
+	ownerImportedNotes  = 0
+	taggedImportedNotes = 0
+)
 
 func importOwnerNotes() {
 	ctx := context.Background()
-	pool = nostr.NewSimplePool(ctx)
 	wdb := eventstore.RelayWrapper{Store: &outboxDB}
 
 	startTime, err := time.Parse(layout, config.ImportStartDate)
@@ -59,7 +60,6 @@ func importOwnerNotes() {
 
 func importTaggedNotes() {
 	ctx := context.Background()
-	pool = nostr.NewSimplePool(ctx)
 	wdb := eventstore.RelayWrapper{Store: &inboxDB}
 
 	startTime, err := time.Parse(layout, config.ImportStartDate)
@@ -115,7 +115,6 @@ func importTaggedNotes() {
 func subscribeInbox() {
 	ctx := context.Background()
 	wdb := eventstore.RelayWrapper{Store: &inboxDB}
-	pool = nostr.NewSimplePool(ctx)
 	filters := []nostr.Filter{{
 		Tags: nostr.TagMap{
 			"p": {nPubToPubkey(config.OwnerNpub)},

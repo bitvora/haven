@@ -8,17 +8,17 @@ import (
 	"github.com/nbd-wtf/go-nostr"
 )
 
-var pubkeyFollowerCount = make(map[string]int)
-var oneHopNetwork []string
-var wot []string
-var wotRelays []string
-var wotMap map[string]bool
+var (
+	pubkeyFollowerCount = make(map[string]int)
+	oneHopNetwork       []string
+	wot                 []string
+	wotRelays           []string
+	wotMap              map[string]bool
+)
 
 func refreshTrustNetwork() {
-
 	ctx := context.Background()
 	timeoutCtx, cancel := context.WithTimeout(ctx, 3*time.Second)
-	pool = nostr.NewSimplePool(ctx)
 
 	defer cancel()
 	ownerPubkey := nPubToPubkey(config.OwnerNpub)
@@ -69,7 +69,6 @@ func refreshTrustNetwork() {
 }
 
 func appendRelay(relay string) {
-
 	for _, r := range wotRelays {
 		if r == relay {
 			return
@@ -107,14 +106,15 @@ func appendOneHopNetwork(pubkey string) {
 }
 
 func updateWoTMap() {
-	wotMap = make(map[string]bool)
+	wotMapTmp := make(map[string]bool)
 
 	for pubkey, count := range pubkeyFollowerCount {
 		if count >= config.ChatRelayMinimumFollowers {
-			wotMap[pubkey] = true
+			wotMapTmp[pubkey] = true
 			appendPubkeyToWoT(pubkey)
 		}
 	}
 
+	wotMap = wotMapTmp
 	log.Println("🌐 pubkeys with minimum followers: ", len(wotMap), "keys")
 }
