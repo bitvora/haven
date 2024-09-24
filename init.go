@@ -1,48 +1,55 @@
 package main
 
 import (
-	"github.com/fiatjaf/eventstore/badger"
+	"github.com/fiatjaf/eventstore/lmdb"
 	"github.com/fiatjaf/khatru"
 )
 
-var privateRelay = khatru.NewRelay()
-var privateDB = getPrivateDB()
+var (
+	privateRelay = khatru.NewRelay()
+	privateDB    = getPrivateDB()
+)
 
-var chatRelay = khatru.NewRelay()
-var chatDB = getChatDB()
+var (
+	chatRelay = khatru.NewRelay()
+	chatDB    = getChatDB()
+)
 
-var outboxRelay = khatru.NewRelay()
-var outboxDB = getOutboxDB()
+var (
+	outboxRelay = khatru.NewRelay()
+	outboxDB    = getOutboxDB()
+)
 
-var inboxRelay = khatru.NewRelay()
-var inboxDB = getInboxDB()
+var (
+	inboxRelay = khatru.NewRelay()
+	inboxDB    = getInboxDB()
+)
 
-func getPrivateDB() badger.BadgerBackend {
-	return badger.BadgerBackend{
+func getPrivateDB() lmdb.LMDBBackend {
+	return lmdb.LMDBBackend{
 		Path: "db/private",
 	}
 }
 
-func getChatDB() badger.BadgerBackend {
-	return badger.BadgerBackend{
+func getChatDB() lmdb.LMDBBackend {
+	return lmdb.LMDBBackend{
 		Path: "db/chat",
 	}
 }
 
-func getOutboxDB() badger.BadgerBackend {
-	return badger.BadgerBackend{
+func getOutboxDB() lmdb.LMDBBackend {
+	return lmdb.LMDBBackend{
 		Path: "db/outbox",
 	}
 }
 
-func getInboxDB() badger.BadgerBackend {
-	return badger.BadgerBackend{
+func getInboxDB() lmdb.LMDBBackend {
+	return lmdb.LMDBBackend{
 		Path: "db/inbox",
 	}
 }
 
 func initRelays() {
-
 	if err := privateDB.Init(); err != nil {
 		panic(err)
 	}

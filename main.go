@@ -45,10 +45,10 @@ func main() {
 		go backupDatabase()
 	}()
 
-	handler := http.HandlerFunc(dynamicRelayHandler)
+	http.HandleFunc("/", dynamicRelayHandler)
 
 	log.Printf("🔗 listening at http://localhost:3355")
-	http.ListenAndServe("0.0.0.0:3355", handler)
+	http.ListenAndServe("0.0.0.0:3355", nil)
 }
 
 func dynamicRelayHandler(w http.ResponseWriter, r *http.Request) {
