@@ -26,10 +26,10 @@ func importOwnerNotes() {
 		fmt.Println("Error parsing start date:", err)
 		return
 	}
-	endTime := startTime.Add(240 * time.Hour)
+	endTime := startTime.Add(500 * time.Hour)
 
 	for {
-		ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+		ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
 		defer cancel()
 
 		startTimestamp := nostr.Timestamp(startTime.Unix())
@@ -46,10 +46,9 @@ func importOwnerNotes() {
 			ownerImportedNotes++
 		}
 		log.Println("📦 imported", ownerImportedNotes, "owner notes")
-		time.Sleep(5 * time.Second)
 
-		startTime = startTime.Add(240 * time.Hour)
-		endTime = endTime.Add(240 * time.Hour)
+		startTime = startTime.Add(500 * time.Hour)
+		endTime = endTime.Add(500 * time.Hour)
 
 		if startTime.After(time.Now()) {
 			log.Println("✅ owner note import complete! ")
