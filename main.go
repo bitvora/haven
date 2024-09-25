@@ -114,7 +114,7 @@ func makeNewRelay(relayType string) *khatru.Relay {
 				RelayName:        config.PrivateRelayName,
 				RelayPubkey:      nPubToPubkey(config.PrivateRelayNpub),
 				RelayDescription: config.PrivateRelayDescription,
-				RelayURL:         "wss://" + config.RelayURL + "/outbox",
+				RelayURL:         "wss://" + config.RelayURL + "/private",
 			}
 			err := tmpl.Execute(w, data)
 			if err != nil {
