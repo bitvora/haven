@@ -10,5 +10,5 @@ services:
       - "./db:/app/db"
       - "./haven:/app/haven"
     ports:
-      - "3335:3335"
+      - "3355:3355"
     user: "${DOCKER_UID:-1000}:${DOCKER_GID:-1000}"

@@ -1,12 +1,12 @@
 package main
 
 import (
+	"encoding/json"
+	"io/ioutil"
 	"log"
 	"os"
 	"strconv"
 	"strings"
-	"encoding/json"
-	"io/ioutil"
 
 	"github.com/joho/godotenv"
 )
@@ -142,6 +142,17 @@ func getEnvInt(key string, defaultValue int) int {
 			panic(err)
 		}
 		return intValue
+	}
+	return defaultValue
+}
+
+func getEnvBool(key string, defaultValue bool) bool {
+	if value, ok := os.LookupEnv(key); ok {
+		boolValue, err := strconv.ParseBool(value)
+		if err != nil {
+			panic(err)
+		}
+		return boolValue
 	}
 	return defaultValue
 }
