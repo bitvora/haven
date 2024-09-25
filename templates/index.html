@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta name="theme-color" content="#ffffff" />
+    <meta charset="UTF-8" />
+    <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{.RelayName}}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap");
+      body {
+        font-family: "Inter", sans-serif;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+    </style>
+  </head>
+  <body class="bg-gray-900 text-white">
+    <div class="flex-grow flex flex-col justify-center items-center px-4">
+      <!-- Container -->
+      <div class="text-center max-w-2xl">
+        <!-- Heading (Relay Name) -->
+        <h1 class="text-5xl md:text-6xl font-bold text-purple-400 mb-6">
+          {{.RelayName}}
+        </h1>
+
+        <!-- Relay Description -->
+        <p class="text-xl md:text-2xl text-gray-300 mb-8">
+          {{.RelayDescription}}
+        </p>
+
+        <!-- Relay URL -->
+        <a
+          href="#"
+          class="text-lg md:text-xl text-purple-300 hover:text-purple-400 underline"
+        >
+          {{.RelayURL}}
+        </a>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="text-center py-6 bg-gray-800 w-full">
+      <p class="text-lg text-gray-400">
+        Proudly powered by
+        <a
+          href="https://khatru.nostr.technology/"
+          target="_blank"
+          class="text-purple-300 hover:text-purple-400 underline"
+          >Khatru</a
+        >
+        |
+        <a
+          href="https://github.com/bitvora/haven"
+          target="_blank"
+          class="text-purple-300 hover:text-purple-400 underline"
+          >Haven Relay on Github</a
+        >
+      </p>
+    </footer>
+  </body>
+</html>

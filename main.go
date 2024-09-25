@@ -7,6 +7,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"text/template"
 
 	"github.com/fiatjaf/khatru"
 	"github.com/nbd-wtf/go-nostr"
@@ -96,6 +97,31 @@ func makeNewRelay(relayType string) *khatru.Relay {
 			return true, "auth-required: publishing this event requires authentication"
 		})
 
+		mux := privateRelay.Router()
+		static := http.FileServer(http.Dir("templates/static"))
+
+		mux.Handle("GET /static/", http.StripPrefix("/static/", static))
+		mux.Handle("GET /favicon.ico", http.StripPrefix("/", static))
+
+		mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+			tmpl := template.Must(template.ParseFiles("templates/index.html"))
+			data := struct {
+				RelayName        string
+				RelayPubkey      string
+				RelayDescription string
+				RelayURL         string
+			}{
+				RelayName:        config.PrivateRelayName,
+				RelayPubkey:      nPubToPubkey(config.PrivateRelayNpub),
+				RelayDescription: config.PrivateRelayDescription,
+				RelayURL:         "wss://" + config.RelayURL + "/outbox",
+			}
+			err := tmpl.Execute(w, data)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+			}
+		})
+
 		return privateRelay
 
 	case "/chat":
@@ -150,6 +176,31 @@ func makeNewRelay(relayType string) *khatru.Relay {
 			return true, "only direct messages are allowed in this relay"
 		})
 
+		mux := chatRelay.Router()
+		static := http.FileServer(http.Dir("templates/static"))
+
+		mux.Handle("GET /static/", http.StripPrefix("/static/", static))
+		mux.Handle("GET /favicon.ico", http.StripPrefix("/", static))
+
+		mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+			tmpl := template.Must(template.ParseFiles("templates/index.html"))
+			data := struct {
+				RelayName        string
+				RelayPubkey      string
+				RelayDescription string
+				RelayURL         string
+			}{
+				RelayName:        config.ChatRelayName,
+				RelayPubkey:      nPubToPubkey(config.ChatRelayNpub),
+				RelayDescription: config.ChatRelayDescription,
+				RelayURL:         "wss://" + config.RelayURL + "/chat",
+			}
+			err := tmpl.Execute(w, data)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+			}
+		})
+
 		return chatRelay
 
 	case "/inbox":
@@ -170,6 +221,31 @@ func makeNewRelay(relayType string) *khatru.Relay {
 			return true, "you can only post notes if you've tagged the owner of this relay"
 		})
 
+		mux := inboxRelay.Router()
+		static := http.FileServer(http.Dir("templates/static"))
+
+		mux.Handle("GET /static/", http.StripPrefix("/static/", static))
+		mux.Handle("GET /favicon.ico", http.StripPrefix("/", static))
+
+		mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+			tmpl := template.Must(template.ParseFiles("templates/index.html"))
+			data := struct {
+				RelayName        string
+				RelayPubkey      string
+				RelayDescription string
+				RelayURL         string
+			}{
+				RelayName:        config.InboxRelayName,
+				RelayPubkey:      nPubToPubkey(config.InboxRelayNpub),
+				RelayDescription: config.InboxRelayDescription,
+				RelayURL:         "wss://" + config.RelayURL + "/inbox",
+			}
+			err := tmpl.Execute(w, data)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+			}
+		})
+
 		return inboxRelay
 
 	default: // default to outbox
@@ -185,6 +261,31 @@ func makeNewRelay(relayType string) *khatru.Relay {
 				return false, ""
 			}
 			return true, "only notes signed by the owner of this relay are allowed"
+		})
+
+		mux := outboxRelay.Router()
+		static := http.FileServer(http.Dir("templates/static"))
+
+		mux.Handle("GET /static/", http.StripPrefix("/static/", static))
+		mux.Handle("GET /favicon.ico", http.StripPrefix("/", static))
+
+		mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+			tmpl := template.Must(template.ParseFiles("templates/index.html"))
+			data := struct {
+				RelayName        string
+				RelayPubkey      string
+				RelayDescription string
+				RelayURL         string
+			}{
+				RelayName:        config.OutboxRelayName,
+				RelayPubkey:      nPubToPubkey(config.OutboxRelayNpub),
+				RelayDescription: config.OutboxRelayDescription,
+				RelayURL:         "wss://" + config.RelayURL + "/outbox",
+			}
+			err := tmpl.Execute(w, data)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+			}
 		})
 
 		return outboxRelay

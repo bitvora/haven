@@ -1,8 +1,11 @@
 package main
 
 import (
+	"time"
+
 	"github.com/fiatjaf/eventstore/lmdb"
 	"github.com/fiatjaf/khatru"
+	"github.com/fiatjaf/khatru/policies"
 )
 
 var (
@@ -66,6 +69,8 @@ func initRelays() {
 		panic(err)
 	}
 
+	initRelayLimits()
+
 	privateRelay.Info.Name = config.PrivateRelayName
 	privateRelay.Info.PubKey = nPubToPubkey(config.PrivateRelayNpub)
 	privateRelay.Info.Description = config.PrivateRelayDescription
@@ -73,6 +78,31 @@ func initRelays() {
 	privateRelay.Info.Version = config.RelayVersion
 	privateRelay.Info.Software = config.RelaySoftware
 	privateRelay.ServiceURL = "https://" + config.RelayURL + "/private"
+
+	if !privateRelayLimits.AllowEmptyFilters {
+		privateRelay.RejectFilter = append(privateRelay.RejectFilter, policies.NoEmptyFilters)
+	}
+
+	if !privateRelayLimits.AllowComplexFilters {
+		privateRelay.RejectFilter = append(privateRelay.RejectFilter, policies.NoComplexFilters)
+	}
+
+	privateRelay.RejectEvent = append(privateRelay.RejectEvent,
+		policies.RejectEventsWithBase64Media,
+		policies.EventIPRateLimiter(
+			privateRelayLimits.EventIPLimiterTokensPerInterval,
+			time.Minute*time.Duration(privateRelayLimits.EventIPLimiterInterval),
+			privateRelayLimits.EventIPLimiterMaxTokens,
+		),
+	)
+
+	privateRelay.RejectConnection = append(privateRelay.RejectConnection,
+		policies.ConnectionRateLimiter(
+			privateRelayLimits.ConnectionRateLimiterTokensPerInterval,
+			time.Minute*time.Duration(privateRelayLimits.ConnectionRateLimiterInterval),
+			privateRelayLimits.ConnectionRateLimiterMaxTokens,
+		),
+	)
 
 	chatRelay.Info.Name = config.ChatRelayName
 	chatRelay.Info.PubKey = nPubToPubkey(config.ChatRelayNpub)
@@ -82,12 +112,62 @@ func initRelays() {
 	chatRelay.Info.Software = config.RelaySoftware
 	chatRelay.ServiceURL = "https://" + config.RelayURL + "/chat"
 
+	if !chatRelayLimits.AllowEmptyFilters {
+		chatRelay.RejectFilter = append(chatRelay.RejectFilter, policies.NoEmptyFilters)
+	}
+
+	if !chatRelayLimits.AllowComplexFilters {
+		chatRelay.RejectFilter = append(chatRelay.RejectFilter, policies.NoComplexFilters)
+	}
+
+	chatRelay.RejectEvent = append(chatRelay.RejectEvent,
+		policies.RejectEventsWithBase64Media,
+		policies.EventIPRateLimiter(
+			chatRelayLimits.EventIPLimiterTokensPerInterval,
+			time.Minute*time.Duration(chatRelayLimits.EventIPLimiterInterval),
+			chatRelayLimits.EventIPLimiterMaxTokens,
+		),
+	)
+
+	chatRelay.RejectConnection = append(chatRelay.RejectConnection,
+		policies.ConnectionRateLimiter(
+			chatRelayLimits.ConnectionRateLimiterTokensPerInterval,
+			time.Minute*time.Duration(chatRelayLimits.ConnectionRateLimiterInterval),
+			chatRelayLimits.ConnectionRateLimiterMaxTokens,
+		),
+	)
+
 	outboxRelay.Info.Name = config.OutboxRelayName
 	outboxRelay.Info.PubKey = nPubToPubkey(config.OutboxRelayNpub)
 	outboxRelay.Info.Description = config.OutboxRelayDescription
 	outboxRelay.Info.Icon = config.OutboxRelayIcon
 	outboxRelay.Info.Version = config.RelayVersion
 	outboxRelay.Info.Software = config.RelaySoftware
+
+	if !outboxRelayLimits.AllowEmptyFilters {
+		outboxRelay.RejectFilter = append(outboxRelay.RejectFilter, policies.NoEmptyFilters)
+	}
+
+	if !outboxRelayLimits.AllowComplexFilters {
+		outboxRelay.RejectFilter = append(outboxRelay.RejectFilter, policies.NoComplexFilters)
+	}
+
+	outboxRelay.RejectEvent = append(outboxRelay.RejectEvent,
+		policies.RejectEventsWithBase64Media,
+		policies.EventIPRateLimiter(
+			outboxRelayLimits.EventIPLimiterTokensPerInterval,
+			time.Minute*time.Duration(outboxRelayLimits.EventIPLimiterInterval),
+			outboxRelayLimits.EventIPLimiterMaxTokens,
+		),
+	)
+
+	outboxRelay.RejectConnection = append(outboxRelay.RejectConnection,
+		policies.ConnectionRateLimiter(
+			outboxRelayLimits.ConnectionRateLimiterTokensPerInterval,
+			time.Minute*time.Duration(outboxRelayLimits.ConnectionRateLimiterInterval),
+			outboxRelayLimits.ConnectionRateLimiterMaxTokens,
+		),
+	)
 
 	inboxRelay.Info.Name = config.InboxRelayName
 	inboxRelay.Info.PubKey = nPubToPubkey(config.InboxRelayNpub)
@@ -96,4 +176,30 @@ func initRelays() {
 	inboxRelay.Info.Version = config.RelayVersion
 	inboxRelay.Info.Software = config.RelaySoftware
 	inboxRelay.ServiceURL = "https://" + config.RelayURL + "/inbox"
+
+	if !inboxRelayLimits.AllowEmptyFilters {
+		inboxRelay.RejectFilter = append(inboxRelay.RejectFilter, policies.NoEmptyFilters)
+	}
+
+	if !inboxRelayLimits.AllowComplexFilters {
+		inboxRelay.RejectFilter = append(inboxRelay.RejectFilter, policies.NoComplexFilters)
+	}
+
+	inboxRelay.RejectEvent = append(inboxRelay.RejectEvent,
+		policies.RejectEventsWithBase64Media,
+		policies.EventIPRateLimiter(
+			inboxRelayLimits.EventIPLimiterTokensPerInterval,
+			time.Minute*time.Duration(inboxRelayLimits.EventIPLimiterInterval),
+			inboxRelayLimits.EventIPLimiterMaxTokens,
+		),
+	)
+
+	inboxRelay.RejectConnection = append(inboxRelay.RejectConnection,
+		policies.ConnectionRateLimiter(
+			inboxRelayLimits.ConnectionRateLimiterTokensPerInterval,
+			time.Minute*time.Duration(inboxRelayLimits.ConnectionRateLimiterInterval),
+			inboxRelayLimits.ConnectionRateLimiterMaxTokens,
+		),
+	)
+
 }
