@@ -69,7 +69,7 @@ IMPORT_SEED_RELAYS_FILE=relays_import.json
 BLASTR_RELAYS_FILE=blastr_relays.json
 ```
 
-The JSON should contain an array of relay URLs (without ws:// or wss://):
+The JSON should contain an array of relay URLs:
 
 ```json
 ["relay.damus.io", "nos.lol"]
