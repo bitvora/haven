@@ -115,10 +115,12 @@ func importTaggedNotes() {
 func subscribeInbox() {
 	ctx := context.Background()
 	wdb := eventstore.RelayWrapper{Store: &inboxDB}
+	startTime := nostr.Timestamp(time.Now().Add(-time.Minute * 5).Unix())
 	filters := []nostr.Filter{{
 		Tags: nostr.TagMap{
 			"p": {nPubToPubkey(config.OwnerNpub)},
 		},
+		Since: &startTime,
 	}}
 
 	log.Println("📢 subscribing to inbox")
