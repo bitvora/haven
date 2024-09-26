@@ -230,6 +230,24 @@ To start the project using Docker Compose, follow these steps:
 
 This will build the Docker image and start the `haven-relay` service as defined in the `docker-compose.yml` file. The application will be accessible on port 3335.
 
+### Nginx + SSL with Docker (optional)
+
+If you want to serve the relay over HTTPS, you can use Nginx as a reverse proxy with SSL termination.
+
+It's recommended to edit the `.env` file and modify the `EMAIL` to a real email address.
+
+You'll also need to expose ports 80 and 443 to the internet and set up your DNS A and AAAA (if you are using IPv6) 
+records to point to your server's IP address.
+
+Finally, run the following command:
+
+```sh
+# in foreground
+docker compose -f docker-compose-nginx-ssl.yml up --build
+# in background
+docker compose -f docker-compose-nginx-ssl.yml up --build -d
+```
+
 ### Hidden Service with Tor and Docker (optional)
 
 Same as the step 6, but with the following command:
