@@ -31,7 +31,7 @@ RUN chown -R appuser:appgroup /app
 USER appuser
 
 # Expose the port that the application will run on
-EXPOSE 3334
+EXPOSE 3355
 
 # Set the command to run the executable
 CMD ["./main"]
