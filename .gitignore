@@ -2,3 +2,5 @@
 relays_import.json
 relays_blastr.json
 haven
+.DS_Store
+.idea/
