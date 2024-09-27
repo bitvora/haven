@@ -99,7 +99,7 @@ func makeNewRelay(relayType string) *khatru.Relay {
 
 		mux := privateRelay.Router()
 
-		mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		mux.HandleFunc("/private", func(w http.ResponseWriter, r *http.Request) {
 			tmpl := template.Must(template.ParseFiles("templates/index.html"))
 			data := struct {
 				RelayName        string
@@ -174,7 +174,7 @@ func makeNewRelay(relayType string) *khatru.Relay {
 
 		mux := chatRelay.Router()
 
-		mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		mux.HandleFunc("/chat", func(w http.ResponseWriter, r *http.Request) {
 			tmpl := template.Must(template.ParseFiles("templates/index.html"))
 			data := struct {
 				RelayName        string
@@ -215,7 +215,7 @@ func makeNewRelay(relayType string) *khatru.Relay {
 
 		mux := inboxRelay.Router()
 
-		mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		mux.HandleFunc("/inbox", func(w http.ResponseWriter, r *http.Request) {
 			tmpl := template.Must(template.ParseFiles("templates/index.html"))
 			data := struct {
 				RelayName        string
