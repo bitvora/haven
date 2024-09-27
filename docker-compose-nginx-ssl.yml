@@ -12,7 +12,7 @@ services:
       - VIRTUAL_PORT=3355
     volumes:
       - "./db:/app/db"
-      - "./haven:/app/haven"
+      - "./dbin:/app/haven"
     user: "${DOCKER_UID:-1000}:${DOCKER_GID:-1000}"
     network_mode: bridge
     restart: unless-stopped
