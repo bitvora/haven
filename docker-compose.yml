@@ -8,7 +8,7 @@ services:
       - .env
     volumes:
       - "./db:/app/db"
-      - "./haven:/app/haven"
+      - "./haven:/app"
     ports:
       - "3355:3355"
     user: "${DOCKER_UID:-1000}:${DOCKER_GID:-1000}"
