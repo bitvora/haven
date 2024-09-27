@@ -252,10 +252,6 @@ func makeNewRelay(relayType string) *khatru.Relay {
 		})
 
 		mux := outboxRelay.Router()
-		static := http.FileServer(http.Dir("templates/static"))
-
-		mux.Handle("GET /static/", http.StripPrefix("/static/", static))
-		mux.Handle("GET /favicon.ico", http.StripPrefix("/", static))
 
 		mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 			tmpl := template.Must(template.ParseFiles("templates/index.html"))
