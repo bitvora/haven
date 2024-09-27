@@ -60,14 +60,14 @@ func dynamicRelayHandler(w http.ResponseWriter, r *http.Request) {
 		relay = mainRelay
 	} else {
 		relay, _ = subRelays.LoadOrCompute(relayType, func() *khatru.Relay {
-			return makeNewRelay(relayType)
+			return makeNewRelay(relayType, w, r)
 		})
 	}
 
 	relay.ServeHTTP(w, r)
 }
 
-func makeNewRelay(relayType string) *khatru.Relay {
+func makeNewRelay(relayType string, w http.ResponseWriter, r *http.Request) *khatru.Relay {
 	switch relayType {
 	case "/private":
 		privateRelay.OnConnect = append(privateRelay.OnConnect, func(ctx context.Context) {
@@ -253,7 +253,7 @@ func makeNewRelay(relayType string) *khatru.Relay {
 
 		mux := outboxRelay.Router()
 
-		mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		mux.HandleFunc(relayType, func(w http.ResponseWriter, r *http.Request) {
 			tmpl := template.Must(template.ParseFiles("templates/index.html"))
 			data := struct {
 				RelayName        string
