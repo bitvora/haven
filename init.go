@@ -1,11 +1,14 @@
 package main
 
 import (
+	"context"
 	"time"
 
+	"github.com/fiatjaf/eventstore/badger"
 	"github.com/fiatjaf/eventstore/lmdb"
 	"github.com/fiatjaf/khatru"
 	"github.com/fiatjaf/khatru/policies"
+	"github.com/nbd-wtf/go-nostr"
 )
 
 var (
@@ -28,27 +31,81 @@ var (
 	inboxDB    = getInboxDB()
 )
 
-func getPrivateDB() lmdb.LMDBBackend {
-	return lmdb.LMDBBackend{
-		Path: "db/private",
+type DBBackend interface {
+	Init() error
+	Close()
+	CountEvents(ctx context.Context, filter nostr.Filter) (int64, error)
+	DeleteEvent(ctx context.Context, evt *nostr.Event) error
+	QueryEvents(ctx context.Context, filter nostr.Filter) (chan *nostr.Event, error)
+	SaveEvent(ctx context.Context, evt *nostr.Event) error
+	Serial() []byte
+}
+
+func getPrivateDB() DBBackend {
+	switch config.DBEngine {
+	case "lmdb":
+		return &lmdb.LMDBBackend{
+			Path: "db/private",
+		}
+	case "badger":
+		return &badger.BadgerBackend{
+			Path: "db/private",
+		}
+	default:
+		return &lmdb.LMDBBackend{
+			Path: "db/private",
+		}
 	}
 }
 
-func getChatDB() lmdb.LMDBBackend {
-	return lmdb.LMDBBackend{
-		Path: "db/chat",
+func getChatDB() DBBackend {
+	switch config.DBEngine {
+	case "lmdb":
+		return &lmdb.LMDBBackend{
+			Path: "db/chat",
+		}
+	case "badger":
+		return &badger.BadgerBackend{
+			Path: "db/chat",
+		}
+	default:
+		return &lmdb.LMDBBackend{
+			Path: "db/chat",
+		}
 	}
 }
 
-func getOutboxDB() lmdb.LMDBBackend {
-	return lmdb.LMDBBackend{
-		Path: "db/outbox",
+func getOutboxDB() DBBackend {
+	switch config.DBEngine {
+	case "lmdb":
+		return &lmdb.LMDBBackend{
+			Path: "db/outbox",
+		}
+	case "badger":
+		return &badger.BadgerBackend{
+			Path: "db/outbox",
+		}
+	default:
+		return &lmdb.LMDBBackend{
+			Path: "db/outbox",
+		}
 	}
 }
 
-func getInboxDB() lmdb.LMDBBackend {
-	return lmdb.LMDBBackend{
-		Path: "db/inbox",
+func getInboxDB() DBBackend {
+	switch config.DBEngine {
+	case "lmdb":
+		return &lmdb.LMDBBackend{
+			Path: "db/inbox",
+		}
+	case "badger":
+		return &badger.BadgerBackend{
+			Path: "db/inbox",
+		}
+	default:
+		return &lmdb.LMDBBackend{
+			Path: "db/inbox",
+		}
 	}
 }
 

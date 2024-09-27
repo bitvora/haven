@@ -13,6 +13,7 @@ import (
 
 type Config struct {
 	OwnerNpub                        string   `json:"owner_npub"`
+	DBEngine                         string   `json:"db_engine"`
 	RelayURL                         string   `json:"relay_url"`
 	RelaySoftware                    string   `json:"relay_software"`
 	RelayVersion                     string   `json:"relay_version"`
@@ -67,9 +68,13 @@ func getRelayListFromEnvOrFile(envKey, fileKey string) []string {
 
 func loadConfig() Config {
 	godotenv.Load(".env")
+	if os.Getenv("DB_ENGINE") == "" {
+		os.Setenv("DB_ENGINE", "lmdb")
+	}
 
 	return Config{
 		OwnerNpub:                        getEnv("OWNER_NPUB"),
+		DBEngine:                         getEnv("DB_ENGINE"),
 		RelayURL:                         getEnv("RELAY_URL"),
 		RelaySoftware:                    "https://github.com/bitvora/haven",
 		RelayVersion:                     "v0.1.0",
