@@ -8,9 +8,9 @@ services:
       - .env
     volumes:
       - "./db:/app/db"
-      - "./haven:/app"
+      - "./dbin:/app/haven"
     ports:
-      - "3355"
+      - "3335"
     user: "${DOCKER_UID:-1000}:${DOCKER_GID:-1000}"
 
   tor:
