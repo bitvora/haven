@@ -57,7 +57,9 @@ func getRelayListFromEnvOrFile(envKey, fileKey string) []string {
 	filePath := getEnv(fileKey)
 
 	if filePath != "" {
-		return getRelayListFromFile(filePath)
+		if _, err := os.Stat(filePath); err == nil {
+			return getRelayListFromFile(filePath)
+		}
 	}
 
 	if envValue != "" {
