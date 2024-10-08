@@ -54,13 +54,16 @@ type AwsConfig struct {
 
 func getRelayListFromEnvOrFile(envKey, fileKey string) []string {
 	envValue := getEnv(envKey)
-	if envValue != "" {
-		return getRelayList(envValue)
+	filePath := getEnv(fileKey)
+
+	if filePath != "" {
+		if _, err := os.Stat(filePath); err == nil {
+			return getRelayListFromFile(filePath)
+		}
 	}
 
-	filePath := getEnv(fileKey)
-	if filePath != "" {
-		return getRelayListFromFile(filePath)
+	if envValue != "" {
+		return getRelayList(envValue)
 	}
 
 	return []string{}
@@ -127,7 +130,11 @@ func getRelayListFromFile(filePath string) []string {
 	}
 
 	for i, relay := range relayList {
-		relayList[i] = "wss://" + strings.TrimSpace(relay)
+		relay = strings.TrimSpace(relay)
+		if !strings.HasPrefix(relay, "wss://") && !strings.HasPrefix(relay, "ws://") {
+			relay = "wss://" + relay
+		}
+		relayList[i] = relay
 	}
 	return relayList
 }
