@@ -89,25 +89,19 @@ func importTaggedNotes() {
 				continue
 			}
 
-			for _, tag := range ev.Event.Tags.GetAll([]string{"p"}) {
-				if len(tag) < 2 {
-					continue
-				}
-				if tag[1] == nPubToPubkey(config.OwnerNpub) {
-					wdb.Publish(ctx, *ev.Event)
-					taggedImportedNotes++
-				}
-			}
-			log.Println("📦 imported", taggedImportedNotes, "tagged notes")
-			time.Sleep(5 * time.Second)
+			wdb.Publish(ctx, *ev.Event)
+			taggedImportedNotes++
+		}
 
-			startTime = startTime.Add(240 * time.Hour)
-			endTime = endTime.Add(240 * time.Hour)
+		log.Println("📦 imported", taggedImportedNotes, "tagged notes")
+		time.Sleep(5 * time.Second)
 
-			if startTime.After(time.Now()) {
-				log.Println("✅ tagged import complete. please restart the relay")
-				break
-			}
+		startTime = startTime.Add(240 * time.Hour)
+		endTime = endTime.Add(240 * time.Hour)
+
+		if startTime.After(time.Now()) {
+			log.Println("✅ tagged import complete. please restart the relay")
+			break
 		}
 	}
 }
