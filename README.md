@@ -52,29 +52,6 @@ cp .env.example .env
 
 Open the `.env` file and set the necessary environment variables.
 
-If you want to use custom relay files for import and blastr, you can specify IMPORT_SEED_RELAYS_FILE and BLASTR_RELAYS_FILE in the .env file. First, copy the example JSON files:
-
-```bash
-cp relays_import.example.json relays_import.json
-```
-
-```bash
-cp relays_blastr.example.json relays_blastr.json
-```
-
-Then, set the paths to the files in the .env file:
-
-```bash
-IMPORT_SEED_RELAYS_FILE=relays_import.json
-BLASTR_RELAYS_FILE=blastr_relays.json
-```
-
-The JSON should contain an array of relay URLs (without ws:// or wss://):
-
-```json
-["relay.damus.io", "nos.lol"]
-```
-
 ### 4. Build the project
 
 Run the following command to build the relay:
@@ -236,7 +213,7 @@ If you want to serve the relay over HTTPS, you can use Nginx as a reverse proxy 
 
 It's recommended to edit the `.env` file and modify the `EMAIL` to a real email address.
 
-You'll also need to expose ports 80 and 443 to the internet and set up your DNS A and AAAA (if you are using IPv6) 
+You'll also need to expose ports 80 and 443 to the internet and set up your DNS A and AAAA (if you are using IPv6)
 records to point to your server's IP address.
 
 Finally, run the following command:
