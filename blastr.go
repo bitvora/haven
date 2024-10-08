@@ -16,7 +16,7 @@ func blast(ev *nostr.Event) {
 		if err != nil {
 			cancel()
 			log.Println("error connecting to relay", relay, err)
-			return
+			continue
 		}
 		relay.Publish(ctx, *ev)
 		log.Println("🔫 blasted to", relay)
