@@ -22,6 +22,11 @@ type AwsCredentials struct {
 }
 
 func backupDatabase() {
+	if config.BackupProvider == "none" || config.BackupProvider == "" {
+		log.Println("🚫 no backup provider set")
+		return
+	}
+
 	ticker := time.NewTicker(time.Duration(config.BackupIntervalHours) * time.Hour)
 	defer ticker.Stop()
 
