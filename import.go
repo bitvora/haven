@@ -89,8 +89,16 @@ func importTaggedNotes() {
 				continue
 			}
 
-			wdb.Publish(ctx, *ev.Event)
-			taggedImportedNotes++
+			for _, tag := range ev.Event.Tags.GetAll([]string{"p"}) {
+				if len(tag) < 2 {
+					continue
+				}
+				if tag[1] == nPubToPubkey(config.OwnerNpub) {
+
+					wdb.Publish(ctx, *ev.Event)
+					taggedImportedNotes++
+				}
+			}
 		}
 
 		log.Println("📦 imported", taggedImportedNotes, "tagged notes")
