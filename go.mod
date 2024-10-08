@@ -8,14 +8,15 @@ require (
 	github.com/aws/aws-sdk-go-v2 v1.31.0
 	github.com/aws/aws-sdk-go-v2/config v1.27.36
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.63.0
-	github.com/fiatjaf/eventstore v0.10.0
-	github.com/fiatjaf/khatru v0.8.1
+	github.com/fiatjaf/eventstore v0.11.2
+	github.com/fiatjaf/khatru v0.8.3
 	github.com/joho/godotenv v1.5.1
-	github.com/nbd-wtf/go-nostr v0.37.3
+	github.com/nbd-wtf/go-nostr v0.38.1
 	github.com/puzpuzpuz/xsync/v3 v3.4.0
 )
 
 require (
+	fiatjaf.com/lib v0.2.0 // indirect
 	github.com/PowerDNS/lmdb-go v1.9.2 // indirect
 	github.com/andybalholm/brotli v1.0.5 // indirect
 	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.6.5 // indirect

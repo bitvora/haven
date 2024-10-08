@@ -1,4 +1,6 @@
 cloud.google.com/go v0.26.0/go.mod h1:aQUYkXzVsufM+DwF1aE+0xfcU+56JwCaLick0ClmMTw=
+fiatjaf.com/lib v0.2.0 h1:TgIJESbbND6GjOgGHxF5jsO6EMjuAxIzZHPo5DXYexs=
+fiatjaf.com/lib v0.2.0/go.mod h1:Ycqq3+mJ9jAWu7XjbQI1cVr+OFgnHn79dQR5oTII47g=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/PowerDNS/lmdb-go v1.9.2 h1:Cmgerh9y3ZKBZGz1irxSShhfmFyRUh+Zdk4cZk7ZJvU=
 github.com/PowerDNS/lmdb-go v1.9.2/go.mod h1:TE0l+EZK8Z1B4dx070ZxkWTlp8RG1mjN0/+FkFRQMtU=
@@ -101,8 +103,12 @@ github.com/fiatjaf/eventstore v0.9.0 h1:WsGDVAaRaVaV/J8PdrQDGfzChrL13q+lTO4C44rh
 github.com/fiatjaf/eventstore v0.9.0/go.mod h1:JrAce5h0wi79+Sw4gsEq5kz0NtUxbVkOZ7lAo7ay6R8=
 github.com/fiatjaf/eventstore v0.10.0 h1:uc5H8Si8Qxs1PBPgCtCN646uhBuEzKRVXsK1mvzcDxA=
 github.com/fiatjaf/eventstore v0.10.0/go.mod h1:h5CdLSF7mEQ7/rWpEABTRIrNuFoSwdQDi/nZkW/vVFU=
+github.com/fiatjaf/eventstore v0.11.2 h1:gJTATGOk7RtDGt1qs47cLyTzko9phFyXlmWQb0zR7Lg=
+github.com/fiatjaf/eventstore v0.11.2/go.mod h1:oCHPB4TprrNjbhH2kjMKt1O48O1pk3VxAy5iZkB5Fb0=
 github.com/fiatjaf/khatru v0.8.1 h1:BWAZqwuT0272ZlyzPkuqAA0eGBOs5G3u0Dn1tlWrm6Q=
 github.com/fiatjaf/khatru v0.8.1/go.mod h1:jRmqbbIbEH+y0unt3wMUBwqY/btVussqx5SmBoGhXtg=
+github.com/fiatjaf/khatru v0.8.3 h1:bCXyfoPYesmJ00jmi7IyoLpE/CB/tPUw4nP62/3jbBw=
+github.com/fiatjaf/khatru v0.8.3/go.mod h1:44X/Mcc+2ObOqz+/fDbhAW3BeUEPKxDgrX9St/cXEKc=
 github.com/fsnotify/fsnotify v1.4.7/go.mod h1:jwhsz4b93w/PPRr/qN1Yymfu8t87LnFCMoQvtojpjFo=
 github.com/fsnotify/fsnotify v1.4.9/go.mod h1:znqG4EE+3YCdAaPaxE2ZRY/06pZUdp0tY4IgpuI1SZQ=
 github.com/gobwas/httphead v0.1.0 h1:exrUm0f4YX0L7EBwZHuCF4GDp8aJfVeBrlLQrs6NqWU=
@@ -162,6 +168,8 @@ github.com/mailru/easyjson v0.7.7 h1:UGYAvKxe3sBsEDzO8ZeWOSlIQfWFlxbzLZe7hwFURr0
 github.com/mailru/easyjson v0.7.7/go.mod h1:xzfreul335JAWq5oZzymOObrkdz5UnU4kGfJJLY9Nlc=
 github.com/nbd-wtf/go-nostr v0.37.3 h1:p/rrOWhaAk78UCVwzWtTN1C8WbP2k5eQV4HlpEYAeeA=
 github.com/nbd-wtf/go-nostr v0.37.3/go.mod h1:TGKGj00BmJRXvRe0LlpDN3KKbELhhPXgBwUEhzu3Oq0=
+github.com/nbd-wtf/go-nostr v0.38.1 h1:D0moEtIpjhWs2zbgeRyokA4TOLzBdumtpL1/O7/frww=
+github.com/nbd-wtf/go-nostr v0.38.1/go.mod h1:TGKGj00BmJRXvRe0LlpDN3KKbELhhPXgBwUEhzu3Oq0=
 github.com/nxadm/tail v1.4.4/go.mod h1:kenIhsEOeOJmVchQTgglprH7qJGnHDVpk1VPCcaMI8A=
 github.com/onsi/ginkgo v1.6.0/go.mod h1:lLunBs/Ym6LB5Z9jYTR76FiuTmxDTDusOGeTQH+WWjE=
 github.com/onsi/ginkgo v1.7.0/go.mod h1:lLunBs/Ym6LB5Z9jYTR76FiuTmxDTDusOGeTQH+WWjE=
