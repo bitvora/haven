@@ -60,58 +60,34 @@ func importOwnerNotes() {
 
 func importTaggedNotes() {
 	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(ctx, 2*time.Minute)
+	defer cancel()
+
 	wdb := eventstore.RelayWrapper{Store: inboxDB}
+	filters := []nostr.Filter{{
+		Tags: nostr.TagMap{
+			"p": {nPubToPubkey(config.OwnerNpub)},
+		},
+	}}
 
-	startTime, err := time.Parse(layout, config.ImportStartDate)
-	if err != nil {
-		fmt.Println("Error parsing start date:", err)
-		return
-	}
-	endTime := startTime.Add(240 * time.Hour)
-
-	for {
-		ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
-		defer cancel()
-
-		startTimestamp := nostr.Timestamp(startTime.Unix())
-		endTimestamp := nostr.Timestamp(endTime.Unix())
-
-		filters := []nostr.Filter{{
-			Tags: nostr.TagMap{
-				"p": {nPubToPubkey(config.OwnerNpub)},
-			},
-			Since: &startTimestamp,
-			Until: &endTimestamp,
-		}}
-
-		for ev := range pool.SubManyEose(ctx, config.ImportSeedRelays, filters) {
-			if !wotMap[ev.Event.PubKey] {
+	log.Println("📦 importing inbox notes, please wait 2 minutes")
+	taggedImportedNotes = 0
+	for ev := range pool.SubMany(ctx, config.ImportSeedRelays, filters) {
+		if !wotMap[ev.Event.PubKey] {
+			continue
+		}
+		for _, tag := range ev.Event.Tags.GetAll([]string{"p"}) {
+			if len(tag) < 2 {
 				continue
 			}
-
-			for _, tag := range ev.Event.Tags.GetAll([]string{"p"}) {
-				if len(tag) < 2 {
-					continue
-				}
-				if tag[1] == nPubToPubkey(config.OwnerNpub) {
-
-					wdb.Publish(ctx, *ev.Event)
-					taggedImportedNotes++
-				}
+			if tag[1] == nPubToPubkey(config.OwnerNpub) {
+				wdb.Publish(ctx, *ev.Event)
+				taggedImportedNotes++
 			}
 		}
-
-		log.Println("📦 imported", taggedImportedNotes, "tagged notes")
-		time.Sleep(5 * time.Second)
-
-		startTime = startTime.Add(240 * time.Hour)
-		endTime = endTime.Add(240 * time.Hour)
-
-		if startTime.After(time.Now()) {
-			log.Println("✅ tagged import complete. please restart the relay")
-			break
-		}
 	}
+	log.Println("📦 imported", taggedImportedNotes, "tagged notes")
+	log.Println("✅ tagged import complete. please restart the relay")
 }
 
 func subscribeInbox() {
