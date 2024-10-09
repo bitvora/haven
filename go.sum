@@ -105,6 +105,8 @@ github.com/fiatjaf/eventstore v0.10.0 h1:uc5H8Si8Qxs1PBPgCtCN646uhBuEzKRVXsK1mvz
 github.com/fiatjaf/eventstore v0.10.0/go.mod h1:h5CdLSF7mEQ7/rWpEABTRIrNuFoSwdQDi/nZkW/vVFU=
 github.com/fiatjaf/eventstore v0.11.2 h1:gJTATGOk7RtDGt1qs47cLyTzko9phFyXlmWQb0zR7Lg=
 github.com/fiatjaf/eventstore v0.11.2/go.mod h1:oCHPB4TprrNjbhH2kjMKt1O48O1pk3VxAy5iZkB5Fb0=
+github.com/fiatjaf/eventstore v0.11.3-0.20241008170935-f5de4f6e7288 h1:TPshCX571iQy9ympFZxlaApPYyCTWSgb4AHAhaArdjU=
+github.com/fiatjaf/eventstore v0.11.3-0.20241008170935-f5de4f6e7288/go.mod h1:oCHPB4TprrNjbhH2kjMKt1O48O1pk3VxAy5iZkB5Fb0=
 github.com/fiatjaf/khatru v0.8.1 h1:BWAZqwuT0272ZlyzPkuqAA0eGBOs5G3u0Dn1tlWrm6Q=
 github.com/fiatjaf/khatru v0.8.1/go.mod h1:jRmqbbIbEH+y0unt3wMUBwqY/btVussqx5SmBoGhXtg=
 github.com/fiatjaf/khatru v0.8.3 h1:bCXyfoPYesmJ00jmi7IyoLpE/CB/tPUw4nP62/3jbBw=

@@ -19,7 +19,7 @@ func blast(ev *nostr.Event) {
 			continue
 		}
 		relay.Publish(ctx, *ev)
-		log.Println("🔫 blasted to", relay)
 		cancel()
 	}
+	log.Println("🔫 blasted", ev.ID, "to", len(config.BlastrRelays), "relays")
 }
