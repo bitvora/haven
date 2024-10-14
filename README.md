@@ -186,6 +186,52 @@ Once everything is set up, the relay will be running on `localhost:3355` with th
 - `localhost:3355/chat`
 - `localhost:3355/inbox`
 
+## Start the Project with Docker Compose
+
+To start the project using Docker Compose, follow these steps:
+
+1. Ensure Docker and Docker Compose are installed on your system.
+2. Navigate to the project directory.
+3. Ensure the `.env` file is present in the project directory and has the necessary environment variables set. It's recommended to modify the `EMAIL` to a real email address.
+4. You'll also need to expose ports 80 and 443 to the internet and set up your DNS A and AAAA (if you are using IPv6)
+   records to point to your server's IP address.
+5. (Optional) You can also change the paths of the `blossom`, `db`, and `templates` folders in the `compose.yml` file.
+
+   ```yaml
+   volumes:
+      - ./blossom:/haven/blossom # only change the left side before the colon
+      - ./db:/haven/db
+      - ./templates:/haven/templates
+   ```
+6. (Optional) Nginx is pre-configured to reject uploads larger than 25MB. If you want to change this, modify the `client_max_body_size`
+directive in the `nginx/haven_proxy.conf file`. Setting it to 0 means no limit.
+
+   ```nginx
+   client_max_body_size 0;
+   ```
+
+7. Run the following command:
+
+   ```sh
+   # in foreground
+   docker compose up --build
+   # in background
+   docker compose up --build -d
+   ```
+   
+8. For updating the relay, run the following command:
+
+   ```sh
+   
+   git pull
+   docker compose down
+   docker compose build
+   # in foreground
+   docker compose up
+   # in background
+   docker compose up -d
+   ```
+
 ## Blossom Media Server
 
 The outbox relay also functions as a media server for hosting images and videos. You can upload media files to the relay and obtain a shareable link.  
