@@ -1,0 +1,24 @@
+# Files
+.dockerignore
+.env
+.env.example
+.gitignore
+
+compose.yml
+Dockerfile
+haven
+README.md
+relays_blastr.json
+relays_blastr.example.json
+relays_import.json
+relays_import.example.json
+
+# Directories
+.idea
+.git
+db
+nginx
+templates
+
+# Patterns
+**/.DS_Store
