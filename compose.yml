@@ -1,0 +1,74 @@
+services:
+  relay:
+    container_name: haven-relay
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    environment:
+      - LETSENCRYPT_HOST=${RELAY_URL}
+      - VIRTUAL_HOST=${RELAY_URL}
+      - VIRTUAL_PORT=${RELAY_PORT}
+    volumes:
+      - ./blossom:/haven/blossom
+      - ./db:/haven/db
+      - ./templates:/haven/templates
+      - ./relays_blastr.json:/haven/relays_blastr.json:ro
+      - ./relays_import.json:/haven/relays_import.json:ro
+    user: "${DOCKER_UID:-1000}:${DOCKER_GID:-1000}"
+    restart: unless-stopped
+
+  nginx-proxy:
+    image: nginx:alpine
+    container_name: nginx-proxy
+    environment:
+      - TZ
+    volumes:
+      # The vhost volume is only required if you
+      # plan to obtain standalone certificates
+      # - vhost:/etc/nginx/vhost.d
+      - conf:/etc/nginx/conf.d
+      - html:/usr/share/nginx/html
+      - certs:/etc/nginx/certs:ro
+      - ./nginx/haven_proxy.conf:/etc/nginx/conf.d/haven_proxy.conf:ro
+    ports:
+      - "80:80"
+      - "443:443"
+    restart: unless-stopped
+
+  docker-gen:
+    image: nginxproxy/docker-gen
+    container_name: nginx-proxy-gen
+    command: -notify-sighup nginx-proxy -watch -wait 5s:30s /etc/docker-gen/templates/nginx.tmpl /etc/nginx/conf.d/default.conf
+    environment:
+      - TZ
+    volumes_from:
+      - nginx-proxy
+    volumes:
+      - ./nginx/nginx.tmpl:/etc/docker-gen/templates/nginx.tmpl:ro
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+    labels:
+      - "com.github.nginx-proxy.docker-gen"
+    privileged: true
+
+  acme-companion:
+    image: nginxproxy/acme-companion
+    container_name: nginx-proxy-acme
+    environment:
+      - DEFAULT_EMAIL=${ACME_EMAIL}
+      - TZ
+    volumes_from:
+      - nginx-proxy
+    volumes:
+      - certs:/etc/nginx/certs:rw
+      - acme:/etc/acme.sh
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    privileged: true
+
+volumes:
+  # vhost:
+  conf:
+  html:
+  certs:
+  acme:
