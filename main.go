@@ -238,10 +238,6 @@ func makeNewRelay(relayType string, w http.ResponseWriter, r *http.Request) *kha
 		return inboxRelay
 
 	default: // default to outbox
-		outboxRelay.StoreEvent = append(outboxRelay.StoreEvent, outboxDB.SaveEvent, func(ctx context.Context, event *nostr.Event) error {
-			go blast(event)
-			return nil
-		})
 		outboxRelay.QueryEvents = append(outboxRelay.QueryEvents, outboxDB.QueryEvents)
 		outboxRelay.DeleteEvent = append(outboxRelay.DeleteEvent, outboxDB.DeleteEvent)
 
@@ -250,6 +246,11 @@ func makeNewRelay(relayType string, w http.ResponseWriter, r *http.Request) *kha
 				return false, ""
 			}
 			return true, "only notes signed by the owner of this relay are allowed"
+		})
+
+		outboxRelay.StoreEvent = append(outboxRelay.StoreEvent, outboxDB.SaveEvent, func(ctx context.Context, event *nostr.Event) error {
+			go blast(event)
+			return nil
 		})
 
 		mux := outboxRelay.Router()
