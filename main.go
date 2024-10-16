@@ -160,6 +160,7 @@ func makeNewRelay(relayType string, w http.ResponseWriter, r *http.Request) *kha
 			nostr.KindSimpleGroupThread,
 			nostr.KindChannelHideMessage,
 			nostr.KindChannelMessage,
+			nostr.KindGiftWrap,
 		}
 
 		chatRelay.RejectEvent = append(chatRelay.RejectEvent, func(ctx context.Context, event *nostr.Event) (bool, string) {

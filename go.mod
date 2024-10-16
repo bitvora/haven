@@ -1,8 +1,8 @@
 module github.com/bitvora/haven
 
-go 1.23.0
+go 1.23.1
 
-toolchain go1.23.1
+toolchain go1.23.2
 
 require (
 	github.com/aws/aws-sdk-go-v2 v1.31.0
@@ -11,7 +11,7 @@ require (
 	github.com/fiatjaf/eventstore v0.11.3-0.20241008170935-f5de4f6e7288
 	github.com/fiatjaf/khatru v0.8.3
 	github.com/joho/godotenv v1.5.1
-	github.com/nbd-wtf/go-nostr v0.38.1
+	github.com/nbd-wtf/go-nostr v0.38.3
 	github.com/puzpuzpuz/xsync/v3 v3.4.0
 )
 
@@ -59,14 +59,14 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/rs/cors v1.7.0 // indirect
 	github.com/savsgio/gotils v0.0.0-20230208104028-c358bd845dee // indirect
-	github.com/tidwall/gjson v1.17.3 // indirect
+	github.com/tidwall/gjson v1.18.0 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.1 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.51.0 // indirect
 	go.opencensus.io v0.24.0 // indirect
-	golang.org/x/exp v0.0.0-20240909161429-701f63a606c0 // indirect
+	golang.org/x/exp v0.0.0-20241009180824-f66d83c29e7c // indirect
 	golang.org/x/net v0.21.0 // indirect
-	golang.org/x/sys v0.25.0 // indirect
+	golang.org/x/sys v0.26.0 // indirect
 	google.golang.org/protobuf v1.31.0 // indirect
 )
