@@ -62,7 +62,7 @@ func loadConfig() Config {
 		DBEngine:                         getEnv("DB_ENGINE"),
 		RelayURL:                         getEnv("RELAY_URL"),
 		RelaySoftware:                    "https://github.com/bitvora/haven",
-		RelayVersion:                     "v0.4.2",
+		RelayVersion:                     "v0.4.4",
 		PrivateRelayName:                 getEnv("PRIVATE_RELAY_NAME"),
 		PrivateRelayNpub:                 getEnv("PRIVATE_RELAY_NPUB"),
 		PrivateRelayDescription:          getEnv("PRIVATE_RELAY_DESCRIPTION"),
