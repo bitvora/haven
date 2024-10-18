@@ -27,6 +27,7 @@ type Config struct {
 	ChatRelayWotDepth                int      `json:"chat_relay_wot_depth"`
 	ChatRelayWotRefreshIntervalHours int      `json:"chat_relay_wot_refresh_interval_hours"`
 	ChatRelayMinimumFollowers        int      `json:"chat_relay_minimum_followers"`
+	ChatRelayAllowKind4              bool     `json:"chat_relay_allow_kind_4"`
 	OutboxRelayName                  string   `json:"outbox_relay_name"`
 	OutboxRelayNpub                  string   `json:"outbox_relay_npub"`
 	OutboxRelayDescription           string   `json:"outbox_relay_description"`
@@ -74,6 +75,7 @@ func loadConfig() Config {
 		ChatRelayWotDepth:                getEnvInt("CHAT_RELAY_WOT_DEPTH", 0),
 		ChatRelayWotRefreshIntervalHours: getEnvInt("CHAT_RELAY_WOT_REFRESH_INTERVAL_HOURS", 0),
 		ChatRelayMinimumFollowers:        getEnvInt("CHAT_RELAY_MINIMUM_FOLLOWERS", 0),
+		ChatRelayAllowKind4:              getEnvBool("CHAT_RELAY_ALLOW_KIND_4", false),
 		OutboxRelayName:                  getEnv("OUTBOX_RELAY_NAME"),
 		OutboxRelayNpub:                  getEnv("OUTBOX_RELAY_NPUB"),
 		OutboxRelayDescription:           getEnv("OUTBOX_RELAY_DESCRIPTION"),
