@@ -164,6 +164,10 @@ func makeNewRelay(relayType string, w http.ResponseWriter, r *http.Request) *kha
 			nostr.KindGiftWrap,
 		}
 
+		if config.ChatRelayAllowKind4 {
+			allowedKinds = append(allowedKinds, nostr.KindEncryptedDirectMessage)
+		}
+
 		chatRelay.RejectEvent = append(chatRelay.RejectEvent, func(ctx context.Context, event *nostr.Event) (bool, string) {
 			for _, kind := range allowedKinds {
 				if event.Kind == kind {
@@ -171,7 +175,7 @@ func makeNewRelay(relayType string, w http.ResponseWriter, r *http.Request) *kha
 				}
 			}
 
-			return true, "only gift wrapped DMs are allowed"
+			return true, "only chat related events are allowed"
 		})
 
 		mux := chatRelay.Router()
@@ -206,7 +210,7 @@ func makeNewRelay(relayType string, w http.ResponseWriter, r *http.Request) *kha
 				return true, "you must be in the web of trust to post to this relay"
 			}
 
-			if event.Kind == nostr.KindEncryptedDirectMessage {
+			if event.Kind == nostr.KindEncryptedDirectMessage && !config.ChatRelayAllowKind4 {
 				return true, "only gift wrapped DMs are supported"
 			}
 
