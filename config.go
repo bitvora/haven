@@ -14,6 +14,8 @@ type Config struct {
 	OwnerNpub                        string   `json:"owner_npub"`
 	DBEngine                         string   `json:"db_engine"`
 	RelayURL                         string   `json:"relay_url"`
+	RelayPort                        int      `json:"relay_port"`
+	RelayBindAddress                 string   `json:"relay_bind_address"`
 	RelaySoftware                    string   `json:"relay_software"`
 	RelayVersion                     string   `json:"relay_version"`
 	PrivateRelayName                 string   `json:"private_relay_name"`
@@ -52,15 +54,17 @@ type AwsConfig struct {
 }
 
 func loadConfig() Config {
-	godotenv.Load(".env")
-	if os.Getenv("DB_ENGINE") == "" {
-		os.Setenv("DB_ENGINE", "lmdb")
+	err := godotenv.Load(".env")
+	if err != nil {
+		log.Fatalf("%s - please create an .env file", err)
 	}
 
 	return Config{
 		OwnerNpub:                        getEnv("OWNER_NPUB"),
-		DBEngine:                         getEnv("DB_ENGINE"),
+		DBEngine:                         getEnvString("DB_ENGINE", "lmdb"),
 		RelayURL:                         getEnv("RELAY_URL"),
+		RelayPort:                        getEnvInt("RELAY_PORT", 3355),
+		RelayBindAddress:                 getEnvString("RELAY_BIND_ADDRESS", "0.0.0.0"),
 		RelaySoftware:                    "https://github.com/bitvora/haven",
 		RelayVersion:                     "v0.4.4",
 		PrivateRelayName:                 getEnv("PRIVATE_RELAY_NAME"),
@@ -119,6 +123,13 @@ func getEnv(key string) string {
 		log.Fatalf("Environment variable %s not set", key)
 	}
 	return value
+}
+
+func getEnvString(key string, defaultValue string) string {
+	if value, ok := os.LookupEnv(key); ok {
+		return value
+	}
+	return defaultValue
 }
 
 func getEnvInt(key string, defaultValue int) int {
