@@ -48,8 +48,10 @@ func main() {
 
 	http.HandleFunc("/", dynamicRelayHandler)
 
-	log.Printf("🔗 listening at http://localhost:3355")
-	http.ListenAndServe("0.0.0.0:3355", nil)
+	addr := fmt.Sprintf("%s:%d", config.RelayBindAddress, config.RelayPort)
+
+	log.Printf("🔗 listening at %s", addr)
+	http.ListenAndServe(addr, nil)
 }
 
 func dynamicRelayHandler(w http.ResponseWriter, r *http.Request) {
