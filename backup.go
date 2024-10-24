@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"cloud.google.com/go/storage"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsConfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
@@ -37,6 +38,8 @@ func backupDatabase() {
 			switch config.BackupProvider {
 			case "aws":
 				S3Upload()
+			case "gcp":
+				GCPBucketUpload()
 			default:
 				log.Println("🚫 we only support AWS at this time")
 			}
@@ -44,8 +47,46 @@ func backupDatabase() {
 	}
 }
 
-func S3Upload() {
+func GCPBucketUpload() {
+	bucket := getEnv("GCP_BUCKET_NAME")
 
+	ctx := context.Background()
+
+	client, err := storage.NewClient(ctx)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer client.Close()
+
+	// open the zip db file.
+	f, err := os.Open("db.zip")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer f.Close()
+
+	obj := client.Bucket(bucket).Object("db.zip")
+
+	// Upload an object with storage.Writer.
+	wc := obj.NewWriter(ctx)
+	if _, err = io.Copy(wc, f); err != nil {
+		log.Fatal(err)
+	}
+
+	if err := wc.Close(); err != nil {
+		log.Fatal(err)
+	}
+
+	log.Printf("✅ Successfully uploaded %q to %q\n", "db.zip", bucket)
+
+	// delete the file.
+	err = os.Remove("db.zip")
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func S3Upload() {
 	bucket := getEnv("AWS_BUCKET_NAME")
 	cfg, err := awsConfig.LoadDefaultConfig(context.TODO())
 	if err != nil {

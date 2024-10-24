@@ -208,6 +208,18 @@ AWS_BUCKET=your_bucket
 
 Replace `your_access_key_id`, `your_secret_access_key`, `your_region`, and `your_bucket` with your actual AWS credentials.
 
+### GCP
+
+To back up your database to GCP, you'll need set up Application Default Credentials (ADC). There are many ways to do so and it varies on the environment you're running the relay on. Check out the [official documentation](https://cloud.google.com/docs/authentication/provide-credentials-adc) for more information. 
+
+After authenticating to GCP, set the environment variable below in your `.env` file:
+
+```bash
+GCP_BUCKET_NAME="backups"
+```
+
+Replace the name of the bucket accordingly.
+
 ## License
 
 This project is licensed under the MIT License.
