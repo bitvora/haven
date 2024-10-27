@@ -204,6 +204,7 @@ func makeNewRelay(relayType string, w http.ResponseWriter, r *http.Request) *kha
 	case "/inbox":
 		inboxRelay.StoreEvent = append(inboxRelay.StoreEvent, inboxDB.SaveEvent)
 		inboxRelay.QueryEvents = append(inboxRelay.QueryEvents, inboxDB.QueryEvents)
+		inboxRelay.DeleteEvent = append(inboxRelay.DeleteEvent, inboxDB.DeleteEvent)
 
 		inboxRelay.RejectEvent = append(inboxRelay.RejectEvent, func(ctx context.Context, event *nostr.Event) (bool, string) {
 			if !wotMap[event.PubKey] {
