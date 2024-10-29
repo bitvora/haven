@@ -45,7 +45,6 @@ type Config struct {
 	BackupIntervalHours              int      `json:"backup_interval_hours"`
 	BlastrRelays                     []string `json:"blastr_relays"`
 	BlossomPath                      string   `json:"blossom_path"`
-	BlossomURL                       string   `json:"blossom_url"`
 }
 
 type AwsConfig struct {
@@ -62,12 +61,11 @@ func loadConfig() Config {
 		OwnerNpub:                        getEnv("OWNER_NPUB"),
 		DBEngine:                         getEnvString("DB_ENGINE", "lmdb"),
 		BlossomPath:                      getEnvString("BLOSSOM_PATH", "blossom"),
-		BlossomURL:                       getEnvString("BLOSSOM_URL", "http://localhost:3355"),
 		RelayURL:                         getEnv("RELAY_URL"),
 		RelayPort:                        getEnvInt("RELAY_PORT", 3355),
 		RelayBindAddress:                 getEnvString("RELAY_BIND_ADDRESS", "0.0.0.0"),
 		RelaySoftware:                    "https://github.com/bitvora/haven",
-		RelayVersion:                     "v0.4.4",
+		RelayVersion:                     "v1.0.0",
 		PrivateRelayName:                 getEnv("PRIVATE_RELAY_NAME"),
 		PrivateRelayNpub:                 getEnv("PRIVATE_RELAY_NPUB"),
 		PrivateRelayDescription:          getEnv("PRIVATE_RELAY_DESCRIPTION"),
