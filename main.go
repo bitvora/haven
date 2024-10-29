@@ -306,13 +306,13 @@ func makeNewRelay(relayType string, w http.ResponseWriter, r *http.Request) *kha
 		bl.DeleteBlob = append(bl.DeleteBlob, func(ctx context.Context, sha256 string) error {
 			return fs.Remove(config.BlossomPath + sha256)
 		})
-		bl.RejectUpload = append(bl.RejectUpload, func(ctx context.Context, event *nostr.Event, size int, ext string) (bool, string, int) {
-			if event.PubKey == nPubToPubkey(config.OwnerNpub) {
-				return false, ext, size
-			}
+		// bl.RejectUpload = append(bl.RejectUpload, func(ctx context.Context, event *nostr.Event, size int, ext string) (bool, string, int) {
+		// 	if event.PubKey == nPubToPubkey(config.OwnerNpub) {
+		// 		return false, ext, size
+		// 	}
 
-			return true, "only notes signed by the owner of this relay are allowed", 0
-		})
+		// 	return true, "only notes signed by the owner of this relay are allowed", 0
+		// })
 
 		return outboxRelay
 	}
