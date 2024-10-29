@@ -315,7 +315,9 @@ func makeNewRelay(relayType string, w http.ResponseWriter, r *http.Request) *kha
 		})
 
 		return outboxRelay
-	}
 
-	return nil
+	default:
+
+		return nil
+	}
 }
