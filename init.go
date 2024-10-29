@@ -238,7 +238,7 @@ func initRelays() {
 			return fmt.Errorf("auth-required: only the relay owner can store media")
 		}
 
-		file, err := fs.Create("files/" + sha256)
+		file, err := fs.Create(config.BlossomPath + sha256)
 		if err != nil {
 			return err
 		}
