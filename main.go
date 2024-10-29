@@ -250,7 +250,7 @@ func makeNewRelay(relayType string, w http.ResponseWriter, r *http.Request) *kha
 
 		return inboxRelay
 
-	case "/": // default to outbox
+	default: // default to outbox
 		outboxRelay.QueryEvents = append(outboxRelay.QueryEvents, outboxDB.QueryEvents)
 		outboxRelay.DeleteEvent = append(outboxRelay.DeleteEvent, outboxDB.DeleteEvent)
 
@@ -315,9 +315,5 @@ func makeNewRelay(relayType string, w http.ResponseWriter, r *http.Request) *kha
 		})
 
 		return outboxRelay
-
-	default:
-
-		return nil
 	}
 }
