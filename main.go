@@ -12,6 +12,7 @@ import (
 	"github.com/fiatjaf/khatru"
 	"github.com/nbd-wtf/go-nostr"
 	"github.com/puzpuzpuz/xsync/v3"
+	"github.com/spf13/afero"
 )
 
 var (
@@ -19,6 +20,7 @@ var (
 	subRelays = xsync.NewMapOf[string, *khatru.Relay]()
 	pool      = nostr.NewSimplePool(context.Background())
 	config    = loadConfig()
+	fs        afero.Fs
 )
 
 func main() {
@@ -30,6 +32,9 @@ func main() {
 	reset := "\033[0m"
 	fmt.Println(green + art + reset)
 	log.Println("🚀 haven is booting up")
+	fs = afero.NewOsFs()
+	fs.MkdirAll(config.BlossomPath, 0755)
+
 	initRelays()
 
 	go func() {

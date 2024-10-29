@@ -1,12 +1,16 @@
 package main
 
 import (
+	"bytes"
 	"context"
+	"fmt"
+	"io"
 	"time"
 
 	"github.com/fiatjaf/eventstore/badger"
 	"github.com/fiatjaf/eventstore/lmdb"
 	"github.com/fiatjaf/khatru"
+	"github.com/fiatjaf/khatru/blossom"
 	"github.com/fiatjaf/khatru/policies"
 	"github.com/nbd-wtf/go-nostr"
 )
@@ -225,6 +229,30 @@ func initRelays() {
 			outboxRelayLimits.ConnectionRateLimiterMaxTokens,
 		),
 	)
+	addr := fmt.Sprintf("%s:%d", config.RelayBindAddress, config.RelayPort)
+
+	bl := blossom.New(outboxRelay, addr)
+	bl.Store = blossom.EventStoreBlobIndexWrapper{Store: outboxDB, ServiceURL: bl.ServiceURL}
+	bl.StoreBlob = append(bl.StoreBlob, func(ctx context.Context, sha256 string, body []byte) error {
+		if khatru.GetAuthed(ctx) != nPubToPubkey(config.OwnerNpub) {
+			return fmt.Errorf("auth-required: only the relay owner can store media")
+		}
+
+		file, err := fs.Create("files/" + sha256)
+		if err != nil {
+			return err
+		}
+		if _, err := io.Copy(file, bytes.NewReader(body)); err != nil {
+			return err
+		}
+		return nil
+	})
+	bl.LoadBlob = append(bl.LoadBlob, func(ctx context.Context, sha256 string) (io.Reader, error) {
+		return fs.Open(config.BlossomPath + sha256)
+	})
+	bl.DeleteBlob = append(bl.DeleteBlob, func(ctx context.Context, sha256 string) error {
+		return fs.Remove(config.BlossomPath + sha256)
+	})
 
 	inboxRelay.Info.Name = config.InboxRelayName
 	inboxRelay.Info.PubKey = nPubToPubkey(config.InboxRelayNpub)
