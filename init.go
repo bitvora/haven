@@ -231,7 +231,7 @@ func initRelays() {
 	)
 	addr := fmt.Sprintf("%s:%d", config.RelayBindAddress, config.RelayPort)
 
-	bl := blossom.New(outboxRelay, addr)
+	bl := blossom.New(outboxRelay, addr+"/blossom")
 	bl.Store = blossom.EventStoreBlobIndexWrapper{Store: outboxDB, ServiceURL: bl.ServiceURL}
 	bl.StoreBlob = append(bl.StoreBlob, func(ctx context.Context, sha256 string, body []byte) error {
 		if khatru.GetAuthed(ctx) != nPubToPubkey(config.OwnerNpub) {
