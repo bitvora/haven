@@ -45,6 +45,7 @@ type Config struct {
 	BackupIntervalHours              int      `json:"backup_interval_hours"`
 	BlastrRelays                     []string `json:"blastr_relays"`
 	BlossomPath                      string   `json:"blossom_path"`
+	BlossomPort                      int      `json:"blossom_port"`
 }
 
 type AwsConfig struct {
@@ -61,6 +62,7 @@ func loadConfig() Config {
 		OwnerNpub:                        getEnv("OWNER_NPUB"),
 		DBEngine:                         getEnvString("DB_ENGINE", "lmdb"),
 		BlossomPath:                      getEnvString("BLOSSOM_PATH", "blossom"),
+		BlossomPort:                      getEnvInt("BLOSSOM_PORT", 3366),
 		RelayURL:                         getEnv("RELAY_URL"),
 		RelayPort:                        getEnvInt("RELAY_PORT", 3355),
 		RelayBindAddress:                 getEnvString("RELAY_BIND_ADDRESS", "0.0.0.0"),
