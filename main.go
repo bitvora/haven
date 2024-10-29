@@ -292,9 +292,9 @@ func makeNewRelay(relayType string, w http.ResponseWriter, r *http.Request) *kha
 		bl := blossom.New(outboxRelay, addr)
 		bl.Store = blossom.EventStoreBlobIndexWrapper{Store: outboxDB, ServiceURL: bl.ServiceURL}
 		bl.StoreBlob = append(bl.StoreBlob, func(ctx context.Context, sha256 string, body []byte) error {
-			if khatru.GetAuthed(ctx) != nPubToPubkey(config.OwnerNpub) {
-				return fmt.Errorf("auth-required: only the relay owner can store media")
-			}
+			// if khatru.GetAuthed(ctx) != nPubToPubkey(config.OwnerNpub) {
+			// 	return fmt.Errorf("auth-required: only the relay owner can store media")
+			// }
 
 			file, err := fs.Create(config.BlossomPath + sha256)
 			if err != nil {
