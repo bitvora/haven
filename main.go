@@ -250,7 +250,7 @@ func makeNewRelay(relayType string, w http.ResponseWriter, r *http.Request) *kha
 
 		return inboxRelay
 
-	default: // default to outbox
+	case "/": // default to outbox
 		outboxRelay.QueryEvents = append(outboxRelay.QueryEvents, outboxDB.QueryEvents)
 		outboxRelay.DeleteEvent = append(outboxRelay.DeleteEvent, outboxDB.DeleteEvent)
 
@@ -290,9 +290,6 @@ func makeNewRelay(relayType string, w http.ResponseWriter, r *http.Request) *kha
 		bl := blossom.New(outboxRelay, outboxRelay.ServiceURL)
 		bl.Store = blossom.EventStoreBlobIndexWrapper{Store: outboxDB, ServiceURL: bl.ServiceURL}
 		bl.StoreBlob = append(bl.StoreBlob, func(ctx context.Context, sha256 string, body []byte) error {
-			// if khatru.GetAuthed(ctx) != nPubToPubkey(config.OwnerNpub) {
-			// 	return fmt.Errorf("auth-required: only the relay owner can store media")
-			// }
 
 			file, err := fs.Create(config.BlossomPath + sha256)
 			if err != nil {
@@ -309,8 +306,16 @@ func makeNewRelay(relayType string, w http.ResponseWriter, r *http.Request) *kha
 		bl.DeleteBlob = append(bl.DeleteBlob, func(ctx context.Context, sha256 string) error {
 			return fs.Remove(config.BlossomPath + sha256)
 		})
+		bl.RejectUpload = append(bl.RejectUpload, func(ctx context.Context, event *nostr.Event, size int, ext string) (bool, string, int) {
+			if event.PubKey == nPubToPubkey(config.OwnerNpub) {
+				return false, ext, size
+			}
+
+			return true, "only notes signed by the owner of this relay are allowed", 0
+		})
 
 		return outboxRelay
 	}
 
+	return nil
 }
