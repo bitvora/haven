@@ -287,7 +287,7 @@ func makeNewRelay(relayType string, w http.ResponseWriter, r *http.Request) *kha
 			}
 		})
 
-		bl := blossom.New(outboxRelay, config.BlossomURL)
+		bl := blossom.New(outboxRelay, outboxRelay.ServiceURL)
 		bl.Store = blossom.EventStoreBlobIndexWrapper{Store: outboxDB, ServiceURL: bl.ServiceURL}
 		bl.StoreBlob = append(bl.StoreBlob, func(ctx context.Context, sha256 string, body []byte) error {
 			// if khatru.GetAuthed(ctx) != nPubToPubkey(config.OwnerNpub) {
