@@ -86,6 +86,7 @@ func makeNewRelay(relayType string, w http.ResponseWriter, r *http.Request) *kha
 		privateRelay.StoreEvent = append(privateRelay.StoreEvent, privateDB.SaveEvent)
 		privateRelay.QueryEvents = append(privateRelay.QueryEvents, privateDB.QueryEvents)
 		privateRelay.DeleteEvent = append(privateRelay.DeleteEvent, privateDB.DeleteEvent)
+		privateRelay.CountEvents = append(privateRelay.CountEvents, privateDB.CountEvents)
 
 		privateRelay.RejectFilter = append(privateRelay.RejectFilter, func(ctx context.Context, filter nostr.Filter) (bool, string) {
 			authenticatedUser := khatru.GetAuthed(ctx)
@@ -137,6 +138,7 @@ func makeNewRelay(relayType string, w http.ResponseWriter, r *http.Request) *kha
 		chatRelay.StoreEvent = append(chatRelay.StoreEvent, chatDB.SaveEvent)
 		chatRelay.QueryEvents = append(chatRelay.QueryEvents, chatDB.QueryEvents)
 		chatRelay.DeleteEvent = append(chatRelay.DeleteEvent, chatDB.DeleteEvent)
+		chatRelay.CountEvents = append(chatRelay.CountEvents, chatDB.CountEvents)
 
 		chatRelay.RejectFilter = append(chatRelay.RejectFilter, func(ctx context.Context, filter nostr.Filter) (bool, string) {
 			authenticatedUser := khatru.GetAuthed(ctx)
@@ -208,6 +210,7 @@ func makeNewRelay(relayType string, w http.ResponseWriter, r *http.Request) *kha
 		inboxRelay.StoreEvent = append(inboxRelay.StoreEvent, inboxDB.SaveEvent)
 		inboxRelay.QueryEvents = append(inboxRelay.QueryEvents, inboxDB.QueryEvents)
 		inboxRelay.DeleteEvent = append(inboxRelay.DeleteEvent, inboxDB.DeleteEvent)
+		inboxRelay.CountEvents = append(inboxRelay.CountEvents, inboxDB.CountEvents)
 
 		inboxRelay.RejectEvent = append(inboxRelay.RejectEvent, func(ctx context.Context, event *nostr.Event) (bool, string) {
 			if !wotMap[event.PubKey] {
@@ -251,19 +254,19 @@ func makeNewRelay(relayType string, w http.ResponseWriter, r *http.Request) *kha
 		return inboxRelay
 
 	default: // default to outbox
+		outboxRelay.StoreEvent = append(outboxRelay.StoreEvent, outboxDB.SaveEvent, func(ctx context.Context, event *nostr.Event) error {
+			go blast(event)
+			return nil
+		})
 		outboxRelay.QueryEvents = append(outboxRelay.QueryEvents, outboxDB.QueryEvents)
 		outboxRelay.DeleteEvent = append(outboxRelay.DeleteEvent, outboxDB.DeleteEvent)
+		outboxRelay.CountEvents = append(outboxRelay.CountEvents, outboxDB.CountEvents)
 
 		outboxRelay.RejectEvent = append(outboxRelay.RejectEvent, func(ctx context.Context, event *nostr.Event) (bool, string) {
 			if event.PubKey == nPubToPubkey(config.OwnerNpub) {
 				return false, ""
 			}
 			return true, "only notes signed by the owner of this relay are allowed"
-		})
-
-		outboxRelay.StoreEvent = append(outboxRelay.StoreEvent, outboxDB.SaveEvent, func(ctx context.Context, event *nostr.Event) error {
-			go blast(event)
-			return nil
 		})
 
 		mux := outboxRelay.Router()
