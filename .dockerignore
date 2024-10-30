@@ -16,6 +16,7 @@ relays_import.example.json
 # Directories
 .idea
 .git
+blossom
 db
 nginx
 templates
