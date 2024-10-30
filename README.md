@@ -102,7 +102,7 @@ Restart=always
 WantedBy=multi-user.target
 ```
 
-Replace `/path/to/` with the actual paths where you cloned the repository and stored the `.env` file.
+Replace the values for `ExecStart` and `WorkingDirectory` with the actual paths where you cloned the repository and stored the `.env` file.
 
 3. Reload systemd to recognize the new service:
 
