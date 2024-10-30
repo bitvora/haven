@@ -200,6 +200,7 @@ func initRelays() {
 	outboxRelay.Info.Icon = config.OutboxRelayIcon
 	outboxRelay.Info.Version = config.RelayVersion
 	outboxRelay.Info.Software = config.RelaySoftware
+	outboxRelay.ServiceURL = "https://" + config.RelayURL
 
 	if !outboxRelayLimits.AllowEmptyFilters {
 		outboxRelay.RejectFilter = append(outboxRelay.RejectFilter, policies.NoEmptyFilters)

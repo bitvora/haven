@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"flag"
 	"fmt"
@@ -10,8 +11,10 @@ import (
 	"text/template"
 
 	"github.com/fiatjaf/khatru"
+	"github.com/fiatjaf/khatru/blossom"
 	"github.com/nbd-wtf/go-nostr"
 	"github.com/puzpuzpuz/xsync/v3"
+	"github.com/spf13/afero"
 )
 
 var (
@@ -19,6 +22,7 @@ var (
 	subRelays = xsync.NewMapOf[string, *khatru.Relay]()
 	pool      = nostr.NewSimplePool(context.Background())
 	config    = loadConfig()
+	fs        afero.Fs
 )
 
 func main() {
@@ -30,6 +34,9 @@ func main() {
 	reset := "\033[0m"
 	fmt.Println(green + art + reset)
 	log.Println("🚀 haven is booting up")
+	fs = afero.NewOsFs()
+	fs.MkdirAll(config.BlossomPath, 0755)
+
 	initRelays()
 
 	go func() {
@@ -282,6 +289,33 @@ func makeNewRelay(relayType string, w http.ResponseWriter, r *http.Request) *kha
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 			}
+		})
+
+		bl := blossom.New(outboxRelay, "https://"+config.RelayURL)
+		bl.Store = blossom.EventStoreBlobIndexWrapper{Store: outboxDB, ServiceURL: bl.ServiceURL}
+		bl.StoreBlob = append(bl.StoreBlob, func(ctx context.Context, sha256 string, body []byte) error {
+
+			file, err := fs.Create(config.BlossomPath + sha256)
+			if err != nil {
+				return err
+			}
+			if _, err := io.Copy(file, bytes.NewReader(body)); err != nil {
+				return err
+			}
+			return nil
+		})
+		bl.LoadBlob = append(bl.LoadBlob, func(ctx context.Context, sha256 string) (io.Reader, error) {
+			return fs.Open(config.BlossomPath + sha256)
+		})
+		bl.DeleteBlob = append(bl.DeleteBlob, func(ctx context.Context, sha256 string) error {
+			return fs.Remove(config.BlossomPath + sha256)
+		})
+		bl.RejectUpload = append(bl.RejectUpload, func(ctx context.Context, event *nostr.Event, size int, ext string) (bool, string, int) {
+			if event.PubKey == nPubToPubkey(config.OwnerNpub) {
+				return false, ext, size
+			}
+
+			return true, "only notes signed by the owner of this relay are allowed", 0
 		})
 
 		return outboxRelay
