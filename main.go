@@ -272,6 +272,8 @@ func makeNewRelay(relayType string, w http.ResponseWriter, r *http.Request) *kha
 		mux := outboxRelay.Router()
 
 		mux.HandleFunc(relayType, func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Access-Control-Allow-Origin", "*")
+			w.Header().Set("Access-Control-Allow-Methods", "GET")
 			tmpl := template.Must(template.ParseFiles("templates/index.html"))
 			data := struct {
 				RelayName        string
