@@ -10,9 +10,9 @@ require (
 	github.com/aws/aws-sdk-go-v2/config v1.27.36
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.63.0
 	github.com/fiatjaf/eventstore v0.12.0
-	github.com/fiatjaf/khatru v0.9.2-0.20241029193253-b617fea67944
+	github.com/fiatjaf/khatru v0.10.0
 	github.com/joho/godotenv v1.5.1
-	github.com/nbd-wtf/go-nostr v0.40.0
+	github.com/nbd-wtf/go-nostr v0.41.0
 	github.com/puzpuzpuz/xsync/v3 v3.4.0
 )
 
@@ -23,7 +23,7 @@ require (
 	cloud.google.com/go/iam v1.1.5 // indirect
 	fiatjaf.com/lib v0.2.0 // indirect
 	github.com/PowerDNS/lmdb-go v1.9.2 // indirect
-	github.com/andybalholm/brotli v1.0.5 // indirect
+	github.com/andybalholm/brotli v1.1.1 // indirect
 	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.6.5 // indirect
 	github.com/aws/aws-sdk-go-v2/credentials v1.17.34 // indirect
 	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.16.14 // indirect
@@ -50,7 +50,7 @@ require (
 	github.com/dgraph-io/badger/v4 v4.3.1 // indirect
 	github.com/dgraph-io/ristretto v1.0.0 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
-	github.com/fasthttp/websocket v1.5.7 // indirect
+	github.com/fasthttp/websocket v1.5.10 // indirect
 	github.com/gobwas/httphead v0.1.0 // indirect
 	github.com/gobwas/pool v0.2.1 // indirect
 	github.com/gobwas/ws v1.4.0 // indirect
@@ -67,18 +67,18 @@ require (
 	github.com/googleapis/gax-go/v2 v2.12.0 // indirect
 	github.com/greatroar/blobloom v0.8.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
-	github.com/klauspost/compress v1.17.10 // indirect
+	github.com/klauspost/compress v1.17.11 // indirect
 	github.com/liamg/magic v0.0.1 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
-	github.com/rs/cors v1.7.0 // indirect
-	github.com/savsgio/gotils v0.0.0-20230208104028-c358bd845dee // indirect
+	github.com/rs/cors v1.11.1 // indirect
+	github.com/savsgio/gotils v0.0.0-20240704082632-aef3928b8a38 // indirect
 	github.com/spf13/afero v1.11.0 // indirect
 	github.com/tidwall/gjson v1.18.0 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.1 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
-	github.com/valyala/fasthttp v1.51.0 // indirect
+	github.com/valyala/fasthttp v1.57.0 // indirect
 	go.opencensus.io v0.24.0 // indirect
 	golang.org/x/crypto v0.28.0 // indirect
 	golang.org/x/exp v0.0.0-20241009180824-f66d83c29e7c // indirect

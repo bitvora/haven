@@ -13,6 +13,7 @@ services:
     volumes:
       - ./db:/haven/db
       - ./templates:/haven/templates
+      - ./blossom:/haven/blossom
       - ./relays_blastr.json:/haven/relays_blastr.json:ro
       - ./relays_import.json:/haven/relays_import.json:ro
     user: "${DOCKER_UID:-1000}:${DOCKER_GID:-1000}"
