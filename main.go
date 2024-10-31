@@ -69,14 +69,14 @@ func dynamicRelayHandler(w http.ResponseWriter, r *http.Request) {
 		relay = mainRelay
 	} else {
 		relay, _ = subRelays.LoadOrCompute(relayType, func() *khatru.Relay {
-			return makeNewRelay(relayType, w, r)
+			return makeNewRelay(relayType)
 		})
 	}
 
 	relay.ServeHTTP(w, r)
 }
 
-func makeNewRelay(relayType string, w http.ResponseWriter, r *http.Request) *khatru.Relay {
+func makeNewRelay(relayType string) *khatru.Relay {
 	switch relayType {
 	case "/private":
 		privateRelay.OnConnect = append(privateRelay.OnConnect, func(ctx context.Context) {
@@ -292,7 +292,7 @@ func makeNewRelay(relayType string, w http.ResponseWriter, r *http.Request) *kha
 			}
 		})
 
-		bl := blossom.New(outboxRelay, "https://"+config.RelayURL)
+		bl := blossom.New(mainRelay, "https://"+config.RelayURL)
 		bl.Store = blossom.EventStoreBlobIndexWrapper{Store: outboxDB, ServiceURL: bl.ServiceURL}
 		bl.StoreBlob = append(bl.StoreBlob, func(ctx context.Context, sha256 string, body []byte) error {
 
