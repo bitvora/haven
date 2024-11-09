@@ -196,7 +196,7 @@ func initRelays() {
 
 	mux := privateRelay.Router()
 
-	mux.HandleFunc("/private", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("GET /private", func(w http.ResponseWriter, r *http.Request) {
 		tmpl := template.Must(template.ParseFiles("templates/index.html"))
 		data := struct {
 			RelayName        string
@@ -302,7 +302,7 @@ func initRelays() {
 
 	mux = chatRelay.Router()
 
-	mux.HandleFunc("/chat", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("GET /chat", func(w http.ResponseWriter, r *http.Request) {
 		tmpl := template.Must(template.ParseFiles("templates/index.html"))
 		data := struct {
 			RelayName        string
@@ -371,9 +371,8 @@ func initRelays() {
 
 	mux = outboxRelay.Router()
 
-	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("GET /{$}", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Access-Control-Allow-Methods", "GET")
 		tmpl := template.Must(template.ParseFiles("templates/index.html"))
 		data := struct {
 			RelayName        string
@@ -477,7 +476,7 @@ func initRelays() {
 
 	mux = inboxRelay.Router()
 
-	mux.HandleFunc("/inbox", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("GET /inbox", func(w http.ResponseWriter, r *http.Request) {
 		tmpl := template.Must(template.ParseFiles("templates/index.html"))
 		data := struct {
 			RelayName        string

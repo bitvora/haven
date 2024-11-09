@@ -181,10 +181,17 @@ If you want to import your old notes and notes you're tagged in from other relay
 
 Once everything is set up, the relay will be running on `localhost:3355` with the following endpoints:
 
-- `localhost:3355` (outbox)
+- `localhost:3355` (outbox and Blossom server)
 - `localhost:3355/private`
 - `localhost:3355/chat`
 - `localhost:3355/inbox`
+
+## Blossom Media Server
+
+The outbox relay also functions as a media server for hosting images and videos. You can upload media files to the relay and obtain a shareable link.  
+Only the relay owner has upload permissions to the media server, but anyone can view the hosted images and videos.
+
+Media files are stored in the file system based on the `BLOSSOM_PATH` environment variable set in the `.env` file. The default path is `./blossom`.
 
 ## Cloud Backups
 
