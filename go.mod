@@ -9,11 +9,12 @@ require (
 	github.com/aws/aws-sdk-go-v2 v1.31.0
 	github.com/aws/aws-sdk-go-v2/config v1.27.36
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.63.0
-	github.com/fiatjaf/eventstore v0.12.0
-	github.com/fiatjaf/khatru v0.10.0
+	github.com/fiatjaf/eventstore v0.13.0
+	github.com/fiatjaf/khatru v0.10.1-0.20241106015918-76ecf4f7914a
 	github.com/joho/godotenv v1.5.1
-	github.com/nbd-wtf/go-nostr v0.41.0
+	github.com/nbd-wtf/go-nostr v0.42.0
 	github.com/puzpuzpuz/xsync/v3 v3.4.0
+	github.com/spf13/afero v1.11.0
 )
 
 require (
@@ -55,12 +56,9 @@ require (
 	github.com/gobwas/pool v0.2.1 // indirect
 	github.com/gobwas/ws v1.4.0 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
-	github.com/golang/glog v1.1.2 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
-	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/flatbuffers v24.3.25+incompatible // indirect
-	github.com/google/go-cmp v0.6.0 // indirect
 	github.com/google/s2a-go v0.1.7 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.3.2 // indirect
@@ -73,7 +71,6 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/rs/cors v1.11.1 // indirect
 	github.com/savsgio/gotils v0.0.0-20240704082632-aef3928b8a38 // indirect
-	github.com/spf13/afero v1.11.0 // indirect
 	github.com/tidwall/gjson v1.18.0 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.1 // indirect
