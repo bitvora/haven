@@ -11,13 +11,12 @@ services:
       - VIRTUAL_HOST=${RELAY_URL}
       - VIRTUAL_PORT=${RELAY_PORT}
     volumes:
+      - ./blossom:/haven/blossom
       - ./db:/haven/db
       - ./templates:/haven/templates
-      - ./blossom:/haven/blossom
       - ./relays_blastr.json:/haven/relays_blastr.json:ro
       - ./relays_import.json:/haven/relays_import.json:ro
     user: "${DOCKER_UID:-1000}:${DOCKER_GID:-1000}"
-    network_mode: bridge
     restart: unless-stopped
 
   nginx-proxy:
@@ -32,10 +31,10 @@ services:
       - conf:/etc/nginx/conf.d
       - html:/usr/share/nginx/html
       - certs:/etc/nginx/certs:ro
+      - ./nginx/haven_proxy.conf:/etc/nginx/conf.d/haven_proxy.conf:ro
     ports:
       - "80:80"
       - "443:443"
-    network_mode: bridge
     restart: unless-stopped
 
   docker-gen:
@@ -52,7 +51,6 @@ services:
     labels:
       - "com.github.nginx-proxy.docker-gen"
     privileged: true
-    network_mode: bridge
 
   acme-companion:
     image: nginxproxy/acme-companion
@@ -67,7 +65,6 @@ services:
       - acme:/etc/acme.sh
       - /var/run/docker.sock:/var/run/docker.sock:ro
     privileged: true
-    network_mode: bridge
 
 volumes:
   # vhost:
