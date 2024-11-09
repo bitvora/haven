@@ -33,7 +33,7 @@ HAVEN (High Availability Vault for Events on Nostr) is the most sovereign person
     ```bash
     sudo apt update #Update Package List
     sudo apt install snapd #install snapd to get a newer version of Go
-    sudo snapd install go --classic #Install Go
+    sudo snap install go --classic #Install Go
     go version #check if go was installed correctly
     ```
 
