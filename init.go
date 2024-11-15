@@ -419,7 +419,7 @@ func initRelays() {
 			return false, ext, size
 		}
 
-		return true, "only notes signed by the owner of this relay are allowed", 0
+		return true, "only notes signed by the owner of this relay are allowed", 403
 	})
 
 	inboxRelay.Info.Name = config.InboxRelayName
