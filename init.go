@@ -268,26 +268,31 @@ func initRelays() {
 	})
 
 	allowedKinds := []int{
-		nostr.KindSimpleGroupAddPermission,
-		nostr.KindSimpleGroupAddUser,
-		nostr.KindSimpleGroupAdmins,
+		// Regular kinds
 		nostr.KindSimpleGroupChatMessage,
-		nostr.KindSimpleGroupCreateGroup,
-		nostr.KindSimpleGroupDeleteEvent,
-		nostr.KindSimpleGroupDeleteGroup,
-		nostr.KindSimpleGroupEditGroupStatus,
+		nostr.KindSimpleGroupThreadedReply,
+		nostr.KindSimpleGroupThread,
+		nostr.KindSimpleGroupReply,
+		nostr.KindChannelMessage,
+		nostr.KindChannelHideMessage,
+
+		nostr.KindGiftWrap,
+
+		nostr.KindSimpleGroupPutUser,
+		nostr.KindSimpleGroupRemoveUser,
 		nostr.KindSimpleGroupEditMetadata,
+		nostr.KindSimpleGroupDeleteEvent,
+		nostr.KindSimpleGroupCreateGroup,
+		nostr.KindSimpleGroupDeleteGroup,
+		nostr.KindSimpleGroupCreateInvite,
 		nostr.KindSimpleGroupJoinRequest,
 		nostr.KindSimpleGroupLeaveRequest,
-		nostr.KindSimpleGroupMembers,
+
+		// Addressable kinds
 		nostr.KindSimpleGroupMetadata,
-		nostr.KindSimpleGroupRemovePermission,
-		nostr.KindSimpleGroupRemoveUser,
-		nostr.KindSimpleGroupReply,
-		nostr.KindSimpleGroupThread,
-		nostr.KindChannelHideMessage,
-		nostr.KindChannelMessage,
-		nostr.KindGiftWrap,
+		nostr.KindSimpleGroupAdmins,
+		nostr.KindSimpleGroupMembers,
+		nostr.KindSimpleGroupRoles,
 	}
 
 	chatRelay.RejectEvent = append(chatRelay.RejectEvent, func(ctx context.Context, event *nostr.Event) (bool, string) {
