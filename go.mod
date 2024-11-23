@@ -9,10 +9,10 @@ require (
 	github.com/aws/aws-sdk-go-v2 v1.31.0
 	github.com/aws/aws-sdk-go-v2/config v1.27.36
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.63.0
-	github.com/fiatjaf/eventstore v0.13.0
-	github.com/fiatjaf/khatru v0.10.1-0.20241106015918-76ecf4f7914a
+	github.com/fiatjaf/eventstore v0.14.0
+	github.com/fiatjaf/khatru v0.12.0
 	github.com/joho/godotenv v1.5.1
-	github.com/nbd-wtf/go-nostr v0.42.0
+	github.com/nbd-wtf/go-nostr v0.42.2
 	github.com/puzpuzpuz/xsync/v3 v3.4.0
 	github.com/spf13/afero v1.11.0
 )
@@ -77,13 +77,13 @@ require (
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.57.0 // indirect
 	go.opencensus.io v0.24.0 // indirect
-	golang.org/x/crypto v0.28.0 // indirect
-	golang.org/x/exp v0.0.0-20241009180824-f66d83c29e7c // indirect
-	golang.org/x/net v0.30.0 // indirect
+	golang.org/x/crypto v0.29.0 // indirect
+	golang.org/x/exp v0.0.0-20241108190413-2d47ceb2692f // indirect
+	golang.org/x/net v0.31.0 // indirect
 	golang.org/x/oauth2 v0.15.0 // indirect
-	golang.org/x/sync v0.8.0 // indirect
-	golang.org/x/sys v0.26.0 // indirect
-	golang.org/x/text v0.19.0 // indirect
+	golang.org/x/sync v0.9.0 // indirect
+	golang.org/x/sys v0.27.0 // indirect
+	golang.org/x/text v0.20.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
 	google.golang.org/api v0.152.0 // indirect
