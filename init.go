@@ -18,22 +18,22 @@ import (
 
 var (
 	privateRelay = khatru.NewRelay()
-	privateDB    = getPrivateDB()
+	privateDB    = newDBBackend("db/private")
 )
 
 var (
 	chatRelay = khatru.NewRelay()
-	chatDB    = getChatDB()
+	chatDB    = newDBBackend("db/chat")
 )
 
 var (
 	outboxRelay = khatru.NewRelay()
-	outboxDB    = getOutboxDB()
+	outboxDB    = newDBBackend("db/outbox")
 )
 
 var (
 	inboxRelay = khatru.NewRelay()
-	inboxDB    = getInboxDB()
+	inboxDB    = newDBBackend("db/inbox")
 )
 
 type DBBackend interface {
@@ -46,71 +46,23 @@ type DBBackend interface {
 	Serial() []byte
 }
 
-func getPrivateDB() DBBackend {
+func newDBBackend(path string) DBBackend {
 	switch config.DBEngine {
 	case "lmdb":
-		return &lmdb.LMDBBackend{
-			Path: "db/private",
-		}
+		return newLMDBBackend(path)
 	case "badger":
 		return &badger.BadgerBackend{
-			Path: "db/private",
+			Path: path,
 		}
 	default:
-		return &lmdb.LMDBBackend{
-			Path: "db/private",
-		}
+		return newLMDBBackend(path)
 	}
 }
 
-func getChatDB() DBBackend {
-	switch config.DBEngine {
-	case "lmdb":
-		return &lmdb.LMDBBackend{
-			Path: "db/chat",
-		}
-	case "badger":
-		return &badger.BadgerBackend{
-			Path: "db/chat",
-		}
-	default:
-		return &lmdb.LMDBBackend{
-			Path: "db/chat",
-		}
-	}
-}
-
-func getOutboxDB() DBBackend {
-	switch config.DBEngine {
-	case "lmdb":
-		return &lmdb.LMDBBackend{
-			Path: "db/outbox",
-		}
-	case "badger":
-		return &badger.BadgerBackend{
-			Path: "db/outbox",
-		}
-	default:
-		return &lmdb.LMDBBackend{
-			Path: "db/outbox",
-		}
-	}
-}
-
-func getInboxDB() DBBackend {
-	switch config.DBEngine {
-	case "lmdb":
-		return &lmdb.LMDBBackend{
-			Path: "db/inbox",
-		}
-	case "badger":
-		return &badger.BadgerBackend{
-			Path: "db/inbox",
-		}
-	default:
-		return &lmdb.LMDBBackend{
-			Path: "db/inbox",
-		}
+func newLMDBBackend(path string) *lmdb.LMDBBackend {
+	return &lmdb.LMDBBackend{
+		Path:    path,
+		MapSize: config.LmdbMapSize,
 	}
 }
 
