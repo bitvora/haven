@@ -214,6 +214,27 @@ Once everything is set up, the relay will be running on `localhost:3355` with th
 - `localhost:3355/chat`
 - `localhost:3355/inbox`
 
+## Database
+
+Haven currently supports [BadgerDB](https://github.com/dgraph-io/badger) and [LMDB](https://www.symas.com/mdb) as embedded
+databases, meaning no external database is required.
+
+By default, Haven uses BadgerDB. To switch to LMDB, set the `DB_ENGINE` environment variable to `lmdb` in the `.env` file.
+
+LMDB can be faster than BadgerDB but performs best with NVMe drives and may require fine-tuning based on factors such as
+database size, operating system, file system, and hardware.
+
+### LMDB Map Size
+
+For instance, there is no one-size-fits-all value for LMDB’s map size. Windows and macOS users, in particular, may need
+to adjust the `LMDB_MAPSIZE` environment variable to a value lower than the available free disk space if the default
+value of 273 GB is too high. Otherwise, Haven will fail to bootstrap. Users with large databases may also need to
+increase the `LMDB_MAPSIZE` value above the default. On most systems, the default value should work fine.
+
+Despite the large default value, on most modern systems LMDB will only use the disk space it needs. The map size simply
+defines an upper limit for the database size. For more information about LMDB’s map size, refer to the
+[LMDB documentation](http://www.lmdb.tech/doc/group__mdb.html#gaa2506ec8dab3d969b0e609cd82e619e5).
+
 ## Blossom Media Server
 
 The outbox relay also functions as a media server for hosting images and videos. You can upload media files to the relay and obtain a shareable link.  
