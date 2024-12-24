@@ -10,16 +10,13 @@ import (
 
 	"github.com/fiatjaf/khatru"
 	"github.com/nbd-wtf/go-nostr"
-	"github.com/puzpuzpuz/xsync/v3"
 	"github.com/spf13/afero"
 )
 
 var (
-	mainRelay = khatru.NewRelay()
-	subRelays = xsync.NewMapOf[string, *khatru.Relay]()
-	pool      = nostr.NewSimplePool(context.Background())
-	config    = loadConfig()
-	fs        afero.Fs
+	pool   = nostr.NewSimplePool(context.Background())
+	config = loadConfig()
+	fs     afero.Fs
 )
 
 func main() {
