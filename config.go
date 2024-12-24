@@ -13,6 +13,7 @@ import (
 type Config struct {
 	OwnerNpub                        string   `json:"owner_npub"`
 	DBEngine                         string   `json:"db_engine"`
+	LmdbMapSize                      int64    `json:"lmdb_map_size"`
 	RelayURL                         string   `json:"relay_url"`
 	RelayPort                        int      `json:"relay_port"`
 	RelayBindAddress                 string   `json:"relay_bind_address"`
@@ -60,6 +61,7 @@ func loadConfig() Config {
 	return Config{
 		OwnerNpub:                        getEnv("OWNER_NPUB"),
 		DBEngine:                         getEnvString("DB_ENGINE", "lmdb"),
+		LmdbMapSize:                      getEnvInt64("LMDB_MAPSIZE", 0),
 		BlossomPath:                      getEnvString("BLOSSOM_PATH", "blossom"),
 		RelayURL:                         getEnv("RELAY_URL"),
 		RelayPort:                        getEnvInt("RELAY_PORT", 3355),
@@ -134,6 +136,17 @@ func getEnvString(key string, defaultValue string) string {
 func getEnvInt(key string, defaultValue int) int {
 	if value, ok := os.LookupEnv(key); ok {
 		intValue, err := strconv.Atoi(value)
+		if err != nil {
+			panic(err)
+		}
+		return intValue
+	}
+	return defaultValue
+}
+
+func getEnvInt64(key string, defaultValue int64) int64 {
+	if value, ok := os.LookupEnv(key); ok {
+		intValue, err := strconv.ParseInt(value, 10, 64)
 		if err != nil {
 			panic(err)
 		}
