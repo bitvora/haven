@@ -10,8 +10,6 @@ services:
       - LETSENCRYPT_HOST=${RELAY_URL}
       - VIRTUAL_HOST=${RELAY_URL}
       - VIRTUAL_PORT=${RELAY_PORT}
-    labels:
-      - "com.github.nginx-proxy.nginx-proxy.keepalive=auto"
     volumes:
       - ./blossom:/haven/blossom
       - ./db:/haven/db

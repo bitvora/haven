@@ -19,9 +19,11 @@
 {{- $_ := set $config "external_https_port" ($globals.Env.HTTPS_PORT | default "443") }}
 {{- $_ := set $config "sha1_upstream_name" ($globals.Env.SHA1_UPSTREAM_NAME | default "false" | parseBool) }}
 {{- $_ := set $config "default_root_response" ($globals.Env.DEFAULT_ROOT | default "404") }}
+{{- $_ := set $config "trust_default_cert" ($globals.Env.TRUST_DEFAULT_CERT | default "true") }}
 {{- $_ := set $config "trust_downstream_proxy" ($globals.Env.TRUST_DOWNSTREAM_PROXY | default "true" | parseBool) }}
 {{- $_ := set $config "enable_access_log" ($globals.Env.DISABLE_ACCESS_LOGS | default "false" | parseBool | not) }}
 {{- $_ := set $config "enable_ipv6" ($globals.Env.ENABLE_IPV6 | default "false" | parseBool) }}
+{{- $_ := set $config "prefer_ipv6_network" ($globals.Env.PREFER_IPV6_NETWORK | default "false" | parseBool) }}
 {{- $_ := set $config "ssl_policy" ($globals.Env.SSL_POLICY | default "Mozilla-Intermediate") }}
 {{- $_ := set $config "enable_debug_endpoint" ($globals.Env.DEBUG_ENDPOINT | default "false") }}
 {{- $_ := set $config "hsts" ($globals.Env.HSTS | default "max-age=31536000") }}
@@ -30,6 +32,7 @@
 {{- $_ := set $config "enable_http3" ($globals.Env.ENABLE_HTTP3 | default "false") }}
 {{- $_ := set $config "enable_http_on_missing_cert" ($globals.Env.ENABLE_HTTP_ON_MISSING_CERT | default "true") }}
 {{- $_ := set $config "https_method" ($globals.Env.HTTPS_METHOD | default "redirect") }}
+{{- $_ := set $config "non_get_redirect" ($globals.Env.NON_GET_REDIRECT | default "301") }}
 {{- $_ := set $config "default_host" $globals.Env.DEFAULT_HOST }}
 {{- $_ := set $config "resolvers" $globals.Env.RESOLVERS }}
 {{- /* LOG_JSON is a shorthand that sets logging defaults to JSON format */}}
@@ -75,7 +78,8 @@
      * The return value will be added to the dot dict with key "ip".
      */}}
 {{- define "container_ip" }}
-    {{- $ip := "" }}
+    {{- $ipv4 := "" }}
+    {{- $ipv6 := "" }}
     #     networks:
     {{- range sortObjectsByKeysAsc $.container.Networks "Name" }}
         {{- /*
@@ -90,17 +94,17 @@
             {{- /* Handle containers in host nework mode */}}
             {{- if (index $.globals.networks "host") }}
     #         both container and proxy are in host network mode, using localhost IP
-                {{- $ip = "127.0.0.1" }}
+                {{- $ipv4 = "127.0.0.1" }}
                 {{- continue }}
             {{- end }}
             {{- range sortObjectsByKeysAsc $.globals.CurrentContainer.Networks "Name" }}
                 {{- if and . .Gateway (not .Internal) }}
     #         container is in host network mode, using {{ .Name }} gateway IP
-                    {{- $ip = .Gateway }}
+                    {{- $ipv4 = .Gateway }}
                     {{- break }}
                 {{- end }}
             {{- end }}
-            {{- if $ip }}
+            {{- if $ipv4 }}
                 {{- continue }}
             {{- end }}
         {{- end }}
@@ -110,26 +114,41 @@
         {{- end }}
         {{- /*
              * Do not emit multiple `server` directives for this container if it
-             * is reachable over multiple networks.  This avoids accidentally
-             * inflating the effective round-robin weight of a server due to the
-             * redundant upstream addresses that nginx sees as belonging to
+             * is reachable over multiple networks or multiple IP stacks. This avoids 
+             * accidentally inflating the effective round-robin weight of a server due
+             * to the redundant upstream addresses that nginx sees as belonging to
              * distinct servers.
              */}}
-        {{- if $ip }}
+        {{- if or $ipv4 $ipv6 }}
     #         {{ .Name }} (ignored; reachable but redundant)
             {{- continue }}
         {{- end }}
     #         {{ .Name }} (reachable)
         {{- if and . .IP }}
-            {{- $ip = .IP }}
-        {{- else }}
-    #             /!\ No IP for this network!
+            {{- $ipv4 = .IP }}
+        {{- end }}
+        {{- if and . .GlobalIPv6Address }}
+            {{- $ipv6 = .GlobalIPv6Address }}
+        {{- end }}
+        {{- if and (empty $ipv4) (empty $ipv6) }}
+    #             /!\ No IPv4 or IPv6 for this network!
         {{- end }}
     {{- else }}
     #         (none)
     {{- end }}
-    #     IP address: {{ if $ip }}{{ $ip }}{{ else }}(none usable){{ end }}
-    {{- $_ := set $ "ip" $ip }}
+    {{ if and $ipv6 $.globals.config.prefer_ipv6_network }}
+    #     IPv4 address: {{ if $ipv4 }}{{ $ipv4 }} (ignored; reachable but IPv6 prefered){{ else }}(none usable){{ end }}
+    #     IPv6 address: {{ $ipv6 }}
+        {{- $_ := set $ "ip" (printf "[%s]" $ipv6) }}
+    {{- else }}
+    #     IPv4 address: {{ if $ipv4 }}{{ $ipv4 }}{{ else }}(none usable){{ end }}
+    #     IPv6 address: {{ if $ipv6 }}{{ $ipv6 }}{{ if $ipv4 }} (ignored; reachable but IPv4 prefered){{ end }}{{ else }}(none usable){{ end }}
+        {{- if $ipv4 }}
+            {{- $_ := set $ "ip" $ipv4 }}
+        {{- else if $ipv6}}
+            {{- $_ := set $ "ip" (printf "[%s]" $ipv6) }}
+        {{- end }}
+    {{- end }}
 {{- end }}
 
 {{- /*
@@ -147,7 +166,7 @@
     #     exposed ports (first ten):{{ range $index, $address := (sortObjectsByKeysAsc $.container.Addresses "Port") }}{{ if lt $index 10 }} {{ $address.Port }}/{{ $address.Proto }}{{ end }}{{ else }} (none){{ end }}
     {{- $default_port := when (eq (len $.container.Addresses) 1) (first $.container.Addresses).Port "80" }}
     #     default port: {{ $default_port }}
-    {{- $port := when (eq $.port "default") $default_port (when (eq $.port "legacy") (or $.container.Env.VIRTUAL_PORT $default_port) $.port) }}
+    {{- $port := eq $.port "default" | ternary $default_port $.port }}
     #     using port: {{ $port }}
     {{- $addr_obj := where $.container.Addresses "Port" $port | first }}
     {{- if and $addr_obj $addr_obj.HostPort }}
@@ -367,16 +386,16 @@ upstream {{ $vpath.upstream }} {
 {{- define "debug_location" }}
     {{- $debug_paths := dict }}
     {{- range $path, $vpath := .VHost.paths }}
-        {{- $tmp_port := dict }}
+        {{- $tmp_ports := dict }}
         {{- range $port, $containers := $vpath.ports }}
             {{- $tmp_containers := list }}
             {{- range $container := $containers }}
                 {{- $tmp_containers = dict "Name" $container.Name | append $tmp_containers }}
             {{- end }}
-            {{- $_ := dict $port $tmp_containers | set $tmp_port "ports" }}
-            {{- $tmp_port = deepCopy $vpath | merge $tmp_port }}
+            {{- $_ := set $tmp_ports $port $tmp_containers }}
         {{- end }}
-        {{- $_ := set $debug_paths $path $tmp_port }}
+        {{- $debug_vpath := deepCopy $vpath | merge (dict "ports" $tmp_ports) }}
+        {{- $_ := set $debug_paths $path $debug_vpath }}
     {{- end }}
     
     {{- $debug_vhost := deepCopy .VHost }}
@@ -409,7 +428,7 @@ upstream {{ $vpath.upstream }} {
 
     location  /nginx-proxy-debug {
         default_type application/json;
-        return 200 '{{ toJson $debug_response }}';
+        return 200 '{{ toJson $debug_response }}{{ "\\n" }}';
     }
 {{- end }}
 
@@ -562,7 +581,7 @@ proxy_set_header Proxy "";
     {{- end }}
 
     {{- range $hostname, $vhost := $parsedVhosts }}
-        {{- $vhost_data := when (hasKey $globals.vhosts $hostname) (get $globals.vhosts $hostname) (dict) }}
+        {{- $vhost_data := get $globals.vhosts $hostname | default (dict) }}
         {{- $paths := $vhost_data.paths | default (dict) }}
 
         {{- if (empty $vhost) }}
@@ -571,24 +590,34 @@ proxy_set_header Proxy "";
 
         {{- range $path, $vpath := $vhost }}
             {{- if (empty $vpath) }}
-                {{- $vpath = dict "dest" "" "port" "default" }}
+                {{- $vpath = dict
+                    "dest" ""
+                    "port" "default"
+                    "proto" "http"
+                }}
             {{- end }}
+
             {{- $dest := $vpath.dest | default "" }}
-            {{- $port := when (hasKey $vpath "port") (toString $vpath.port) "default" }}
-            {{- $path_data := when (hasKey $paths $path) (get $paths $path) (dict) }}
-            {{- $path_ports := when (hasKey $path_data "ports") (get $path_data "ports") (dict) }}
-            {{- $path_port_containers := when (hasKey $path_ports $port) (get $path_ports $port) (list) }}
-            {{- $path_port_containers = concat $path_port_containers $containers }}
+            {{- $port := $vpath.port | default "default" | toString }}
+            {{- $proto := $vpath.proto | default "http" }}
+
+            {{- $path_data := get $paths $path | default (dict) }}
+            {{- $path_ports := $path_data.ports | default (dict) }}
+            {{- $path_port_containers := get $path_ports $port | default (list) | concat $containers }}
             {{- $_ := set $path_ports $port $path_port_containers }}
             {{- $_ := set $path_data "ports" $path_ports }}
+            
             {{- if (not (hasKey $path_data "dest")) }}
                 {{- $_ := set $path_data "dest" $dest }}
             {{- end }}
+
+            {{- if (not (hasKey $path_data "proto")) }}
+                {{- $_ := set $path_data "proto" $proto }}
+            {{- end }}
+            
             {{- $_ := set $paths $path $path_data }}
         {{- end }}
         {{- $_ := set $vhost_data "paths" $paths }}
-        {{- $is_regexp := hasPrefix "~" $hostname }}
-        {{- $_ := set $vhost_data "upstream_name" (when (or $is_regexp $globals.config.sha1_upstream_name) (sha1 $hostname) $hostname) }}
         {{- $_ := set $globals.vhosts $hostname $vhost_data }}
     {{- end }}
 {{- end }}
@@ -613,34 +642,42 @@ proxy_set_header Proxy "";
         {{- continue }}
     {{- end }}
 
-    {{- $vhost_data := when (hasKey $globals.vhosts $hostname) (get $globals.vhosts $hostname) (dict) }}
+    {{- $vhost_data := get $globals.vhosts $hostname | default (dict) }}
     {{- $paths := $vhost_data.paths | default (dict) }}
 
     {{- $tmp_paths := groupByWithDefault $containers "Env.VIRTUAL_PATH" "/" }}
 
     {{- range $path, $containers := $tmp_paths }}
         {{- $dest := groupByKeys $containers "Env.VIRTUAL_DEST" | first | default "" }}
-        {{- $port := "legacy" }}
-        {{- $path_data := when (hasKey $paths $path) (get $paths $path) (dict) }}
-        {{- $path_ports := when (hasKey $path_data "ports") (get $path_data "ports") (dict) }}
-        {{- $path_port_containers := when (hasKey $path_ports $port) (get $path_ports $port) (list) }}
-        {{- $path_port_containers = concat $path_port_containers $containers }}
-        {{- $_ := set $path_ports $port $path_port_containers }}
+        {{- $proto := groupByKeys $containers "Env.VIRTUAL_PROTO" | first | default "http" | trim }}
+
+        {{- $path_data := get $paths $path | default (dict) }}
+        {{- $path_ports := $path_data.ports | default (dict) }}
+        {{- range $port, $containers := groupByWithDefault $containers "Env.VIRTUAL_PORT" "default" }}
+            {{- $path_port_containers := get $path_ports $port | default (list) | concat $containers }}
+            {{- $_ := set $path_ports $port $path_port_containers }}
+        {{- end }}
         {{- $_ := set $path_data "ports" $path_ports }}
+
         {{- if (not (hasKey $path_data "dest")) }}
             {{- $_ := set $path_data "dest" $dest }}
         {{- end }}
+
+        {{- if (not (hasKey $path_data "proto")) }}
+            {{- $_ := set $path_data "proto" $proto }}
+        {{- end }}
+        
         {{- $_ := set $paths $path $path_data }}
     {{- end }}
     {{- $_ := set $vhost_data "paths" $paths }}
-    {{- $is_regexp := hasPrefix "~" $hostname }}
-    {{- $_ := set $vhost_data "upstream_name" (when (or $is_regexp $globals.config.sha1_upstream_name) (sha1 $hostname) $hostname) }}
     {{- $_ := set $globals.vhosts $hostname $vhost_data }}
 {{- end }}
 
 {{- /* Loop over $globals.vhosts and update it with the remaining informations about each vhost. */}}
 {{- range $hostname, $vhost_data := $globals.vhosts }}
     {{- $is_regexp := hasPrefix "~" $hostname }}
+    {{- $upstream_name := or $is_regexp $globals.config.sha1_upstream_name | ternary (sha1 $hostname) $hostname }}
+
     {{- $vhost_containers := list }}
 
     {{- range $path, $vpath_data := $vhost_data.paths }}
@@ -649,21 +686,18 @@ proxy_set_header Proxy "";
             {{ $vpath_containers = concat $vpath_containers $vport_containers }}
         {{- end }}
 
-        {{- /* Get the VIRTUAL_PROTO defined by containers w/ the same vhost-vpath, falling back to "http". */}}
-        {{- $proto := groupByKeys $vpath_containers "Env.VIRTUAL_PROTO" | first | default "http" | trim }}
         {{- /* Get the NETWORK_ACCESS defined by containers w/ the same vhost, falling back to "external". */}}
         {{- $network_tag := groupByKeys $vpath_containers "Env.NETWORK_ACCESS" | first | default "external" }}
 
         {{- $loadbalance := groupByLabel $vpath_containers "com.github.nginx-proxy.nginx-proxy.loadbalance" | keys | first }}
-        {{- $keepalive := groupByLabel $vpath_containers "com.github.nginx-proxy.nginx-proxy.keepalive" | keys | first | default "disabled" }}
+        {{- $keepalive := groupByLabel $vpath_containers "com.github.nginx-proxy.nginx-proxy.keepalive" | keys | first | default "auto" }}
 
-        {{- $upstream := $vhost_data.upstream_name }}
+        {{- $upstream := $upstream_name }}
         {{- if (not (eq $path "/")) }}
             {{- $sum := sha1 $path }}
             {{- $upstream = printf "%s-%s" $upstream $sum }}
         {{- end }}
 
-        {{- $_ := set $vpath_data "proto" $proto }}
         {{- $_ := set $vpath_data "network_tag" $network_tag }}
         {{- $_ := set $vpath_data "upstream" $upstream }}
         {{- $_ := set $vpath_data "loadbalance" $loadbalance }}
@@ -673,23 +707,41 @@ proxy_set_header Proxy "";
         {{ $vhost_containers = concat $vhost_containers $vpath_containers }}
     {{- end }}
 
-    {{- $certName := groupByKeys $vhost_containers "Env.CERT_NAME" | first }}
-    {{- $vhostCert := closest (dir "/etc/nginx/certs") (printf "%s.crt" $hostname) }}
-    {{- $vhostCert = trimSuffix ".crt" $vhostCert }}
-    {{- $vhostCert = trimSuffix ".key" $vhostCert }}
-    {{- $cert := or $certName $vhostCert }}
+    {{- $userIdentifiedCert := groupByKeys $vhost_containers "Env.CERT_NAME" | first }}
+    
+    {{- $vhostCert := "" }}
+    {{- if exists (printf "/etc/nginx/certs/%s.crt" $hostname) }}
+        {{- $vhostCert = $hostname }}
+    {{- end }}
+
+    {{- $parentVhostCert := "" }}
+    {{- if gt ($hostname | sprigSplit "." | len) 2 }}
+        {{- $parentHostname := ($hostname | sprigSplitn "." 2)._1 }}
+        {{- if exists (printf "/etc/nginx/certs/%s.crt" $parentHostname) }}
+            {{- $parentVhostCert = $parentHostname }}
+        {{- end }}
+    {{- end }}
+    
+    {{- $trust_default_cert := groupByLabel $vhost_containers "com.github.nginx-proxy.nginx-proxy.trust-default-cert" | keys | first | default $globals.config.trust_default_cert | parseBool }}
+    {{- $defaultCert := and $trust_default_cert $globals.config.default_cert_ok | ternary "default" "" }}
+    
+    {{- $cert := or $userIdentifiedCert $vhostCert $parentVhostCert $defaultCert }}
     {{- $cert_ok := and (ne $cert "") (exists (printf "/etc/nginx/certs/%s.crt" $cert)) (exists (printf "/etc/nginx/certs/%s.key" $cert)) }}
 
     {{- $enable_debug_endpoint := groupByLabel $vhost_containers "com.github.nginx-proxy.nginx-proxy.debug-endpoint" | keys | first | default $globals.config.enable_debug_endpoint | parseBool }}
     {{- $default := eq $globals.config.default_host $hostname }}
     {{- $https_method := groupByKeys $vhost_containers "Env.HTTPS_METHOD" | first | default $globals.config.https_method }}
     {{- $enable_http_on_missing_cert := groupByKeys $vhost_containers "Env.ENABLE_HTTP_ON_MISSING_CERT" | first | default $globals.config.enable_http_on_missing_cert | parseBool }}
-    {{- /* When the certificate is missing we want to ensure that HTTP is enabled; hence switching from 'nohttp' or 'redirect' to 'noredirect' */}}
-    {{- if (and $enable_http_on_missing_cert (not $cert_ok) (or (eq $https_method "nohttp") (eq $https_method "redirect"))) }}
+    {{- /* When no trusted certs (default and/or vhost) are present we want to ensure that HTTP is enabled; hence switching from 'nohttp' or 'redirect' to 'noredirect' */}}
+    {{- $https_method_disable_http := list "nohttp" "redirect" | has $https_method }}
+    {{- if and $https_method_disable_http (not $cert_ok) $enable_http_on_missing_cert }}
         {{- $https_method = "noredirect" }}
     {{- end }}
+    {{- $non_get_redirect := groupByLabel $vhost_containers "com.github.nginx-proxy.nginx-proxy.non-get-redirect" | keys | first | default $globals.config.non_get_redirect }}
+    
     {{- $http2_enabled := groupByLabel $vhost_containers "com.github.nginx-proxy.nginx-proxy.http2.enable" | keys | first | default $globals.config.enable_http2 | parseBool }}
     {{- $http3_enabled := groupByLabel $vhost_containers "com.github.nginx-proxy.nginx-proxy.http3.enable" | keys | first | default $globals.config.enable_http3 | parseBool }}
+    
     {{- $acme_http_challenge := groupByKeys $vhost_containers "Env.ACME_HTTP_CHALLENGE_LOCATION" | first | default $globals.config.acme_http_challenge }}
     {{- $acme_http_challenge_legacy := eq $acme_http_challenge "legacy" }}
     {{- $acme_http_challenge_enabled := false }}
@@ -716,6 +768,7 @@ proxy_set_header Proxy "";
         "default" $default
         "hsts" $hsts
         "https_method" $https_method
+        "non_get_redirect" $non_get_redirect
         "http2_enabled" $http2_enabled
         "http3_enabled" $http3_enabled
         "is_regexp" $is_regexp
@@ -723,6 +776,8 @@ proxy_set_header Proxy "";
         "acme_http_challenge_enabled" $acme_http_challenge_enabled
         "server_tokens" $server_tokens
         "ssl_policy" $ssl_policy
+        "trust_default_cert" $trust_default_cert
+        "upstream_name" $upstream_name
         "vhost_root" $vhost_root
     ) }}
     {{- $_ := set $globals.vhosts $hostname $vhost_data }}
@@ -854,11 +909,14 @@ server {
         {{- end }}
 
     location / {
-        {{- if eq $globals.config.external_https_port "443" }}
-        return 301 https://$host$request_uri;
-        {{- else }}
-        return 301 https://$host:{{ $globals.config.external_https_port }}$request_uri;
-        {{- end }}
+        {{- $redirect_uri := "https://$host$request_uri" }}
+        {{- if ne $globals.config.external_https_port "443" }}
+            {{- $redirect_uri = printf "https://$host:%s$request_uri" $globals.config.external_https_port }}
+        {{- end}}
+        if ($request_method ~ (OPTIONS|POST|PUT|PATCH|DELETE)) {
+            return {{ $vhost.non_get_redirect }} {{ $redirect_uri }};
+        }
+        return 301 {{ $redirect_uri }};
     }
 }
     {{- end }}
@@ -947,14 +1005,9 @@ server {
     }
     add_header Strict-Transport-Security $sts_header always;
             {{- end }}
-        {{- else if $globals.config.default_cert_ok }}
-    # No certificate found for this vhost, so use the default certificate and
-    # return an error code if the user connects via https.
-    ssl_certificate /etc/nginx/certs/default.crt;
-    ssl_certificate_key /etc/nginx/certs/default.key;
-    if ($https) {
-        return 500;
-    }
+        {{- else if not $vhost.trust_default_cert | and $globals.config.default_cert_ok }}
+    # No certificate found for this vhost, and the default certificate isn't trusted, so reject SSL handshake.
+    ssl_reject_handshake on;
         {{- else }}
     # No certificate for this vhost nor default certificate found, so reject SSL handshake.
     ssl_reject_handshake on;
