@@ -143,8 +143,8 @@ github.com/felixge/httpsnoop v1.0.4 h1:NFTV2Zj1bL4mc9sqWACXbQFVBBg2W3GPvqp8/ESS2
 github.com/felixge/httpsnoop v1.0.4/go.mod h1:m8KPJKqk1gH5J9DgRY2ASl2lWCfGKXixSwevea8zH2U=
 github.com/fiatjaf/eventstore v0.16.0 h1:r26aJeOwJTCbEevU8RVqp9FlcAgzKKqUWFH//x+Y+7M=
 github.com/fiatjaf/eventstore v0.16.0/go.mod h1:KAsld5BhkmSck48aF11Txu8X+OGNmoabw4TlYVWqInc=
-github.com/fiatjaf/khatru v0.15.0 h1:0aLWiTrdzoKD4WmW35GWL/Jsn4dACCUw325JKZg/AmI=
-github.com/fiatjaf/khatru v0.15.0/go.mod h1:GBQJXZpitDatXF9RookRXcWB5zCJclCE4ufDK3jk80g=
+github.com/fiatjaf/khatru v0.15.1 h1:7nDcJuCBqMprro05QG5lN8afgsBtwYuJemnWegod9bg=
+github.com/fiatjaf/khatru v0.15.1/go.mod h1:GBQJXZpitDatXF9RookRXcWB5zCJclCE4ufDK3jk80g=
 github.com/fsnotify/fsnotify v1.4.7/go.mod h1:jwhsz4b93w/PPRr/qN1Yymfu8t87LnFCMoQvtojpjFo=
 github.com/fsnotify/fsnotify v1.4.9/go.mod h1:znqG4EE+3YCdAaPaxE2ZRY/06pZUdp0tY4IgpuI1SZQ=
 github.com/go-logr/logr v1.2.2/go.mod h1:jdQByPbusPIv2/zmleS9BjJVeZ6kBagPoEUsqbVz/1A=

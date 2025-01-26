@@ -10,7 +10,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/config v1.27.36
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.63.0
 	github.com/fiatjaf/eventstore v0.16.0
-	github.com/fiatjaf/khatru v0.15.0
+	github.com/fiatjaf/khatru v0.15.1
 	github.com/joho/godotenv v1.5.1
 	github.com/nbd-wtf/go-nostr v0.48.4
 	github.com/puzpuzpuz/xsync/v3 v3.5.0
