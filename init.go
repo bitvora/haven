@@ -43,6 +43,7 @@ type DBBackend interface {
 	DeleteEvent(ctx context.Context, evt *nostr.Event) error
 	QueryEvents(ctx context.Context, filter nostr.Filter) (chan *nostr.Event, error)
 	SaveEvent(ctx context.Context, evt *nostr.Event) error
+	ReplaceEvent(ctx context.Context, evt *nostr.Event) error
 	Serial() []byte
 }
 
@@ -126,6 +127,7 @@ func initRelays() {
 	privateRelay.QueryEvents = append(privateRelay.QueryEvents, privateDB.QueryEvents)
 	privateRelay.DeleteEvent = append(privateRelay.DeleteEvent, privateDB.DeleteEvent)
 	privateRelay.CountEvents = append(privateRelay.CountEvents, privateDB.CountEvents)
+	privateRelay.ReplaceEvent = append(privateRelay.ReplaceEvent, privateDB.ReplaceEvent)
 
 	privateRelay.RejectFilter = append(privateRelay.RejectFilter, func(ctx context.Context, filter nostr.Filter) (bool, string) {
 		authenticatedUser := khatru.GetAuthed(ctx)
@@ -208,6 +210,7 @@ func initRelays() {
 	chatRelay.QueryEvents = append(chatRelay.QueryEvents, chatDB.QueryEvents)
 	chatRelay.DeleteEvent = append(chatRelay.DeleteEvent, chatDB.DeleteEvent)
 	chatRelay.CountEvents = append(chatRelay.CountEvents, chatDB.CountEvents)
+	chatRelay.ReplaceEvent = append(chatRelay.ReplaceEvent, chatDB.ReplaceEvent)
 
 	chatRelay.RejectFilter = append(chatRelay.RejectFilter, func(ctx context.Context, filter nostr.Filter) (bool, string) {
 		authenticatedUser := khatru.GetAuthed(ctx)
@@ -318,6 +321,7 @@ func initRelays() {
 	outboxRelay.QueryEvents = append(outboxRelay.QueryEvents, outboxDB.QueryEvents)
 	outboxRelay.DeleteEvent = append(outboxRelay.DeleteEvent, outboxDB.DeleteEvent)
 	outboxRelay.CountEvents = append(outboxRelay.CountEvents, outboxDB.CountEvents)
+	outboxRelay.ReplaceEvent = append(outboxRelay.ReplaceEvent, outboxDB.ReplaceEvent)
 
 	outboxRelay.RejectEvent = append(outboxRelay.RejectEvent, func(ctx context.Context, event *nostr.Event) (bool, string) {
 		if event.PubKey == nPubToPubkey(config.OwnerNpub) {
@@ -412,6 +416,7 @@ func initRelays() {
 	inboxRelay.QueryEvents = append(inboxRelay.QueryEvents, inboxDB.QueryEvents)
 	inboxRelay.DeleteEvent = append(inboxRelay.DeleteEvent, inboxDB.DeleteEvent)
 	inboxRelay.CountEvents = append(inboxRelay.CountEvents, inboxDB.CountEvents)
+	inboxRelay.ReplaceEvent = append(inboxRelay.ReplaceEvent, inboxDB.ReplaceEvent)
 
 	inboxRelay.RejectEvent = append(inboxRelay.RejectEvent, func(ctx context.Context, event *nostr.Event) (bool, string) {
 		if !wotMap[event.PubKey] {
