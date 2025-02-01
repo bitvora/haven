@@ -1,4 +1,4 @@
-package main
+package backupr
 
 import (
 	"archive/zip"
@@ -13,42 +13,43 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsConfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/bitvora/haven/internal/config"
 )
 
-type AwsCredentials struct {
-	AccessKeyID     string
-	SecretAccessKey string
-	Region          string
-	Bucket          string
+type Backupr struct {
+	cfg config.Config
 }
 
-func backupDatabase() {
-	if config.BackupProvider == "none" || config.BackupProvider == "" {
+func NewBackupr(cfg config.Config) *Backupr {
+	return &Backupr{
+		cfg: cfg,
+	}
+}
+
+func (b *Backupr) BackupDatabase() {
+	if b.cfg.BackupProvider == "none" || b.cfg.BackupProvider == "" {
 		log.Println("🚫 no backup provider set")
 		return
 	}
 
-	ticker := time.NewTicker(time.Duration(config.BackupIntervalHours) * time.Hour)
+	ticker := time.NewTicker(time.Duration(b.cfg.BackupIntervalHours) * time.Hour)
 	defer ticker.Stop()
 
-	for {
-		select {
-		case <-ticker.C:
-			ZipDirectory("db", "db.zip")
-			switch config.BackupProvider {
-			case "aws":
-				S3Upload()
-			case "gcp":
-				GCPBucketUpload()
-			default:
-				log.Println("🚫 we only support AWS at this time")
-			}
+	for range ticker.C {
+		b.ZipDirectory()
+		switch b.cfg.BackupProvider {
+		case "aws":
+			b.S3Upload()
+		case "gcp":
+			b.GCPBucketUpload()
+		default:
+			log.Println("🚫 we only support AWS at this time")
 		}
 	}
 }
 
-func GCPBucketUpload() {
-	bucket := getEnv("GCP_BUCKET_NAME")
+func (b *Backupr) GCPBucketUpload() {
+	bucket := b.cfg.GcpConfig.Bucket
 
 	ctx := context.Background()
 
@@ -86,8 +87,8 @@ func GCPBucketUpload() {
 	}
 }
 
-func S3Upload() {
-	bucket := getEnv("AWS_BUCKET_NAME")
+func (b *Backupr) S3Upload() {
+	bucket := b.cfg.AwsConfig.Bucket
 	cfg, err := awsConfig.LoadDefaultConfig(context.TODO())
 	if err != nil {
 		log.Fatal(err)
@@ -121,7 +122,7 @@ func S3Upload() {
 	}
 }
 
-func ZipDirectory(sourceDir, zipFileName string) error {
+func (b *Backupr) ZipDirectory() error {
 	log.Println("📦 zipping up the database")
 	file, err := os.Create("db.zip")
 	if err != nil {
