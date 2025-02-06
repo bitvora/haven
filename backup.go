@@ -17,13 +17,6 @@ import (
 	"github.com/minio/minio-go/v7/pkg/credentials"
 )
 
-type AwsCredentials struct {
-	AccessKeyID     string
-	SecretAccessKey string
-	Region          string
-	Bucket          string
-}
-
 func backupDatabase() {
 	if config.BackupProvider == "none" || config.BackupProvider == "" {
 		log.Println("🚫 no backup provider set")
@@ -39,20 +32,24 @@ func backupDatabase() {
 			ZipDirectory("db", "db.zip")
 			switch config.BackupProvider {
 			case "aws":
-				S3Upload()
+				AwsUpload()
 			case "gcp":
 				GCPBucketUpload()
-			case "spaces":
-				SpacesUpload()
+			case "s3":
+				S3Upload()
 			default:
-				log.Println("🚫 we only support AWS at this time")
+				log.Println("🚫 we only support AWS, GCP, and S3 at this time")
 			}
 		}
 	}
 }
 
 func GCPBucketUpload() {
-	bucket := getEnv("GCP_BUCKET_NAME")
+	if config.GcpConfig == nil {
+		log.Fatal("🚫 GCP specified as backup provider but no GCP config found. Check environment variables.")
+	}
+
+	bucket := config.GcpConfig.Bucket
 
 	ctx := context.Background()
 
@@ -90,15 +87,19 @@ func GCPBucketUpload() {
 	}
 }
 
-func S3Upload() {
-	bucket := getEnv("AWS_BUCKET_NAME")
-	cfg, err := awsConfig.LoadDefaultConfig(context.TODO())
+func AwsUpload() {
+	if config.AwsConfig == nil {
+		log.Fatal("🚫 AWS specified as backup provider but no AWS config found. Check environment variables.")
+	}
+
+	bucket := config.AwsConfig.Bucket
+	awsCfg, err := awsConfig.LoadDefaultConfig(context.TODO())
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	// Create an Amazon S3 service client
-	client := s3.NewFromConfig(cfg)
+	client := s3.NewFromConfig(awsCfg)
 
 	// Upload the file to S3
 	file, err := os.Open("db.zip")
@@ -125,12 +126,16 @@ func S3Upload() {
 	}
 }
 
-func SpacesUpload() {
-	accessKey := getEnv("SPACES_ACCESS_KEY_ID")
-	secret := getEnv("SPACES_SECRET_KEY")
-	endpoint := getEnv("SPACES_ENDPOINT")
-	region := getEnv("SPACES_REGION")
-	bucketName := getEnv("SPACES_BUCKET_NAME")
+func S3Upload() {
+	if config.S3Config == nil {
+		log.Fatal("🚫 S3 specified as backup provider but no S3 config found. Check environment variables.")
+	}
+
+	accessKey := config.S3Config.AccessKeyID
+	secret := config.S3Config.SecretKey
+	endpoint := config.S3Config.Endpoint
+	region := config.S3Config.Region
+	bucketName := config.S3Config.BucketName
 	useSSL := true
 
 	// Create MinIO client
