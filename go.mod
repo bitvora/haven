@@ -10,9 +10,10 @@ require (
 	github.com/aws/aws-sdk-go-v2/config v1.27.36
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.63.0
 	github.com/fiatjaf/eventstore v0.16.0
-	github.com/fiatjaf/khatru v0.15.1
+	github.com/fiatjaf/khatru v0.15.2
 	github.com/joho/godotenv v1.5.1
-	github.com/nbd-wtf/go-nostr v0.48.4
+	github.com/minio/minio-go/v7 v7.0.84
+	github.com/nbd-wtf/go-nostr v0.49.4
 	github.com/puzpuzpuz/xsync/v3 v3.5.0
 	github.com/spf13/afero v1.11.0
 )
@@ -48,7 +49,7 @@ require (
 	github.com/aws/smithy-go v1.21.0 // indirect
 	github.com/bep/debounce v1.2.1 // indirect
 	github.com/btcsuite/btcd/btcec/v2 v2.3.4 // indirect
-	github.com/btcsuite/btcd/btcutil v1.1.3 // indirect
+	github.com/btcsuite/btcd/btcutil v1.1.5 // indirect
 	github.com/btcsuite/btcd/chaincfg/chainhash v1.1.0 // indirect
 	github.com/census-instrumentation/opencensus-proto v0.4.1 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
@@ -80,7 +81,6 @@ require (
 	github.com/liamg/magic v0.0.1 // indirect
 	github.com/mailru/easyjson v0.9.0 // indirect
 	github.com/minio/md5-simd v1.1.2 // indirect
-	github.com/minio/minio-go/v7 v7.0.84 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
@@ -104,7 +104,7 @@ require (
 	go.opentelemetry.io/otel/sdk/metric v1.33.0 // indirect
 	go.opentelemetry.io/otel/trace v1.33.0 // indirect
 	golang.org/x/crypto v0.32.0 // indirect
-	golang.org/x/exp v0.0.0-20250106191152-7588d65b2ba8 // indirect
+	golang.org/x/exp v0.0.0-20250207012021-f9890c6ad9f3 // indirect
 	golang.org/x/net v0.34.0 // indirect
 	golang.org/x/oauth2 v0.24.0 // indirect
 	golang.org/x/sync v0.10.0 // indirect
