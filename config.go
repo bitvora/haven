@@ -56,6 +56,14 @@ type AwsConfig struct {
 	Bucket          string `json:"bucket"`
 }
 
+type SpacesConfig struct {
+	AccessKeyID string `json:"access_key_id"`
+	SecretKey   string `json:"secret_key"`
+	Endpoint    string `json:"endpoint"`
+	BucketName  string `json:"bucket_name"`
+	Region      string `json:"region"`
+}
+
 func loadConfig() Config {
 	_ = godotenv.Load(".env")
 

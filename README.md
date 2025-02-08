@@ -329,6 +329,34 @@ GCP_BUCKET_NAME="backups"
 
 Replace the name of the bucket accordingly.
 
+### Digital Ocean Spaces
+
+To back up your database to Digital Ocean Spaces, you'll first need to create a bucket in the Digital Ocean dashboard.
+This can be done in the "Spaces Object Storage" tab or by visiting https://cloud.digitalocean.com/spaces.
+
+Once you have created a bucket you will be shown an access key ID and a secret key. Additionally,
+while creating the bucket you will have selected a region to host this bucket which has a URL. For example,
+if you choose the datacenter region "Amsterdam - Datacenter 3 - AMS3", your region will be `ams3` and
+the endpoint will be `ams3.digitalocean.com`.
+
+Now that you have an access key ID, secret key, region, and an endpoint. Replace the following values in your
+`.env` file:
+
+```bash
+SPACES_ACCESS_KEY_ID=your_access_key_id
+SPACES_SECRET_KEY=your_secret_key
+SPACES_ENDPOINT=your_endpoint
+SPACES_REGION=your_region
+SPACES_BUCKET_NAME=your_bucket
+```
+
+Finally, you need to specifiy `spaces` as the backup provider which can be done by modifying the following
+environment variable in `.env` like so:
+
+```bash
+BACKUP_PROVIDER="spaces" # aws, gcp, spaces, none (or leave blank to disable)
+```
+
 ## License
 
 This project is licensed under the MIT License.

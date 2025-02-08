@@ -13,6 +13,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsConfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/minio/minio-go/v7"
+	"github.com/minio/minio-go/v7/pkg/credentials"
 )
 
 type AwsCredentials struct {
@@ -40,6 +42,8 @@ func backupDatabase() {
 				S3Upload()
 			case "gcp":
 				GCPBucketUpload()
+			case "spaces":
+				SpacesUpload()
 			default:
 				log.Println("🚫 we only support AWS at this time")
 			}
@@ -113,6 +117,50 @@ func S3Upload() {
 	}
 
 	log.Printf("✅ Successfully uploaded %q to %q\n", "db.zip", bucket)
+
+	// delete the file
+	err = os.Remove("db.zip")
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func SpacesUpload() {
+	accessKey := getEnv("SPACES_ACCESS_KEY_ID")
+	secret := getEnv("SPACES_SECRET_KEY")
+	endpoint := getEnv("SPACES_ENDPOINT")
+	region := getEnv("SPACES_REGION")
+	bucketName := getEnv("SPACES_BUCKET_NAME")
+	useSSL := true
+
+	// Create MinIO client
+	client, err := minio.New(endpoint, &minio.Options{
+		Creds:  credentials.NewStaticV4(accessKey, secret, ""),
+		Region: region,
+		Secure: useSSL,
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Upload the file to the Digital Ocean Spaces bucket
+	file, err := os.Open("db.zip")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+
+	fileInfo, err := file.Stat()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	_, err = client.PutObject(context.Background(), bucketName, "db.zip", file, fileInfo.Size(), minio.PutObjectOptions{})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Printf("✅ Successfully uploaded %q to %q\n", "db.zip", bucketName)
 
 	// delete the file
 	err = os.Remove("db.zip")
