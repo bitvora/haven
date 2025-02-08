@@ -10,9 +10,6 @@ import (
 	"time"
 
 	"cloud.google.com/go/storage"
-	"github.com/aws/aws-sdk-go-v2/aws"
-	awsConfig "github.com/aws/aws-sdk-go-v2/config"
-	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
 )
@@ -26,17 +23,18 @@ func backupDatabase() {
 	ticker := time.NewTicker(time.Duration(config.BackupIntervalHours) * time.Hour)
 	defer ticker.Stop()
 
+	zipFileName := "db.zip"
 	for {
 		select {
 		case <-ticker.C:
-			ZipDirectory("db", "db.zip")
+			ZipDirectory("db", zipFileName)
 			switch config.BackupProvider {
 			case "aws":
-				AwsUpload()
+				AwsUpload(zipFileName)
 			case "gcp":
-				GCPBucketUpload()
+				GCPBucketUpload(zipFileName)
 			case "s3":
-				S3Upload()
+				S3Upload(zipFileName)
 			default:
 				log.Println("🚫 we only support AWS, GCP, and S3 at this time")
 			}
@@ -44,7 +42,7 @@ func backupDatabase() {
 	}
 }
 
-func GCPBucketUpload() {
+func GCPBucketUpload(zipFileName string) {
 	if config.GcpConfig == nil {
 		log.Fatal("🚫 GCP specified as backup provider but no GCP config found. Check environment variables.")
 	}
@@ -60,13 +58,13 @@ func GCPBucketUpload() {
 	defer client.Close()
 
 	// open the zip db file.
-	f, err := os.Open("db.zip")
+	f, err := os.Open(zipFileName)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer f.Close()
 
-	obj := client.Bucket(bucket).Object("db.zip")
+	obj := client.Bucket(bucket).Object(zipFileName)
 
 	// Upload an object with storage.Writer.
 	wc := obj.NewWriter(ctx)
@@ -78,78 +76,70 @@ func GCPBucketUpload() {
 		log.Fatal(err)
 	}
 
-	log.Printf("✅ Successfully uploaded %q to %q\n", "db.zip", bucket)
+	log.Printf("✅ Successfully uploaded %q to %q\n", zipFileName, bucket)
 
 	// delete the file.
-	err = os.Remove("db.zip")
+	err = os.Remove(zipFileName)
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 
-func AwsUpload() {
+func AwsUpload(zipFileName string) {
 	if config.AwsConfig == nil {
 		log.Fatal("🚫 AWS specified as backup provider but no AWS config found. Check environment variables.")
 	}
 
-	bucket := config.AwsConfig.Bucket
-	awsCfg, err := awsConfig.LoadDefaultConfig(context.TODO())
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// Create an Amazon S3 service client
-	client := s3.NewFromConfig(awsCfg)
-
-	// Upload the file to S3
-	file, err := os.Open("db.zip")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	_, err = client.PutObject(context.TODO(), &s3.PutObjectInput{
-		Bucket: aws.String(bucket),
-		Key:    aws.String("db.zip"),
-		Body:   file,
-	})
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	log.Printf("✅ Successfully uploaded %q to %q\n", "db.zip", bucket)
-
-	// delete the file
-	err = os.Remove("db.zip")
-	if err != nil {
-		log.Fatal(err)
-	}
+	s3UploadShared(
+		zipFileName,
+		config.AwsConfig.AccessKeyID,
+		config.AwsConfig.SecretAccessKey,
+		"s3.amazonaws.com",
+		config.AwsConfig.Region,
+		config.AwsConfig.Bucket,
+		true,
+	)
 }
 
-func S3Upload() {
+func S3Upload(zipFileName string) {
 	if config.S3Config == nil {
 		log.Fatal("🚫 S3 specified as backup provider but no S3 config found. Check environment variables.")
 	}
 
-	accessKey := config.S3Config.AccessKeyID
-	secret := config.S3Config.SecretKey
-	endpoint := config.S3Config.Endpoint
-	region := config.S3Config.Region
-	bucketName := config.S3Config.BucketName
-	useSSL := true
+	s3UploadShared(
+		zipFileName,
+		config.S3Config.AccessKeyID,
+		config.S3Config.SecretKey,
+		config.S3Config.Endpoint,
+		config.S3Config.Region,
+		config.S3Config.BucketName,
+		true,
+	)
+}
+
+func s3UploadShared(
+	zipFileName string,
+	accessKey string,
+	secret string,
+	endpoint string,
+	region string,
+	bucketName string,
+	secure bool,
+) {
+	log.Println("🚀 uploading to S3 Bucket...")
 
 	// Create MinIO client
 	client, err := minio.New(endpoint, &minio.Options{
 		Creds:  credentials.NewStaticV4(accessKey, secret, ""),
 		Region: region,
-		Secure: useSSL,
+		Secure: secure,
 	})
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	// Upload the file to the Digital Ocean Spaces bucket
-	file, err := os.Open("db.zip")
+	// Upload the file to the S3 bucket
+	file, err := os.Open(zipFileName)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -160,15 +150,24 @@ func S3Upload() {
 		log.Fatal(err)
 	}
 
-	_, err = client.PutObject(context.Background(), bucketName, "db.zip", file, fileInfo.Size(), minio.PutObjectOptions{})
+	_, err = client.PutObject(
+		context.Background(),
+		bucketName,
+		zipFileName,
+		file,
+		fileInfo.Size(),
+		minio.PutObjectOptions{
+			ContentType: "application/octet-stream",
+		},
+	)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	log.Printf("✅ Successfully uploaded %q to %q\n", "db.zip", bucketName)
+	log.Printf("✅ Successfully uploaded %q to %q\n", zipFileName, bucketName)
 
 	// delete the file
-	err = os.Remove("db.zip")
+	err = os.Remove(zipFileName)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -176,7 +175,7 @@ func S3Upload() {
 
 func ZipDirectory(sourceDir, zipFileName string) error {
 	log.Println("📦 zipping up the database")
-	file, err := os.Create("db.zip")
+	file, err := os.Create(zipFileName)
 	if err != nil {
 		panic(err)
 	}
