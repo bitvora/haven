@@ -29,12 +29,12 @@ func backupDatabase() {
 		case <-ticker.C:
 			ZipDirectory("db", zipFileName)
 			switch config.BackupProvider {
+			case "s3":
+				S3Upload(zipFileName)
 			case "aws":
 				AwsUpload(zipFileName)
 			case "gcp":
 				GCPBucketUpload(zipFileName)
-			case "s3":
-				S3Upload(zipFileName)
 			default:
 				log.Println("🚫 we only support AWS, GCP, and S3 at this time")
 			}
@@ -42,6 +42,7 @@ func backupDatabase() {
 	}
 }
 
+// Deprecated: Use S3Upload instead
 func GCPBucketUpload(zipFileName string) {
 	if config.GcpConfig == nil {
 		log.Fatal("🚫 GCP specified as backup provider but no GCP config found. Check environment variables.")
@@ -85,6 +86,7 @@ func GCPBucketUpload(zipFileName string) {
 	}
 }
 
+// Deprecated: Use S3Upload instead
 func AwsUpload(zipFileName string) {
 	if config.AwsConfig == nil {
 		log.Fatal("🚫 AWS specified as backup provider but no AWS config found. Check environment variables.")
