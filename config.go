@@ -10,44 +10,6 @@ import (
 	"github.com/joho/godotenv"
 )
 
-type Config struct {
-	OwnerNpub                        string   `json:"owner_npub"`
-	DBEngine                         string   `json:"db_engine"`
-	LmdbMapSize                      int64    `json:"lmdb_map_size"`
-	RelayURL                         string   `json:"relay_url"`
-	RelayPort                        int      `json:"relay_port"`
-	RelayBindAddress                 string   `json:"relay_bind_address"`
-	RelaySoftware                    string   `json:"relay_software"`
-	RelayVersion                     string   `json:"relay_version"`
-	PrivateRelayName                 string   `json:"private_relay_name"`
-	PrivateRelayNpub                 string   `json:"private_relay_npub"`
-	PrivateRelayDescription          string   `json:"private_relay_description"`
-	PrivateRelayIcon                 string   `json:"private_relay_icon"`
-	ChatRelayName                    string   `json:"chat_relay_name"`
-	ChatRelayNpub                    string   `json:"chat_relay_npub"`
-	ChatRelayDescription             string   `json:"chat_relay_description"`
-	ChatRelayIcon                    string   `json:"chat_relay_icon"`
-	ChatRelayWotDepth                int      `json:"chat_relay_wot_depth"`
-	ChatRelayWotRefreshIntervalHours int      `json:"chat_relay_wot_refresh_interval_hours"`
-	ChatRelayMinimumFollowers        int      `json:"chat_relay_minimum_followers"`
-	OutboxRelayName                  string   `json:"outbox_relay_name"`
-	OutboxRelayNpub                  string   `json:"outbox_relay_npub"`
-	OutboxRelayDescription           string   `json:"outbox_relay_description"`
-	OutboxRelayIcon                  string   `json:"outbox_relay_icon"`
-	InboxRelayName                   string   `json:"inbox_relay_name"`
-	InboxRelayNpub                   string   `json:"inbox_relay_npub"`
-	InboxRelayDescription            string   `json:"inbox_relay_description"`
-	InboxRelayIcon                   string   `json:"inbox_relay_icon"`
-	InboxPullIntervalSeconds         int      `json:"inbox_pull_interval_seconds"`
-	ImportStartDate                  string   `json:"import_start_date"`
-	ImportQueryIntervalSeconds       int      `json:"import_query_interval_seconds"`
-	ImportSeedRelays                 []string `json:"import_seed_relays"`
-	BackupProvider                   string   `json:"backup_provider"`
-	BackupIntervalHours              int      `json:"backup_interval_hours"`
-	BlastrRelays                     []string `json:"blastr_relays"`
-	BlossomPath                      string   `json:"blossom_path"`
-}
-
 type AwsConfig struct {
 	AccessKeyID     string `json:"access"`
 	SecretAccessKey string `json:"secret"`
@@ -55,12 +17,57 @@ type AwsConfig struct {
 	Bucket          string `json:"bucket"`
 }
 
-type SpacesConfig struct {
+type GcpConfig struct {
+	Bucket string `json:"bucket"`
+}
+
+type S3Config struct {
 	AccessKeyID string `json:"access_key_id"`
 	SecretKey   string `json:"secret_key"`
 	Endpoint    string `json:"endpoint"`
 	BucketName  string `json:"bucket_name"`
 	Region      string `json:"region"`
+}
+
+type Config struct {
+	OwnerNpub                        string     `json:"owner_npub"`
+	DBEngine                         string     `json:"db_engine"`
+	LmdbMapSize                      int64      `json:"lmdb_map_size"`
+	RelayURL                         string     `json:"relay_url"`
+	RelayPort                        int        `json:"relay_port"`
+	RelayBindAddress                 string     `json:"relay_bind_address"`
+	RelaySoftware                    string     `json:"relay_software"`
+	RelayVersion                     string     `json:"relay_version"`
+	PrivateRelayName                 string     `json:"private_relay_name"`
+	PrivateRelayNpub                 string     `json:"private_relay_npub"`
+	PrivateRelayDescription          string     `json:"private_relay_description"`
+	PrivateRelayIcon                 string     `json:"private_relay_icon"`
+	ChatRelayName                    string     `json:"chat_relay_name"`
+	ChatRelayNpub                    string     `json:"chat_relay_npub"`
+	ChatRelayDescription             string     `json:"chat_relay_description"`
+	ChatRelayIcon                    string     `json:"chat_relay_icon"`
+	ChatRelayWotDepth                int        `json:"chat_relay_wot_depth"`
+	ChatRelayWotRefreshIntervalHours int        `json:"chat_relay_wot_refresh_interval_hours"`
+	ChatRelayMinimumFollowers        int        `json:"chat_relay_minimum_followers"`
+	OutboxRelayName                  string     `json:"outbox_relay_name"`
+	OutboxRelayNpub                  string     `json:"outbox_relay_npub"`
+	OutboxRelayDescription           string     `json:"outbox_relay_description"`
+	OutboxRelayIcon                  string     `json:"outbox_relay_icon"`
+	InboxRelayName                   string     `json:"inbox_relay_name"`
+	InboxRelayNpub                   string     `json:"inbox_relay_npub"`
+	InboxRelayDescription            string     `json:"inbox_relay_description"`
+	InboxRelayIcon                   string     `json:"inbox_relay_icon"`
+	InboxPullIntervalSeconds         int        `json:"inbox_pull_interval_seconds"`
+	ImportStartDate                  string     `json:"import_start_date"`
+	ImportQueryIntervalSeconds       int        `json:"import_query_interval_seconds"`
+	ImportSeedRelays                 []string   `json:"import_seed_relays"`
+	BackupProvider                   string     `json:"backup_provider"`
+	BackupIntervalHours              int        `json:"backup_interval_hours"`
+	BlastrRelays                     []string   `json:"blastr_relays"`
+	BlossomPath                      string     `json:"blossom_path"`
+	AwsConfig                        *AwsConfig `json:"aws_config"`
+	S3Config                         *S3Config  `json:"s3_config"`
+	GcpConfig                        *GcpConfig `json:"gcp_config"`
 }
 
 func loadConfig() Config {
@@ -102,7 +109,53 @@ func loadConfig() Config {
 		BackupProvider:                   getEnv("BACKUP_PROVIDER"),
 		BackupIntervalHours:              getEnvInt("BACKUP_INTERVAL_HOURS", 24),
 		BlastrRelays:                     getRelayListFromFile(getEnv("BLASTR_RELAYS_FILE")),
+		AwsConfig:                        getAwsConfig(),
+		S3Config:                         getS3Config(),
+		GcpConfig:                        getGcpConfig(),
 	}
+}
+
+func getAwsConfig() *AwsConfig {
+	backupProvider := getEnv("BACKUP_PROVIDER")
+
+	if backupProvider == "aws" {
+		return &AwsConfig{
+			AccessKeyID:     getEnv("AWS_ACCESS_KEY_ID"),
+			SecretAccessKey: getEnv("AWS_SECRET_ACCESS_KEY"),
+			Region:          getEnv("AWS_REGION"),
+			Bucket:          getEnv("AWS_BUCKET"),
+		}
+	}
+
+	return nil
+}
+
+func getS3Config() *S3Config {
+	backupProvider := getEnv("BACKUP_PROVIDER")
+
+	if backupProvider == "s3" {
+		return &S3Config{
+			AccessKeyID: getEnv("S3_ACCESS_KEY_ID"),
+			SecretKey:   getEnv("S3_SECRET_KEY"),
+			Endpoint:    getEnv("S3_ENDPOINT"),
+			BucketName:  getEnv("S3_BUCKET_NAME"),
+			Region:      getEnv("S3_REGION"),
+		}
+	}
+
+	return nil
+}
+
+func getGcpConfig() *GcpConfig {
+	backupProvider := getEnv("BACKUP_PROVIDER")
+
+	if backupProvider == "gcp" {
+		return &GcpConfig{
+			Bucket: getEnv("GCP_BUCKET_NAME"),
+		}
+	}
+
+	return nil
 }
 
 func getRelayListFromFile(filePath string) []string {
