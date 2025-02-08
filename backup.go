@@ -208,7 +208,7 @@ func ZipDirectory(sourceDir, zipFileName string) error {
 
 		return nil
 	}
-	err = filepath.Walk("db", walker)
+	err = filepath.Walk(sourceDir, walker)
 	if err != nil {
 		//panic(err)
 	}
