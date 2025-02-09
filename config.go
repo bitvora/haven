@@ -49,7 +49,7 @@ type Config struct {
 	ChatRelayWotDepth                int        `json:"chat_relay_wot_depth"`
 	ChatRelayWotRefreshIntervalHours int        `json:"chat_relay_wot_refresh_interval_hours"`
 	ChatRelayMinimumFollowers        int        `json:"chat_relay_minimum_followers"`
-	ChatRelayAllowKind4              bool       `json:"chat_relay_allow_kind_4"`
+	ChatRelayAllowKind4              bool   	`json:"chat_relay_allow_kind_4"`
 	OutboxRelayName                  string     `json:"outbox_relay_name"`
 	OutboxRelayNpub                  string     `json:"outbox_relay_npub"`
 	OutboxRelayDescription           string     `json:"outbox_relay_description"`
