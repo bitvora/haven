@@ -50,6 +50,7 @@ func main() {
 		go backupDatabase()
 	}()
 
+	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("templates/static"))))
 	http.HandleFunc("/", dynamicRelayHandler)
 
 	addr := fmt.Sprintf("%s:%d", config.RelayBindAddress, config.RelayPort)
