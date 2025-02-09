@@ -171,7 +171,7 @@ server {
 Replace `yourdomain.com` with your actual domain name.
 
 > [!NOTE]
-> [`client_max_body_size`](https://nginx.org/en/docs/http/ngx_http_core_module.html#client_max_body_size) is set to 100M
+> [`client_max_body_size`](https://nginx.org/en/docs/http/ngx_http_core_module.html#client_max_body_size) is set to 100m
 > to allow for larger media files to be uploaded to Blossom. `0` can be used to allow for unlimited file sizes. If you are 
 > using Cloudflare proxy, be mindful of [upload limits](https://community.cloudflare.com/t/maximum-upload-size-is-limit/418490/2).
 
