@@ -20,6 +20,7 @@ blossom
 db
 nginx
 templates
+backup
 
 # Patterns
 **/.DS_Store

@@ -11,12 +11,11 @@ services:
       - VIRTUAL_HOST=${RELAY_URL}
       - VIRTUAL_PORT=${RELAY_PORT}
     volumes:
-      - ./blossom:/haven/blossom
-      - ./db:/haven/db
-      - ./templates:/haven/templates
-      - ./relays_blastr.json:/haven/relays_blastr.json:ro
-      - ./relays_import.json:/haven/relays_import.json:ro
-    user: "${DOCKER_UID:-1000}:${DOCKER_GID:-1000}"
+      - ./blossom:/home/nonroot/blossom
+      - ./db:/home/nonroot/db
+      - ./templates:/home/nonroot/templates
+      - ./relays_blastr.json:/home/nonroot/relays_blastr.json:ro
+      - ./relays_import.json:/home/nonroot/relays_import.json:ro
     restart: unless-stopped
 
   nginx-proxy:
@@ -57,7 +56,6 @@ services:
     image: nginxproxy/acme-companion
     container_name: nginx-proxy-acme
     environment:
-      - DEFAULT_EMAIL=${ACME_EMAIL}
       - TZ
     volumes_from:
       - nginx-proxy

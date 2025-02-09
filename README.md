@@ -153,6 +153,7 @@ sudo apt-get install nginx
 server {
     listen 80;
     server_name yourdomain.com;
+    client_max_body_size 100m;
 
     location / {
         proxy_pass http://localhost:3355;
@@ -168,6 +169,11 @@ server {
 ```
 
 Replace `yourdomain.com` with your actual domain name.
+
+> [!NOTE]
+> [`client_max_body_size`](https://nginx.org/en/docs/http/ngx_http_core_module.html#client_max_body_size) is set to 100m
+> to allow for larger media files to be uploaded to Blossom. `0` can be used to allow for unlimited file sizes. If you are 
+> using Cloudflare proxy, be mindful of [upload limits](https://community.cloudflare.com/t/maximum-upload-size-is-limit/418490/2).
 
 After adding the configuration, restart nginx:
 
@@ -220,7 +226,7 @@ To start the project using Docker Compose, follow these steps:
 
 1. Ensure Docker and Docker Compose are installed on your system.
 2. Navigate to the project directory.
-3. Ensure the `.env` file is present in the project directory and has the necessary environment variables set. It's recommended to modify the `EMAIL` to a real email address.
+3. Ensure the `.env` file is present in the project directory and has the necessary environment variables set.
 4. You'll also need to expose ports 80 and 443 to the internet and set up your DNS A and AAAA (if you are using IPv6)
    records to point to your server's IP address.
 5. (Optional) You can also change the paths of the `blossom`, `db`, and `templates` folders in the `compose.yml` file.
@@ -231,8 +237,8 @@ To start the project using Docker Compose, follow these steps:
       - ./db:/haven/db
       - ./templates:/haven/templates
    ```
-6. (Optional) Nginx is pre-configured to reject uploads larger than 25MB. If you want to change this, modify the `client_max_body_size`
-directive in the `nginx/haven_proxy.conf file`. Setting it to 0 means no limit.
+6. (Optional) Nginx is pre-configured to reject uploads larger than 100MB. If you want to change this, modify the `client_max_body_size`
+directive in the `nginx/haven_proxy.conf file`.
 
    ```nginx
    client_max_body_size 0;
@@ -297,41 +303,76 @@ Media files are stored in the file system based on the `BLOSSOM_PATH` environmen
 
 The relay automatically backs up your database to a cloud provider of your choice.
 
-### AWS
+### S3-Compatible Object Storage
 
-To back up your database to AWS, you'll need to first install and configure the awscli. You can do this by running the following commands:
+To back up your database to S3 compatible storage such as [AWS S3](https://aws.amazon.com/s3/), 
+[GCP Cloud Storage] or 
+[DigitalOcean Spaces](https://www.digitalocean.com/products/spaces).
 
-```bash
-sudo python3 -m pip install awscli
-aws configure
+First need to create the bucket on your provider. After creating the Bucket you will be provided with:
+
+- Access Key ID
+- Secret Key
+- URL Endpoint
+- Region
+- Bucket Name
+
+Once you have this data, update your `.env` file with the appropriate information:
+
+```Dotenv
+S3_ACCESS_KEY_ID="your_access_key_id"
+S3_SECRET_KEY="your_secret_key"
+S3_ENDPOINT="your_endpoint"
+S3_REGION="your_region"
+S3_BUCKET_NAME="your_bucket"
 ```
 
-After configuring the awscli, you can set the following environment variables in your `.env` file:
+Replace `your_access_key_id`, `your_secret_access_key`, `your_region`, and `your_bucket` with your actual credentials.
 
-```bash
-AWS_ACCESS_KEY_ID=your_access_key_id
-AWS_SECRET_ACCESS_KEY=your_secret_access_key
-AWS_REGION=your_region
-AWS_BUCKET=your_bucket
+You may also want to set the `BACKUP_INTERVAL_HOURS` environment variable to specify how often the relay should back up 
+the database.
+
+```Dotenv
+BACKUP_INTERVAL_HOURS=24
 ```
 
-Replace `your_access_key_id`, `your_secret_access_key`, `your_region`, and `your_bucket` with your actual AWS credentials.
+Finally, you need to specifiy `s3` as the backup provider:
 
-### GCP
-
-To back up your database to GCP, you'll need set up Application Default Credentials (ADC). There are many ways to do so and it varies on the environment you're running the relay on. Check out the [official documentation](https://cloud.google.com/docs/authentication/provide-credentials-adc) for more information.
-
-After authenticating to GCP, set the environment variable below in your `.env` file:
-
-```bash
-GCP_BUCKET_NAME="backups"
+```Dotenv
+BACKUP_PROVIDER="s3" # s3, none (or leave blank to disable)
 ```
 
-Replace the name of the bucket accordingly.
+#### AWS S3
 
-### Digital Ocean Spaces
+For AWS S3, set the appropriate endpoint for your region/availability zone:
 
-To back up your database to Digital Ocean Spaces, you'll first need to create a bucket in the Digital Ocean dashboard.
+```Dotenv
+S3_ACCESS_KEY="AKIAIOSFODNN7EXAMPLE"
+S3_SECRET_KEY="wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+S3_ENDPOINT="s3.us-east-1.amazonaws.com""
+S3_REGION="us-east-1"
+S3_BUCKET_NAME="haven_backup"
+```
+
+#### GCP Cloud Storage
+
+For GCP, you can set `S3_ENDPOINT` to `storage.googleapis.com`. 
+
+`S3_REGION` can be left blank. `S3_ACCESS_KEY_ID` and `S3_SECRET_KEY` needs to be set to a [HMAC key](
+https://cloud.google.com/storage/docs/authentication/hmackeys), see GCP's official documentation on [how to create a HMAC 
+key for a service account](https://cloud.google.com/storage/docs/authentication/managing-hmackeys#create).
+
+```Dotenv
+S3_ACCESS_KEY_ID="GOOGXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+S3_SECRET_KEY="Yyy+YYY0/yYYYYyyyy0+YyyYyyYyyYyyyyYyyYyy"
+S3_ENDPOINT="storage.googleapis.com"
+S3_REGION=""
+S3_BUCKET_NAME="haven_backup"
+```
+
+#### DigitalOcean Spaces
+
+To back up your database to DigitalOcean Spaces, you'll first need to create a bucket in the DigitalOcean dashboard.
 This can be done in the "Spaces Object Storage" tab or by visiting https://cloud.digitalocean.com/spaces.
 
 Once you have created a bucket you will be shown an access key ID and a secret key. Additionally,
@@ -339,23 +380,11 @@ while creating the bucket you will have selected a region to host this bucket wh
 if you choose the datacenter region "Amsterdam - Datacenter 3 - AMS3", your region will be `ams3` and
 the endpoint will be `ams3.digitalocean.com`.
 
-Now that you have an access key ID, secret key, region, and an endpoint. Replace the following values in your
-`.env` file:
+### Deprecation warning
 
-```bash
-SPACES_ACCESS_KEY_ID=your_access_key_id
-SPACES_SECRET_KEY=your_secret_key
-SPACES_ENDPOINT=your_endpoint
-SPACES_REGION=your_region
-SPACES_BUCKET_NAME=your_bucket
-```
-
-Finally, you need to specifiy `spaces` as the backup provider which can be done by modifying the following
-environment variable in `.env` like so:
-
-```bash
-BACKUP_PROVIDER="spaces" # aws, gcp, spaces, none (or leave blank to disable)
-```
+The old `aws` and `gcp` backup providers have been deprecated in favor of the new `s3` provider. If you are using the
+old providers, please update your `.env` file to use the new `s3` provider. The old providers will be removed in a future
+release.
 
 ## License
 

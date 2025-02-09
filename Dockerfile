@@ -13,9 +13,7 @@ RUN --mount=type=cache,target=/gomod-cache --mount=type=cache,target=/go-cache \
     go build -ldflags="-w -s" -o haven .
 
 # Final stage: Run the application
-FROM gcr.io/distroless/base-debian12
-
-WORKDIR /haven
+FROM gcr.io/distroless/base-debian12:nonroot
 
 # Copy the built application
 COPY --from=builder /app/haven .
