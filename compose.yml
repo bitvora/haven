@@ -68,7 +68,7 @@ services:
     privileged: true
 
 networks:
-  nginx-proxy:
+  nginx-proxy-network:
     name: nginx-proxy-network
 
 volumes:
