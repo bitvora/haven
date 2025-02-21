@@ -29,7 +29,7 @@ func main() {
 	green := "\033[32m"
 	reset := "\033[0m"
 	fmt.Println(green + art + reset)
-	log.Println("🚀 haven is booting up")
+	log.Println("🚀 HAVEN", config.RelayVersion, "is booting up")
 	fs = afero.NewOsFs()
 	if err := fs.MkdirAll(config.BlossomPath, 0755); err != nil {
 		log.Fatal("🚫 error creating blossom path:", err)
