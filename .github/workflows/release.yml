@@ -26,3 +26,4 @@ jobs:
           ldflags: -w -s
           extra_files: LICENSE README.md .env.example relays_blastr.example.json relays_import.example.json templates
           overwrite: true
+          binary_name: haven
