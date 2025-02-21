@@ -34,6 +34,8 @@ services:
     ports:
       - "80:80"
       - "443:443"
+    networks:
+        - nginx-proxy-network
     restart: unless-stopped
 
   docker-gen:
@@ -64,6 +66,10 @@ services:
       - acme:/etc/acme.sh
       - /var/run/docker.sock:/var/run/docker.sock:ro
     privileged: true
+
+networks:
+  nginx-proxy:
+    name: nginx-proxy-network
 
 volumes:
   # vhost:
