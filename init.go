@@ -36,6 +36,8 @@ var (
 	inboxDB    = newDBBackend("db/inbox")
 )
 
+var blossomDB = newDBBackend("db/blossom")
+
 type DBBackend interface {
 	Init() error
 	Close()
@@ -81,6 +83,10 @@ func initRelays() {
 	}
 
 	if err := inboxDB.Init(); err != nil {
+		panic(err)
+	}
+
+	if err := blossomDB.Init(); err != nil {
 		panic(err)
 	}
 
@@ -357,7 +363,7 @@ func initRelays() {
 	})
 
 	bl := blossom.New(outboxRelay, "https://"+config.RelayURL)
-	bl.Store = blossom.EventStoreBlobIndexWrapper{Store: outboxDB, ServiceURL: bl.ServiceURL}
+	bl.Store = blossom.EventStoreBlobIndexWrapper{Store: blossomDB, ServiceURL: bl.ServiceURL}
 	bl.StoreBlob = append(bl.StoreBlob, func(ctx context.Context, sha256 string, body []byte) error {
 
 		file, err := fs.Create(config.BlossomPath + sha256)
