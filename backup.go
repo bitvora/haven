@@ -27,7 +27,10 @@ func backupDatabase() {
 	for {
 		select {
 		case <-ticker.C:
-			ZipDirectory("db", zipFileName)
+			if err := ZipDirectory("db", zipFileName); err != nil {
+				log.Println("🚫 error zipping database folder:", err)
+				continue
+			}
 			switch config.BackupProvider {
 			case "s3":
 				S3Upload(zipFileName)
@@ -43,6 +46,8 @@ func backupDatabase() {
 }
 
 // Deprecated: Use S3Upload instead
+//
+//goland:noinspection GoUnhandledErrorResult
 func GCPBucketUpload(zipFileName string) {
 	if config.GcpConfig == nil {
 		log.Fatal("🚫 GCP specified as backup provider but no GCP config found. Check environment variables.")
@@ -87,6 +92,8 @@ func GCPBucketUpload(zipFileName string) {
 }
 
 // Deprecated: Use S3Upload instead
+//
+//goland:noinspection GoUnhandledErrorResult
 func AwsUpload(zipFileName string) {
 	if config.AwsConfig == nil {
 		log.Fatal("🚫 AWS specified as backup provider but no AWS config found. Check environment variables.")
@@ -145,7 +152,11 @@ func s3UploadShared(
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer file.Close()
+	defer func(file *os.File) {
+		if err := file.Close(); err != nil {
+			log.Println("🚫 error closing db zip file:", err)
+		}
+	}(file)
 
 	fileInfo, err := file.Stat()
 	if err != nil {
@@ -175,6 +186,7 @@ func s3UploadShared(
 	}
 }
 
+//goland:noinspection GoUnhandledErrorResult
 func ZipDirectory(sourceDir, zipFileName string) error {
 	log.Println("📦 zipping up the database")
 	file, err := os.Create(zipFileName)
