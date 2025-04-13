@@ -80,8 +80,6 @@ func importOwnerNotes() {
 		if nFailedImportNotes > 0 {
 			log.Printf("⚠️ Failed to import %d notes", nFailedImportNotes)
 		}
-
-		time.Sleep(5 * time.Second) // Avoid bombarding relays with requests
 	}
 }
 
