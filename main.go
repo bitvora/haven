@@ -29,7 +29,9 @@ func main() {
 	fmt.Println(green + art + reset)
 	log.Println("🚀 haven is booting up")
 	fs = afero.NewOsFs()
-	fs.MkdirAll(config.BlossomPath, 0755)
+	if err := fs.MkdirAll(config.BlossomPath, 0755); err != nil {
+		log.Fatal("🚫 error creating blossom path:", err)
+	}
 
 	initRelays()
 
@@ -53,7 +55,9 @@ func main() {
 	addr := fmt.Sprintf("%s:%d", config.RelayBindAddress, config.RelayPort)
 
 	log.Printf("🔗 listening at %s", addr)
-	http.ListenAndServe(addr, nil)
+	if err := http.ListenAndServe(addr, nil); err != nil {
+		log.Fatal("🚫 error starting server:", err)
+	}
 }
 
 func dynamicRelayHandler(w http.ResponseWriter, r *http.Request) {
