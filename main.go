@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"log/slog"
 	"net/http"
 
 	"github.com/fiatjaf/khatru"
@@ -24,6 +25,7 @@ func main() {
 	flag.Parse()
 
 	nostr.InfoLogger = log.New(io.Discard, "", 0)
+	slog.SetLogLoggerLevel(getLogLevelFromConfig())
 	green := "\033[32m"
 	reset := "\033[0m"
 	fmt.Println(green + art + reset)
@@ -77,4 +79,19 @@ func dynamicRelayHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	relay.ServeHTTP(w, r)
+}
+
+func getLogLevelFromConfig() slog.Level {
+	switch config.LogLevel {
+	case "DEBUG":
+		return slog.LevelDebug
+	case "INFO":
+		return slog.LevelInfo
+	case "WARN":
+		return slog.LevelWarn
+	case "ERROR":
+		return slog.LevelError
+	default:
+		return slog.LevelInfo // Default level
+	}
 }
