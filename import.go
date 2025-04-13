@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"log/slog"
 	"time"
 
 	"github.com/fiatjaf/eventstore"
@@ -165,13 +166,21 @@ func subscribeInboxAndChat() {
 				continue
 			}
 			if tag[1] == nPubToPubkey(config.OwnerNpub) {
-				dbToWrite := wdbInbox
+				dbToPublish := wdbInbox
 				if ev.Event.Kind == nostr.KindGiftWrap {
-					dbToWrite = wdbChat
+					dbToPublish = wdbChat
 				}
-				if err := dbToWrite.Publish(ctx, *ev.Event); err != nil {
+
+				slog.Debug("ℹ️ importing event", "kind", ev.Kind, "id", ev.Event.ID, "relay", ev.Relay.URL)
+
+				if isDuplicate(ctx, dbToPublish, ev.Event) {
+					slog.Debug("ℹ️ skipping duplicate event", "id", ev.Event.ID)
+					break // Avoid re-importing duplicates
+				}
+
+				if err := dbToPublish.Publish(ctx, *ev.Event); err != nil {
 					log.Println("🚫 error importing tagged note", ev.Event.ID, ":", "from relay", ev.Relay.URL, ":", err)
-					continue
+					break
 				}
 
 				switch ev.Event.Kind {
@@ -195,4 +204,20 @@ func subscribeInboxAndChat() {
 			}
 		}
 	}
+}
+
+func isDuplicate(ctx context.Context, db eventstore.RelayWrapper, event *nostr.Event) bool {
+	filter := nostr.Filter{
+		IDs:   []string{event.ID},
+		Since: &event.CreatedAt,
+		Limit: 1,
+	}
+
+	events, err := db.QuerySync(ctx, filter)
+	if err != nil {
+		log.Println("🚫 error querying for event", event.ID, ":", err)
+		return false
+	}
+
+	return len(events) > 0
 }
