@@ -88,7 +88,8 @@ func importTaggedNotes() {
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 	defer cancel()
 
-	wdb := eventstore.RelayWrapper{Store: inboxDB}
+	wdbInbox := eventstore.RelayWrapper{Store: inboxDB}
+	wdbChat := eventstore.RelayWrapper{Store: chatDB}
 	filter := nostr.Filter{
 		Tags: nostr.TagMap{
 			"p": {nPubToPubkey(config.OwnerNpub)},
@@ -102,7 +103,7 @@ func importTaggedNotes() {
 			if ctx.Err() != nil {
 				return false // Stop the loop on timeout
 			}
-			if !wotMap[ev.PubKey] {
+			if !wotMap[ev.PubKey] && ev.Kind != nostr.KindGiftWrap {
 				return true
 			}
 			for tag := range ev.Tags.FindAll("p") {
@@ -110,8 +111,13 @@ func importTaggedNotes() {
 					continue
 				}
 				if tag[1] == nPubToPubkey(config.OwnerNpub) {
-					if err := wdb.Publish(ctx, *ev); err != nil {
-						log.Println("error importing tagged note", ev.ID, ":", err)
+					dbToWrite := wdbInbox
+					if ev.Kind == nostr.KindGiftWrap {
+						println("Importing gift-wrapped message")
+						dbToWrite = wdbChat
+					}
+					if err := dbToWrite.Publish(ctx, *ev); err != nil {
+						log.Println("🚫 error importing tagged note", ev.ID, ":", err)
 						return true
 					}
 					taggedImportedNotes++
@@ -127,9 +133,10 @@ func importTaggedNotes() {
 	log.Println("✅ tagged import complete. please restart the relay")
 }
 
-func subscribeInbox() {
+func subscribeInboxAndChat() {
 	ctx := context.Background()
-	wdb := eventstore.RelayWrapper{Store: inboxDB}
+	wdbInbox := eventstore.RelayWrapper{Store: inboxDB}
+	wdbChat := eventstore.RelayWrapper{Store: chatDB}
 	startTime := nostr.Timestamp(time.Now().Add(-time.Minute * 5).Unix())
 	filter := nostr.Filter{
 		Tags: nostr.TagMap{
@@ -141,7 +148,7 @@ func subscribeInbox() {
 	log.Println("📢 subscribing to inbox")
 
 	for ev := range pool.SubscribeMany(ctx, config.ImportSeedRelays, filter) {
-		if !wotMap[ev.Event.PubKey] {
+		if !wotMap[ev.Event.PubKey] && ev.Event.Kind != nostr.KindGiftWrap {
 			continue
 		}
 		for tag := range ev.Event.Tags.FindAll("p") {
@@ -149,8 +156,12 @@ func subscribeInbox() {
 				continue
 			}
 			if tag[1] == nPubToPubkey(config.OwnerNpub) {
-				if err := wdb.Publish(ctx, *ev.Event); err != nil {
-					log.Println("error importing tagged note", ev.Event.ID, ":", "from relay", ev.Relay.URL, ":", err)
+				dbToWrite := wdbInbox
+				if ev.Event.Kind == nostr.KindGiftWrap {
+					dbToWrite = wdbChat
+				}
+				if err := dbToWrite.Publish(ctx, *ev.Event); err != nil {
+					log.Println("🚫 error importing tagged note", ev.Event.ID, ":", "from relay", ev.Relay.URL, ":", err)
 					continue
 				}
 
@@ -162,7 +173,9 @@ func subscribeInbox() {
 				case nostr.KindZap:
 					log.Println("⚡️ new zap in your inbox")
 				case nostr.KindEncryptedDirectMessage:
-					log.Println("🔒 new encrypted message in your inbox")
+					log.Println("🔒✉️ new encrypted message in your inbox")
+				case nostr.KindGiftWrap:
+					log.Println("🎁🔒️✉️ new gift-wrapped message in your chat relay")
 				case nostr.KindRepost:
 					log.Println("🔁 new repost in your inbox")
 				case nostr.KindFollowList:
