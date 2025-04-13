@@ -3,6 +3,7 @@
 .env
 .env.example
 .gitignore
+.goreleaser.yaml
 
 compose.yml
 Dockerfile
