@@ -33,6 +33,7 @@ type Config struct {
 	OwnerNpub                            string     `json:"owner_npub"`
 	DBEngine                             string     `json:"db_engine"`
 	LmdbMapSize                          int64      `json:"lmdb_map_size"`
+	BlossomPath                          string     `json:"blossom_path"`
 	RelayURL                             string     `json:"relay_url"`
 	RelayPort                            int        `json:"relay_port"`
 	RelayBindAddress                     string     `json:"relay_bind_address"`
@@ -65,9 +66,9 @@ type Config struct {
 	ImportSeedRelays                     []string   `json:"import_seed_relays"`
 	BackupProvider                       string     `json:"backup_provider"`
 	BackupIntervalHours                  int        `json:"backup_interval_hours"`
-	BlastrRelays                         []string   `json:"blastr_relays"`
 	WotFetchTimeoutSeconds               int        `json:"wot_fetch_timeout_seconds"`
-	BlossomPath                          string     `json:"blossom_path"`
+	LogLevel                             string     `json:"log_level"`
+	BlastrRelays                         []string   `json:"blastr_relays"`
 	AwsConfig                            *AwsConfig `json:"aws_config"`
 	S3Config                             *S3Config  `json:"s3_config"`
 	GcpConfig                            *GcpConfig `json:"gcp_config"`
@@ -114,6 +115,7 @@ func loadConfig() Config {
 		BackupProvider:                       getEnv("BACKUP_PROVIDER"),
 		BackupIntervalHours:                  getEnvInt("BACKUP_INTERVAL_HOURS", 24),
 		WotFetchTimeoutSeconds:               getEnvInt("WOT_FETCH_TIMEOUT_SECONDS", 60),
+		LogLevel:                             getEnvString("HAVEN_LOG_LEVEL", "INFO"),
 		BlastrRelays:                         getRelayListFromFile(getEnv("BLASTR_RELAYS_FILE")),
 		AwsConfig:                            getAwsConfig(),
 		S3Config:                             getS3Config(),
