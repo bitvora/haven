@@ -18,7 +18,9 @@ func blast(ev *nostr.Event) {
 			log.Println("error connecting to relay", relay, err)
 			continue
 		}
-		relay.Publish(ctx, *ev)
+		if err := relay.Publish(ctx, *ev); err != nil {
+			log.Println("🚫 error publishing to relay", relay, err)
+		}
 		cancel()
 	}
 	log.Println("🔫 blasted", ev.ID, "to", len(config.BlastrRelays), "relays")
