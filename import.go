@@ -117,7 +117,6 @@ func importTaggedNotes() {
 				if tag[1] == nPubToPubkey(config.OwnerNpub) {
 					dbToWrite := wdbInbox
 					if ev.Kind == nostr.KindGiftWrap {
-						println("Importing gift-wrapped message")
 						dbToWrite = wdbChat
 					}
 					if err := dbToWrite.Publish(ctx, *ev); err != nil {
@@ -140,7 +139,6 @@ func importTaggedNotes() {
 		log.Println("🚫 Timeout after", timeout, "while importing tagged notes")
 	}
 
-	log.Println("📦 imported", taggedImportedNotes, "tagged notes")
 	log.Println("✅ tagged import complete. please restart the relay")
 }
 
