@@ -35,7 +35,7 @@ func importOwnerNotes() {
 		}
 
 		done := make(chan int, 1)
-		timeout := time.Duration(config.ImportOwnedNotesFetchTimeoutSeconds) * time.Second
+		timeout := time.Duration(config.ImportOwnerNotesFetchTimeoutSeconds) * time.Second
 		ctx, cancel := context.WithTimeout(context.Background(), timeout)
 
 		go func() {
@@ -88,7 +88,7 @@ func importOwnerNotes() {
 func importTaggedNotes() {
 	taggedImportedNotes := 0
 	done := make(chan struct{}, 1)
-	timeout := time.Duration(config.ImportTaggedFetchTimeoutSeconds) * time.Second
+	timeout := time.Duration(config.ImportTaggedNotesFetchTimeoutSeconds) * time.Second
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
