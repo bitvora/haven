@@ -427,10 +427,8 @@ func initRelays() {
 			return true, "only gift wrapped DMs are supported"
 		}
 
-		for _, tag := range event.Tags.GetAll([]string{"p"}) {
-			if tag[1] == inboxRelay.Info.PubKey {
-				return false, ""
-			}
+		if event.Tags.FindWithValue("p", inboxRelay.Info.PubKey) != nil {
+			return false, ""
 		}
 
 		return true, "you can only post notes if you've tagged the owner of this relay"
