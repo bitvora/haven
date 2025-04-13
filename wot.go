@@ -18,7 +18,8 @@ var (
 
 func refreshTrustNetwork() {
 	ctx := context.Background()
-	timeoutCtx, cancel := context.WithTimeout(ctx, 3*time.Second)
+	timeout := time.Duration(config.WotFetchTimeoutSeconds) * time.Second
+	timeoutCtx, cancel := context.WithTimeout(ctx, timeout)
 
 	defer cancel()
 	ownerPubkey := nPubToPubkey(config.OwnerNpub)
@@ -40,7 +41,7 @@ func refreshTrustNetwork() {
 	log.Println("🌐 building web of trust graph")
 	nPubkeys := uint(0)
 	for i := 0; i < len(oneHopNetwork); i += 100 {
-		timeout, cancel := context.WithTimeout(ctx, 30*time.Second)
+		timeoutCtx, cancel = context.WithTimeout(ctx, timeout)
 		done := make(chan struct{})
 
 		end := i + 100
@@ -56,7 +57,7 @@ func refreshTrustNetwork() {
 		go func() {
 			defer cancel()
 
-			pool.FetchManyReplaceable(timeout, config.ImportSeedRelays, filter).Range(func(_ nostr.ReplaceableKey, ev *nostr.Event) bool {
+			pool.FetchManyReplaceable(timeoutCtx, config.ImportSeedRelays, filter).Range(func(_ nostr.ReplaceableKey, ev *nostr.Event) bool {
 				nPubkeys++
 				for contact := range ev.Tags.FindAll("p") {
 					if len(contact) > 1 {
@@ -76,7 +77,7 @@ func refreshTrustNetwork() {
 		select {
 		case <-done:
 			log.Println("🕸️ analysed", nPubkeys, "followed pubkeys so far")
-		case <-timeout.Done():
+		case <-timeoutCtx.Done():
 			log.Println("🚫Timeout while fetching pubkeys, moving to the next batch")
 		}
 	}

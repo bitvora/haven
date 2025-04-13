@@ -35,7 +35,8 @@ func importOwnerNotes() {
 		}
 
 		done := make(chan int, 1)
-		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		timeout := time.Duration(config.ImportOwnedNotesFetchTimeoutSeconds) * time.Second
+		ctx, cancel := context.WithTimeout(context.Background(), timeout)
 
 		go func() {
 			defer cancel()
@@ -66,7 +67,7 @@ func importOwnerNotes() {
 				log.Printf("📦 Imported %d notes from %s to %s", batchImportedNotes, startTime.Format(layout), endTime.Format(layout))
 			}
 		case <-ctx.Done():
-			log.Printf("🚫 Timeout after %v while importing notes from %s to %s", 30*time.Second, startTime.Format(layout), endTime.Format(layout))
+			log.Printf("🚫 Timeout after %v while importing notes from %s to %s", timeout, startTime.Format(layout), endTime.Format(layout))
 		}
 
 		startTime = startTime.Add(240 * time.Hour)
@@ -79,13 +80,16 @@ func importOwnerNotes() {
 		if nFailedImportNotes > 0 {
 			log.Printf("⚠️ Failed to import %d notes", nFailedImportNotes)
 		}
+
+		time.Sleep(5 * time.Second) // Avoid bombarding relays with requests
 	}
 }
 
 func importTaggedNotes() {
 	taggedImportedNotes := 0
 	done := make(chan struct{}, 1)
-	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
+	timeout := time.Duration(config.ImportTaggedFetchTimeoutSeconds) * time.Second
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
 	wdbInbox := eventstore.RelayWrapper{Store: inboxDB}
@@ -96,7 +100,7 @@ func importTaggedNotes() {
 		},
 	}
 
-	log.Println("📦 importing inbox notes, please wait up to 2 minutes")
+	log.Println("📦 importing inbox notes, please wait up to", timeout)
 
 	go func() {
 		pool.FetchManyReplaceable(ctx, config.ImportSeedRelays, filter).Range(func(_ nostr.ReplaceableKey, ev *nostr.Event) bool {
@@ -128,6 +132,13 @@ func importTaggedNotes() {
 		})
 		close(done)
 	}()
+
+	select {
+	case <-done:
+		log.Println("📦 imported", taggedImportedNotes, "tagged notes")
+	case <-ctx.Done():
+		log.Println("🚫 Timeout after", timeout, "while importing tagged notes")
+	}
 
 	log.Println("📦 imported", taggedImportedNotes, "tagged notes")
 	log.Println("✅ tagged import complete. please restart the relay")
