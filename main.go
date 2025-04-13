@@ -43,7 +43,7 @@ func main() {
 			return
 		}
 
-		go subscribeInbox()
+		go subscribeInboxAndChat()
 		go backupDatabase()
 	}()
 
