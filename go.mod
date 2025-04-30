@@ -4,8 +4,8 @@ go 1.24.1
 
 require (
 	cloud.google.com/go/storage v1.49.0
-	github.com/fiatjaf/eventstore v0.16.6
-	github.com/fiatjaf/khatru v0.17.7
+	github.com/fiatjaf/eventstore v0.16.7
+	github.com/fiatjaf/khatru v0.18.0
 	github.com/joho/godotenv v1.5.1
 	github.com/minio/minio-go/v7 v7.0.90
 	github.com/nbd-wtf/go-nostr v0.51.10
@@ -78,7 +78,7 @@ require (
 	github.com/tidwall/pretty v1.2.1 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
-	github.com/valyala/fasthttp v1.60.0 // indirect
+	github.com/valyala/fasthttp v1.61.0 // indirect
 	go.opencensus.io v0.24.0 // indirect
 	go.opentelemetry.io/auto/sdk v1.1.0 // indirect
 	go.opentelemetry.io/contrib/detectors/gcp v1.33.0 // indirect
