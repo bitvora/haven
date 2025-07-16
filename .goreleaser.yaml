@@ -4,7 +4,7 @@ before:
   hooks:
     - go mod tidy
 builds:
-  - id: haven-zig-cross-compilation-macos
+  - id: haven-darwin
     goos:
       - darwin
     goarch:
@@ -17,18 +17,8 @@ builds:
       - -buildmode=pie
     env:
       - CGO_ENABLED=1
-      - >-
-        {{- if eq .Os "darwin" }}
-          {{- if eq .Arch "amd64"}}CC=zig c -target x86_64-macos-none -F{{ .Env.SDK_PATH }}/System/Library/Frameworks{{- end }}
-          {{- if eq .Arch "arm64"}}CC=zig c -target aarch64-macos-none -F{{ .Env.SDK_PATH }}/System/Library/Frameworks{{- end }}
-        {{- end }}
-      - >-
-        {{- if eq .Os "darwin" }}
-          {{- if eq .Arch "amd64"}}CC=zig c++ -target x86_64-macos-none -F{{ .Env.SDK_PATH }}/System/Library/Frameworks{{- end }}
-          {{- if eq .Arch "arm64"}}CC=zig c++ -target aarch64-macos-none -F{{ .Env.SDK_PATH }}/System/Library/Frameworks{{- end }}
-        {{- end }}
 
-  - id: haven-zig-cross-compilation-linux
+  - id: haven-linux
     goos:
       - linux
     goarch:
@@ -51,7 +41,7 @@ builds:
           {{- if eq .Arch "arm64"}}CC=zig c++ -target aarch64-linux-musl{{- end }}
         {{- end }}
 
-  - id: haven-zig-cross-compilation-windows
+  - id: haven-windows
     goos:
       - windows
     goarch:

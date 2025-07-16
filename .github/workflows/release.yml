@@ -19,13 +19,9 @@ jobs:
         with:
           go-version-file: go.mod
       - uses: mlugg/setup-zig@v2
-      - name: Set output
-        id: macos_sdk
-        run: echo "path=$(xcrun --show-sdk-path)" >> $GITHUB_OUTPUT
       - uses: goreleaser/goreleaser-action@v6
         with:
           version: latest
           args: release --clean
         env:
-          SDK_PATH: ${{ steps.macos_sdk.outputs.path }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
