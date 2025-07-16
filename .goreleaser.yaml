@@ -1,0 +1,111 @@
+project_name: haven
+before:
+  hooks:
+    - go mod tidy
+builds:
+  - id: haven-zig-cross-compilation-macos
+    goos:
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w
+    flags:
+      - -trimpath
+      - -buildmode=pie
+    env:
+      - CGO_ENABLED=1
+      - >-
+        {{- if eq .Os "darwin" }}
+          {{- if eq .Arch "amd64"}}CC=zig c -target x86_64-macos-none -F{{ .Env.SDK_PATH }}/System/Library/Frameworks{{- end }}
+          {{- if eq .Arch "arm64"}}CC=zig c -target aarch64-macos-none -F{{ .Env.SDK_PATH }}/System/Library/Frameworks{{- end }}
+        {{- end }}
+      - >-
+        {{- if eq .Os "darwin" }}
+          {{- if eq .Arch "amd64"}}CC=zig c++ -target x86_64-macos-none -F{{ .Env.SDK_PATH }}/System/Library/Frameworks{{- end }}
+          {{- if eq .Arch "arm64"}}CC=zig c++ -target aarch64-macos-none -F{{ .Env.SDK_PATH }}/System/Library/Frameworks{{- end }}
+        {{- end }}
+
+  - id: haven-zig-cross-compilation-linux
+    goos:
+      - linux
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w
+    flags:
+      - -trimpath
+    env:
+      - CGO_ENABLED=1
+      - >-
+        {{- if eq .Os "linux" }}
+          {{- if eq .Arch "amd64" }}CC=zig c -target x86_64-linux-musl{{- end }}
+          {{- if eq .Arch "arm64"}}CC=zig c -target aarch64-linux-musl{{- end }}
+        {{- end }}
+      - >-
+        {{- if eq .Os "linux" }}
+          {{- if eq .Arch "amd64" }}CC=zig c++ -target x86_64-linux-musl{{- end }}
+          {{- if eq .Arch "arm64"}}CC=zig c++ -target aarch64-linux-musl{{- end }}
+        {{- end }}
+
+  - id: haven-zig-cross-compilation-windows
+    goos:
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w
+    flags:
+      - -trimpath
+    env:
+      - CGO_ENABLED=1
+      - >-
+        {{- if eq .Os "windows" }}
+          {{- if eq .Arch "amd64" }}CC=zig c -target x86_64-windows-gnu{{- end }}
+          {{- if eq .Arch "arm64"}}CC=zig c -target aarch64-windows-gnu{{- end }}
+        {{- end }}
+      - >-
+        {{- if eq .Os "windows" }}
+          {{- if eq .Arch "amd64" }}CC=zig c++ -target x86_64-windows-gnu{{- end }}
+          {{- if eq .Arch "arm64"}}CC=zig c++ -target aarch64-windows-gnu{{- end }}
+        {{- end }}
+
+archives:
+  - format: tar.gz
+    # this name template makes the OS and Arch compatible with the results of uname.
+    name_template: >-
+      {{ .ProjectName }}_
+      {{- title .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- if .Arm }}v{{ .Arm }}{{ end }}
+    # use zip for windows archives
+    format_overrides:
+      - goos: windows
+        format: zip
+    files:
+      - LICENSE
+      - README.md
+      - .env.example
+      - relays_blastr.example.json
+      - relays_import.example.json
+      - templates/**/*
+checksum:
+  name_template: 'checksums.txt'
+snapshot:
+  name_template: "{{ incpatch .Version }}-next"
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+
+# The lines beneath this are called `modelines`. See `:help modeline`
+# Feel free to remove those if you don't want/use them.
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
+# vim: set ts=2 sw=2 tw=0 fo=cnqoj

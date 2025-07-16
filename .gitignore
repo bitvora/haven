@@ -6,4 +6,5 @@ haven
 .idea/
 db.zip
 db/
+dist/
 blossom/

@@ -23,6 +23,7 @@ db
 nginx
 templates
 backup
+dist
 
 # Patterns
 **/.DS_Store

@@ -1,32 +1,31 @@
-name : Release Go Binary
+name: Release gGi Binary
 
 on:
-  release:
-    types: [created]
+  push:
+    tags:
+      - 'v*'
 
 permissions:
-  contents: write
-  packages: write
+  contents: write # needed to write releases
 
 jobs:
-  releases-matrix:
-    name: Release Go Binary
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        goos: [linux, windows, darwin]
-        goarch: [amd64]
-#        exclude:
-#          - goarch: arm64
-#            goos: windows
+  release:
+    runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: wangyoucao577/go-release-action@v1
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          goos: ${{ matrix.goos }}
-          goarch: ${{ matrix.goarch }}
-          ldflags: -w -s
-          extra_files: LICENSE README.md .env.example relays_blastr.example.json relays_import.example.json templates
-          overwrite: true
-          binary_name: haven
+          fetch-depth: 0
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - uses: mlugg/setup-zig@v2
+      - name: Set output
+        id: macos_sdk
+        run: echo "path=$(xcrun --show-sdk-path)" >> $GITHUB_OUTPUT
+      - uses: goreleaser/goreleaser-action@v6
+        with:
+          version: latest
+          args: release --clean
+        env:
+          SDK_PATH: ${{ steps.macos_sdk.outputs.path }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
