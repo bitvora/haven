@@ -102,7 +102,7 @@ signs:
     args:
       - "--batch"
       - "-u"
-      - "59F3BB93E8F4097CC43ED03C66865E933089774D!"
+      - "{{ .Env.GPG_FINGERPRINT }}"
       - "--output"
       - "${signature}"
       - "--detach-sign"
