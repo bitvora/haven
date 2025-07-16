@@ -98,7 +98,6 @@ changelog:
 
 signs:
   - artifacts: checksum
-    cmd: gpg2
     args:
       - "--batch"
       - "-u"
