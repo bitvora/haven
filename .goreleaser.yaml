@@ -84,7 +84,7 @@ archives:
       - .env.example
       - relays_blastr.example.json
       - relays_import.example.json
-      - templates/**/*
+      - templates/**
 checksum:
   name_template: 'checksums.txt'
 snapshot:
