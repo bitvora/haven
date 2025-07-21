@@ -26,31 +26,15 @@ HAVEN (High Availability Vault for Events on Nostr) is the most sovereign person
 
 **Import Old Notes**: Import your old notes and notes you're tagged in from other relays.
 
-## Prerequisites
+## Building and Setup
 
-- **Go**: Ensure you have Go installed on your system. You can download it from [here](https://golang.org/dl/).
-
-    ```bash
-    sudo apt update #Update Package List
-    sudo apt install snapd #install snapd to get a newer version of Go
-    sudo snap install go --classic #Install Go
-    go version #check if go was installed correctly
-    ```
-
-- **Build Essentials**: If you're using Linux, you may need to install build essentials. You can do this by running `sudo apt install build-essential`.
+For instructions on building Haven from source, please see the [Build Documentation](docs/build.md).
 
 ## Setup Instructions
 
 Follow these steps to get the Haven Relay running on your local machine:
 
-### 1. Clone the repository
-
-```bash
-git clone https://github.com/bitvora/haven.git
-cd haven
-```
-
-### 2. Copy `.env.example` to `.env`
+### 1. Copy `.env.example` to `.env`
 
 You'll need to create an `.env` file based on the example provided in the repository.
 
@@ -76,15 +60,7 @@ cp relays_blastr.example.json relays_blastr.json
 
 The JSON should contain an array of relay URLs, which default to wss:// if you don't explicitly specify the protocol.
 
-### 4. Build the project
-
-Run the following command to build the relay:
-
-```bash
-go build
-```
-
-### 5. Create a Systemd Service
+### 4. Create a Systemd Service
 
 To have the relay run as a service, create a systemd unit file. Make sure to limit the memory usage to less than your system's total memory to prevent the relay from crashing the system.
 and Replace the values for `ExecStart` and `WorkingDirectory` with the actual paths where you cloned the repository and stored the `.env` file.
@@ -132,7 +108,7 @@ sudo systemctl start haven
 sudo systemctl enable haven
 ```
 
-### 6. Serving over nginx (optional)
+### 5. Serving over nginx (optional)
 
 To have a domain name (example: relay.domain.com) point to your machine, you will need to setup an nginx.
 
@@ -181,7 +157,7 @@ After adding the configuration, restart nginx:
 sudo systemctl restart nginx
 ```
 
-### 7. Install Certbot (optional)
+### 6. Install Certbot (optional)
 
 If you want to serve the relay over HTTPS, you can use Certbot to generate an SSL certificate.
 
@@ -201,7 +177,7 @@ Follow the instructions to generate the certificate.
 Note: Command will fail if the Domain you added to nginx is not yet pointing at your machine's IP address. 
 This is done by adding an A record subdomain pointing to your IP address through your DNS recrods Manager.
 
-### 8. Run The Import (optional)
+### 7. Run The Import (optional)
 
 If you want to import your old notes and notes you're tagged in from other relays, run the following command:
 
@@ -211,7 +187,7 @@ sudo systemctl stop haven
 sudo systemctl start haven
 ```
 
-### 9. Access the relay
+### 8. Access the relay
 
 Once everything is set up, the relay will be running on `localhost:3355` with the following endpoints:
 
