@@ -26,27 +26,47 @@ HAVEN (High Availability Vault for Events on Nostr) is the most sovereign person
 
 **Import Old Notes**: Import your old notes and notes you're tagged in from other relays.
 
-## Building and Setup
+## Installation
 
-For instructions on building Haven from source, please see the [Build Documentation](docs/build.md).
+### Option 1: Download Pre-built Binaries (Recommended)
+
+The easiest way to get started with Haven is to download pre-built binaries from our GitHub releases page:
+
+**[Download Haven Releases](https://github.com/bitvora/haven/releases/)**
+
+#### Installation Steps:
+
+1. **Download the appropriate binary** for your system from the releases page
+2. **Verify the download (optional)**: See our [Verification Documentation](docs/verify.md) for 
+instructions on how to verify the authenticity of the binaries using GPG signatures and checksums.
+3. **Create a haven directory** and extract the downloaded file:
+   ```bash
+   mkdir haven
+   # For Linux/macOS:
+   tar -xzf haven_[Platform]_[Architecture].tar.gz -C haven
+   # For Windows: extract the .zip file to this directory
+   ```
+### Option 2: Build from Source
+
+If you prefer to build Haven from source or need to customize the build, please see the [Build Documentation](docs/build.md).
 
 ## Setup Instructions
 
-Follow these steps to get the Haven Relay running on your local machine:
+Follow these steps to get the Haven Relay running on your local machine (after installing via binary download or building from source):
 
 ### 1. Copy `.env.example` to `.env`
 
-You'll need to create an `.env` file based on the example provided in the repository.
+You'll need to create an `.env` file based on the example provided.
 
 ```bash
 cp .env.example .env
 ```
 
-### 3. Set your environment variables
+### 2. Set your environment variables
 
 Open the `.env` file and set the necessary environment variables.
 
-### 4. Create the relays JSON files
+### 3. Create the relays JSON files
 
 Copy the example relays JSON files for your seed and blastr relays:
 
@@ -63,7 +83,7 @@ The JSON should contain an array of relay URLs, which default to wss:// if you d
 ### 4. Create a Systemd Service
 
 To have the relay run as a service, create a systemd unit file. Make sure to limit the memory usage to less than your system's total memory to prevent the relay from crashing the system.
-and Replace the values for `ExecStart` and `WorkingDirectory` with the actual paths where you cloned the repository and stored the `.env` file.
+Replace the values for `ExecStart` and `WorkingDirectory` with the actual paths where you installed Haven and stored the `.env` file.
 
 
 1. Create the file:
@@ -80,8 +100,8 @@ Description=Haven Relay
 After=network.target
 
 [Service]
-ExecStart=/home/ubuntu/haven/haven #Edit path to point to the path of where the haven git was pulled
-WorkingDirectory=/home/ubuntu/haven #Edit path to point to the path of where the haven git was pulled
+ExecStart=/home/ubuntu/haven/haven #Edit path to point to where you installed Haven
+WorkingDirectory=/home/ubuntu/haven #Edit path to point to where you installed Haven
 MemoryLimit=1000M  # Example, Limit memory usage to 1000 MB | Edit this to fit your machine
 Restart=always
 
