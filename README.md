@@ -266,7 +266,8 @@ defines an upper limit for the database size. For more information about LMDB’
 
 Haven versions 1.0.3 and earlier did not replace outdated notes. While this does not impact the relay's core 
 functionality, it can lead to a bloated database, reduced performance, and bugs in certain clients. For this reason, it
-is recommended to delete old databases and start fresh, optionally [re-importing](#8-run-the-import-optional) previous notes.
+is recommended to delete old databases and start fresh, optionally [re-importing](#7-run-the-import-optional) 
+previous notes.
 
 ## Blossom Media Server
 
