@@ -4,16 +4,29 @@ This document provides instructions for building the Haven relay from source.
 
 ## Prerequisites
 
-- **Go**: Ensure you have Go installed on your system. You can download it from [here](https://golang.org/dl/).
+### Go
 
-    ```bash
-    sudo apt update #Update Package List
-    sudo apt install snapd #install snapd to get a newer version of Go
-    sudo snap install go --classic #Install Go
-    go version #check if go was installed correctly
-    ```
+Ensure you have Go installed on your system. You can download it from [here](https://golang.org/dl/). 
 
-- **Build Essentials**: If you're using Linux, you may need to install build essentials. You can do this by running `sudo apt install build-essential`.
+Alternatively, Go can often be found in your favourite package manager.
+
+For Ubuntu users, you can install Go using the following commands:
+
+```bash
+sudo apt update #Update Package List
+sudo apt install snapd #install snapd to get a newer version of Go
+sudo snap install go --classic #Install Go
+go version #check if go was installed correctly
+  ```
+
+### Build Essentials 
+
+If you're using Linux, you may need to install build essentials. For Ubuntu users, you can do 
+this by running:
+
+```bash
+sudo apt install build-essential`
+````
 
 ## Building from Source
 
