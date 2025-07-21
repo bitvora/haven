@@ -16,14 +16,15 @@ relays_import.json
 relays_import.example.json
 
 # Directories
-.idea
 .git
+.idea
+backup
 blossom
 db
+dist
+docs
 nginx
 templates
-backup
-dist
 
 # Patterns
 **/.DS_Store
