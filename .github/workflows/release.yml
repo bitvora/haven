@@ -1,4 +1,4 @@
-name: Release gGi Binary
+name: Release Binaries
 
 on:
   push:
