@@ -10,9 +10,9 @@ The release binaries, along with `checksums.txt` and `checksums.txt.sig` files, 
 
 Download the appropriate binary for your system along with the checksum files.
 
-## Obtaining GPG Keys
+## Obtaining PGP Keys
 
-Before verifying the binaries, you need to obtain the Haven GPG keys. You can do this in two ways:
+Before verifying the binaries, you need to obtain the Haven PGP keys. You can do this in two ways:
 
 1. From the OpenPGP keyserver:
 
@@ -67,5 +67,5 @@ If the verification is successful, you can be confident that the binary has not 
 If you encounter any issues during verification, please:
 
 1. Ensure you've downloaded all required files
-2. Check that you've imported the GPG keys correctly
+2. Check that you've imported the PGP keys correctly
 3. Verify that you're using the correct commands for your operating system
