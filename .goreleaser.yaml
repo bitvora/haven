@@ -93,9 +93,10 @@ changelog:
   sort: asc
   filters:
     exclude:
-      - '^docs:'
-      - '^test:'
+      - '^Add toggle setting for NIP-04 DMs$'
+      - '^build(docker):'
       - '^Merge'
+      - '^Reintroduce Docker$'
 
 signs:
   - artifacts: checksum
