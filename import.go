@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"log/slog"
+	"os"
 	"time"
 
 	"github.com/fiatjaf/eventstore"
@@ -12,6 +13,28 @@ import (
 )
 
 const layout = "2006-01-02"
+
+func ensureImportRelays() {
+	nErrors := 0
+	log.Println("🧪 Testing import relays")
+	for _, relay := range config.ImportSeedRelays {
+		if _, err := pool.EnsureRelay(relay); err != nil {
+			nErrors++
+			slog.Error("🚫 Error connecting to relay", "relay", relay, "error", err)
+		} else {
+			slog.Debug("✅ Connected to relay", "relay", relay)
+		}
+	}
+	if nErrors == 0 {
+		slog.Info("✅ All relays connected successfully")
+	} else if nErrors == len(config.ImportSeedRelays) {
+		slog.Error("🚫 Unable to connect to any import relayss, check your connectivity and relays_info.json file")
+		os.Exit(1)
+	} else {
+		slog.Warn("⚠️ Some relays failed to connect, proceeding, but this may cause issues")
+		slog.Info("ℹ️ If you always see this message during startup, consider removing the relays that are not working from your relays_info.json file")
+	}
+}
 
 func importOwnerNotes() {
 	ownerImportedNotes := 0

@@ -15,7 +15,7 @@ import (
 )
 
 var (
-	pool   = nostr.NewSimplePool(context.Background())
+	pool   = nostr.NewSimplePool(context.Background(), nostr.WithPenaltyBox())
 	config = loadConfig()
 	fs     afero.Fs
 )
@@ -38,6 +38,7 @@ func main() {
 	initRelays()
 
 	go func() {
+		ensureImportRelays()
 		refreshTrustNetwork()
 
 		if *importFlag {
