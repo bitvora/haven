@@ -38,6 +38,7 @@ func main() {
 	initRelays()
 
 	go func() {
+		ensureImportRelays()
 		refreshTrustNetwork()
 
 		if *importFlag {
