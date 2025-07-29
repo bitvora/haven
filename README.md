@@ -177,7 +177,7 @@ After adding the configuration, restart nginx:
 sudo systemctl restart nginx
 ```
 
-### 6. Install Certbot (optional)
+### 7. Install Certbot (optional)
 
 If you want to serve the relay over HTTPS, you can use Certbot to generate an SSL certificate.
 
@@ -197,7 +197,7 @@ Follow the instructions to generate the certificate.
 Note: Command will fail if the Domain you added to nginx is not yet pointing at your machine's IP address. 
 This is done by adding an A record subdomain pointing to your IP address through your DNS recrods Manager.
 
-### 7. Run The Import (optional)
+### 8. Run The Import (optional)
 
 If you want to import your old notes and notes you're tagged in from other relays, run the following command:
 
@@ -207,7 +207,7 @@ sudo systemctl stop haven
 sudo systemctl start haven
 ```
 
-### 8. Access the relay
+### 9. Access the relay
 
 Once everything is set up, the relay will be running on `localhost:3355` with the following endpoints:
 
@@ -286,8 +286,7 @@ defines an upper limit for the database size. For more information about LMDB’
 
 Haven versions 1.0.3 and earlier did not replace outdated notes. While this does not impact the relay's core 
 functionality, it can lead to a bloated database, reduced performance, and bugs in certain clients. For this reason, it
-is recommended to delete old databases and start fresh, optionally [re-importing](#7-run-the-import-optional) 
-previous notes.
+is recommended to delete old databases and start fresh, optionally [re-importing](#8-run-the-import-optional) previous notes.
 
 ## Blossom Media Server
 
