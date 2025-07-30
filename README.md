@@ -177,6 +177,66 @@ After adding the configuration, restart nginx:
 sudo systemctl restart nginx
 ```
 
+### Alternative: Serving over Caddy
+<details><summary>Click here to view the installation routine for Caddy</summary>
+<p>
+
+Preparation: Set the A record (for your domain) to point to the server's IP address.
+
+1. Install caddy:
+
+```bash
+sudo apt install -y debian-keyring debian-archive-keyring apt-transport-https
+curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | sudo gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
+curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' | sudo tee /etc/apt/sources.list.d/caddy-stable.list
+sudo apt update
+sudo apt install caddy
+```
+
+2. Open Caddyfile:
+
+```bash
+sudo nano /etc/caddy/Caddyfile
+```
+
+3. Add configuration:
+
+```bash
+# Configuration for HAVEN Relay
+yourdomain.com {
+    reverse_proxy localhost:3355 {
+        header_up Host {host}
+        header_up X-Real-IP {remote_host}
+        header_up X-Forwarded-For {remote_host}
+        header_up X-Forwarded-Proto {scheme}
+        transport http {
+            versions 1.1
+        }
+    }
+    request_body {
+        max_size 100MB
+    }
+}
+```
+
+4. Reload Caddy:
+
+```bash
+sudo systemctl reload caddy
+```
+
+5. Check status logs:
+
+```bash
+sudo systemctl status caddy
+sudo journalctl -u caddy -f --since "2 hour ago"
+```
+
+**Note:** Caddy automatically manages certificates and WebSocket connections. Certbot is not required.
+
+</p>
+</details>
+
 ### 7. Install Certbot (optional)
 
 If you want to serve the relay over HTTPS, you can use Certbot to generate an SSL certificate.
@@ -234,7 +294,7 @@ To start the project using Docker Compose, follow these steps:
       - ./templates:/haven/templates
    ```
 6. (Optional) Nginx is pre-configured to reject uploads larger than 100MB. If you want to change this, modify the `client_max_body_size`
-directive in the `nginx/haven_proxy.conf file`.
+   directive in the `nginx/haven_proxy.conf file`.
 
    ```nginx
    client_max_body_size 0;
@@ -248,7 +308,7 @@ directive in the `nginx/haven_proxy.conf file`.
    # in background
    docker compose up --build -d
    ```
-   
+
 8. For updating the relay, run the following commands:
 
    ```sh
