@@ -65,9 +65,9 @@
 #     (none)
     {{- end }}
 {{- else }}
-# /!\ WARNING: Failed to find the Docker container labeled "{{ $globals.config.nginx_container_label }}" or the one running docker-gen. 
+# /!\ WARNING: Failed to find the Docker container labeled "{{ $globals.config.nginx_container_label }}" or the one running docker-gen.
 #              All upstream (backend) application containers will appear to be unreachable.
-#              Try removing the -only-exposed and -only-published arguments to docker-gen if you pass either of those. 
+#              Try removing the -only-exposed and -only-published arguments to docker-gen if you pass either of those.
 #              See https://github.com/nginx-proxy/docker-gen/issues/458.
 {{- end }}
 
@@ -291,7 +291,7 @@
         {{- $override = printf "/etc/nginx/vhost.d/%s_location_override" .Host }}
     {{- end }}
     {{- if exists $override }}
-    include {{ $override }};
+    include {{  printf "%s" (replace $override "*" "\\*" -1) }};
     {{- else }}
         {{- $keepalive := $vpath.keepalive }}
     location {{ .Path }} {
@@ -321,8 +321,10 @@
             {{- end }}
         {{- else if eq $proto "grpc" }}
         grpc_pass {{ trim $proto }}://{{ trim $upstream }};
+        grpc_set_header X-Real-IP $remote_addr;
         {{- else if eq $proto "grpcs" }}
         grpc_pass {{ trim $proto }}://{{ trim $upstream }};
+        grpc_set_header X-Real-IP $remote_addr;
         {{- else }}
         proxy_pass {{ trim $proto }}://{{ trim $upstream }}{{ trim $dest }};
         set $upstream_keepalive {{ if ne $keepalive "disabled" }}true{{ else }}false{{ end }};
@@ -337,9 +339,9 @@
         {{- end }}
 
         {{- if (exists (printf "/etc/nginx/vhost.d/%s_%s_location" .Host (sha1 .Path) )) }}
-        include {{ printf "/etc/nginx/vhost.d/%s_%s_location" .Host (sha1 .Path) }};
+        include {{ printf "/etc/nginx/vhost.d/%s_%s_location" (replace .Host "*" "\\*" -1) (sha1 .Path) }};
         {{- else if (exists (printf "/etc/nginx/vhost.d/%s_location" .Host)) }}
-        include {{ printf "/etc/nginx/vhost.d/%s_location" .Host}};
+        include {{ printf "/etc/nginx/vhost.d/%s_location" (replace .Host "*" "\\*" -1) }};
         {{- else if (exists "/etc/nginx/vhost.d/default_location") }}
         include /etc/nginx/vhost.d/default_location;
         {{- end }}
@@ -438,7 +440,7 @@ upstream {{ $vpath.upstream }} {
 {{- end }}
 
 {{- define "access_log" }}
-    {{- when .Enable "access_log /var/log/nginx/access.log vhost;" "" }}
+    {{- when .Enable "access_log /var/log/nginx/access.log vhost if=$allow_and_log;" "" }}
 {{- end }}
 
 map $proxy_add_x_forwarded_for $proxy_x_forwarded_for {
@@ -786,7 +788,7 @@ proxy_set_header Proxy "";
     {{- $ssl_policy := groupByKeys $vhost_containers "Env.SSL_POLICY" | first | default "" }}
 
     {{- /* Get ssl_verify_client defined by containers w/ the same vhost, falling back to "on" */}}
-    {{- $ssl_verify_client := groupByLabel $vhost_containers "com.github.nginx-proxy.nginx-proxy.ssl_verify_client" | keys | first | default "on" }}																						   
+    {{- $ssl_verify_client := groupByLabel $vhost_containers "com.github.nginx-proxy.nginx-proxy.ssl_verify_client" | keys | first | default "on" }}
 
     {{- /* Get the HSTS defined by containers w/ the same vhost, falling back to "max-age=31536000". */}}
     {{- $hsts := groupByKeys $vhost_containers "Env.HSTS" | first | default $globals.config.hsts }}
@@ -809,7 +811,7 @@ proxy_set_header Proxy "";
         "acme_http_challenge_enabled" $acme_http_challenge_enabled
         "server_tokens" $server_tokens
         "ssl_policy" $ssl_policy
-        "ssl_verify_client" $ssl_verify_client											  
+        "ssl_verify_client" $ssl_verify_client
         "trust_default_cert" $trust_default_cert
         "upstream_name" $upstream_name
         "vhost_root" $vhost_root
@@ -939,6 +941,10 @@ server {
     listen [::]:{{ $globals.config.external_http_port }} {{- $default_server }} {{- $proxy_protocol }};
         {{- end }}
 
+    if ($allow_and_log = 0) {
+        return 444;
+    }
+
         {{- if (or $vhost.acme_http_challenge_legacy $vhost.acme_http_challenge_enabled) }}
     # Do not HTTPS redirect Let's Encrypt ACME challenge
     location ^~ /.well-known/acme-challenge/ {
@@ -1029,6 +1035,10 @@ server {
         {{- if $vhost.cert_ok }}
             {{- template "ssl_policy" (dict "ssl_policy" $vhost.ssl_policy) }}
 
+    if ($allow_and_log = 0) {
+        return 444;
+    }
+
     ssl_session_timeout 5m;
     ssl_session_cache shared:SSL:50m;
     ssl_session_tickets off;
@@ -1065,7 +1075,7 @@ server {
     {{- $vhostFileName :=  $vhost.is_regexp | ternary (sha1 $hostname) $hostname }}
 
     {{- if (exists (printf "/etc/nginx/vhost.d/%s" $vhostFileName)) }}
-    include {{ printf "/etc/nginx/vhost.d/%s" $vhostFileName }};
+    include {{ printf "/etc/nginx/vhost.d/%s" (replace $vhostFileName "*" "\\*" -1) }};
     {{- else if (exists "/etc/nginx/vhost.d/default") }}
     include /etc/nginx/vhost.d/default;
     {{- end }}
@@ -1073,11 +1083,11 @@ server {
     {{/* SSL Client Certificate Validation */}}
     {{/* If vhost(hash).ca.crt exists, include CA */}}
     {{- if (exists (printf "/etc/nginx/certs/%s.ca.crt" $vhostFileName)) }}
-    ssl_client_certificate {{ printf "/etc/nginx/certs/%s.ca.crt" $vhostFileName }}; 
+    ssl_client_certificate {{ printf "/etc/nginx/certs/%s.ca.crt" $vhostFileName }};
     ssl_verify_client {{ $vhost.ssl_verify_client }};
         {{/* If vhost(hash).crl.pem exists, include CRL */}}
         {{- if (exists (printf "/etc/nginx/certs/%s.crl.pem" $vhostFileName)) }}
-    ssl_crl {{ printf "/etc/nginx/certs/%s.crl.pem" $vhostFileName }}; 
+    ssl_crl {{ printf "/etc/nginx/certs/%s.crl.pem" $vhostFileName }};
         {{ end }}
     {{/* Else if no vhost CA file exists, but a global ca.crt exists include it */}}
     {{ else if (exists "/etc/nginx/certs/ca.crt") }}
