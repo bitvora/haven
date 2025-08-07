@@ -36,6 +36,8 @@ github.com/ImVexed/fasturl v0.0.0-20230304231329-4e41488060f3 h1:ClzzXMDDuUbWfNN
 github.com/ImVexed/fasturl v0.0.0-20230304231329-4e41488060f3/go.mod h1:we0YA5CsBbH5+/NUzC/AlMmxaDtWlXeNsqrwXjTzmzA=
 github.com/PowerDNS/lmdb-go v1.9.3 h1:AUMY2pZT8WRpkEv39I9Id3MuoHd+NZbTVpNhruVkPTg=
 github.com/PowerDNS/lmdb-go v1.9.3/go.mod h1:TE0l+EZK8Z1B4dx070ZxkWTlp8RG1mjN0/+FkFRQMtU=
+github.com/aaccioly-open-source/khatru v0.0.0-20250806230548-3ee107eefac7 h1:6j2fPqYumVny33ehpSxQJFZ9csXc/R9+u2YxUO9u5zo=
+github.com/aaccioly-open-source/khatru v0.0.0-20250806230548-3ee107eefac7/go.mod h1:oYPexfQRBIDUPXWrPXjPqJksKCuK3Moc++rUI6Ubdb8=
 github.com/aead/siphash v1.0.1/go.mod h1:Nywa3cDsYNNK3gaciGTWPwHt0wlpNV15vwmswBAUSII=
 github.com/andybalholm/brotli v1.2.0 h1:ukwgCxwYrmACq68yiUqwIWnGY0cTPox/M94sVwToPjQ=
 github.com/andybalholm/brotli v1.2.0/go.mod h1:rzTDkvFWvIrjDXZHkuS16NPggd91W3kUSvPlQ1pLaKY=
@@ -118,8 +120,6 @@ github.com/felixge/httpsnoop v1.0.4 h1:NFTV2Zj1bL4mc9sqWACXbQFVBBg2W3GPvqp8/ESS2
 github.com/felixge/httpsnoop v1.0.4/go.mod h1:m8KPJKqk1gH5J9DgRY2ASl2lWCfGKXixSwevea8zH2U=
 github.com/fiatjaf/eventstore v0.17.1 h1:Uckf36z7BZSwUw+OwDwhtij554QqhnzmJEBKQ9Aqr1M=
 github.com/fiatjaf/eventstore v0.17.1/go.mod h1:u5Hc0rwHm2O/atVfujfeZ4zzRb4uj0+X8WNZQbTGW8c=
-github.com/fiatjaf/khatru v0.18.2 h1:0sz9geSh4DjXr6E+yULAYM4jEG1UuNRPgWqhuoACHko=
-github.com/fiatjaf/khatru v0.18.2/go.mod h1:oYPexfQRBIDUPXWrPXjPqJksKCuK3Moc++rUI6Ubdb8=
 github.com/fsnotify/fsnotify v1.4.7/go.mod h1:jwhsz4b93w/PPRr/qN1Yymfu8t87LnFCMoQvtojpjFo=
 github.com/fsnotify/fsnotify v1.4.9/go.mod h1:znqG4EE+3YCdAaPaxE2ZRY/06pZUdp0tY4IgpuI1SZQ=
 github.com/go-ini/ini v1.67.0 h1:z6ZrTEZqSWOTyH2FlglNbNgARyHG8oLW9gMELqKr06A=

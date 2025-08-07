@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"io"
+	"log/slog"
 	"net/http"
 	"text/template"
 	"time"
@@ -364,8 +365,8 @@ func initRelays() {
 
 	bl := blossom.New(outboxRelay, "https://"+config.RelayURL)
 	bl.Store = blossom.EventStoreBlobIndexWrapper{Store: blossomDB, ServiceURL: bl.ServiceURL}
-	bl.StoreBlob = append(bl.StoreBlob, func(ctx context.Context, sha256 string, body []byte) error {
-
+	bl.StoreBlob = append(bl.StoreBlob, func(ctx context.Context, sha256 string, ext string, body []byte) error {
+		slog.Debug("storing blob", "sha256", sha256, "ext", ext)
 		file, err := fs.Create(config.BlossomPath + sha256)
 		if err != nil {
 			return err
@@ -375,10 +376,12 @@ func initRelays() {
 		}
 		return nil
 	})
-	bl.LoadBlob = append(bl.LoadBlob, func(ctx context.Context, sha256 string) (io.ReadSeeker, error) {
+	bl.LoadBlob = append(bl.LoadBlob, func(ctx context.Context, sha256 string, ext string) (io.ReadSeeker, error) {
+		slog.Debug("loading blob", "sha256", sha256, "ext", ext)
 		return fs.Open(config.BlossomPath + sha256)
 	})
-	bl.DeleteBlob = append(bl.DeleteBlob, func(ctx context.Context, sha256 string) error {
+	bl.DeleteBlob = append(bl.DeleteBlob, func(ctx context.Context, sha256 string, ext string) error {
+		slog.Debug("deleting blob", "sha256", sha256, "ext", ext)
 		return fs.Remove(config.BlossomPath + sha256)
 	})
 	bl.RejectUpload = append(bl.RejectUpload, func(ctx context.Context, event *nostr.Event, size int, ext string) (bool, string, int) {

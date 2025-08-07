@@ -107,3 +107,5 @@ require (
 	google.golang.org/grpc v1.72.0 // indirect
 	google.golang.org/protobuf v1.36.6 // indirect
 )
+
+replace github.com/fiatjaf/khatru => github.com/aaccioly-open-source/khatru v0.0.0-20250806230548-3ee107eefac7
