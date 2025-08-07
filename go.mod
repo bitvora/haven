@@ -108,4 +108,4 @@ require (
 	google.golang.org/protobuf v1.36.6 // indirect
 )
 
-replace github.com/fiatjaf/khatru => github.com/aaccioly-open-source/khatru v0.0.0-20250806230548-3ee107eefac7
+replace github.com/fiatjaf/khatru => github.com/aaccioly-open-source/khatru v0.0.0-20250807015656-5425e6f793a0
