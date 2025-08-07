@@ -391,7 +391,7 @@ func initRelays() {
 
 		return true, "only notes signed by the owner of this relay are allowed", 403
 	})
-	migrateBlossomMetadata()
+	migrateBlossomMetadata(bl)
 
 	inboxRelay.Info.Name = config.InboxRelayName
 	inboxRelay.Info.PubKey = nPubToPubkey(config.InboxRelayNpub)

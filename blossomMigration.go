@@ -7,10 +7,8 @@ import (
 	"github.com/fiatjaf/khatru/blossom"
 )
 
-func migrateBlossomMetadata() {
-	// Create a temporary Blossom instance for the migration
-	blossomInstance := blossom.New(outboxRelay, "https://"+config.RelayURL)
-	blossomInstance.Store = blossom.EventStoreBlobIndexWrapper{Store: blossomDB, ServiceURL: "https://" + config.RelayURL}
+func migrateBlossomMetadata(bl *blossom.BlossomServer) {
+	// Create a temporary Blossom dbWrapper for the migration
 	outboxDBWrapper := blossom.EventStoreBlobIndexWrapper{Store: outboxDB, ServiceURL: "https://" + config.RelayURL}
 
 	// List all BlobDescriptor for the relay owner pubkey
@@ -42,7 +40,7 @@ func migrateBlossomMetadata() {
 			blob.Type = "application/octet-stream"
 		}
 
-		err := blossomInstance.Store.Keep(context.Background(), blob, ownerPubkey)
+		err := bl.Store.Keep(context.Background(), blob, ownerPubkey)
 		if err != nil {
 			slog.Error("🚫 Failed to store blob in Blossom DB", "sha256", blob.SHA256, "error", err)
 			continue
