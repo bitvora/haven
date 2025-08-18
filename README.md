@@ -344,9 +344,23 @@ defines an upper limit for the database size. For more information about LMDB’
 
 ### Migrating from databases created in older versions of Haven
 
-Haven versions 1.0.3 and earlier did not replace outdated notes. While this does not impact the relay's core 
-functionality, it can lead to a bloated database, reduced performance, and bugs in certain clients. For this reason, it
-is recommended to delete old databases and start fresh, optionally [re-importing](#8-run-the-import-optional) previous notes.
+Haven uses [Khatru's event store](https://github.com/fiatjaf/eventstore) to store notes. The way events are stored evolves 
+over time, and occasionally this introduces breaking changes.
+
+As a precaution, before upgrading to a newer version of Haven, you should back up the `db` folder.
+
+Haven versions 1.0.3 and earlier did not replace outdated notes. While this does not affect the relay's core
+functionality, it can result in a bloated database, reduced performance, and bugs in some clients. For this reason, it
+is recommended to delete old databases and start fresh.
+
+BadgerDB users upgrading from Haven version 1.0.5 or earlier may encounter a critical error when starting the relay:
+
+```
+error running migrations: failed to delete index key xxxx: Txn is too big to fit into one request
+```
+
+As a workaround, you can delete the `db` folder and start fresh, optionally [re-importing](#8-run-the-import-optional)
+previous notes.
 
 ## Blossom Media Server
 
