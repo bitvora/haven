@@ -257,10 +257,6 @@ func initRelays() {
 		nostr.KindSimpleGroupRoles,
 	}
 
-	if config.ChatRelayAllowKind4 {
-		allowedKinds = append(allowedKinds, nostr.KindEncryptedDirectMessage)
-	}
-
 	chatRelay.RejectEvent = append(chatRelay.RejectEvent, func(ctx context.Context, event *nostr.Event) (bool, string) {
 		for _, kind := range allowedKinds {
 			if event.Kind == kind {
@@ -437,7 +433,7 @@ func initRelays() {
 			return true, "you must be in the web of trust to post to this relay"
 		}
 
-		if event.Kind == nostr.KindEncryptedDirectMessage && !config.ChatRelayAllowKind4 {
+		if event.Kind == nostr.KindEncryptedDirectMessage {
 			return true, "only gift wrapped DMs are supported"
 		}
 
