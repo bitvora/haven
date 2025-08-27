@@ -8,6 +8,11 @@ import (
 )
 
 func nPubToPubkey(nPub string) string {
+	// If npub contains a comma, only use the part before the first comma
+	if commaIndex := strings.Index(nPub, ","); commaIndex != -1 {
+		nPub = nPub[:commaIndex]
+	}
+
 	_, v, err := nip19.Decode(nPub)
 	if err != nil {
 		panic(err)
