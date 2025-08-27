@@ -53,7 +53,7 @@ func importOwnerNotes() {
 		endTimestamp := nostr.Timestamp(endTime.Unix())
 
 		filter := nostr.Filter{
-			Authors: []string{nPubToPubkey(config.OwnerNpub)},
+			Authors: nPubsToPubkeys(config.OwnerNpub),
 			Since:   &startTimestamp,
 			Until:   &endTimestamp,
 		}
@@ -120,7 +120,7 @@ func importTaggedNotes() {
 	wdbChat := eventstore.RelayWrapper{Store: chatDB}
 	filter := nostr.Filter{
 		Tags: nostr.TagMap{
-			"p": {nPubToPubkey(config.OwnerNpub)},
+			"p": nPubsToPubkeys(config.OwnerNpub),
 		},
 	}
 
@@ -173,7 +173,7 @@ func subscribeInboxAndChat() {
 	startTime := nostr.Timestamp(time.Now().Add(-time.Minute * 5).Unix())
 	filter := nostr.Filter{
 		Tags: nostr.TagMap{
-			"p": {nPubToPubkey(config.OwnerNpub)},
+			"p": nPubsToPubkeys(config.OwnerNpub),
 		},
 		Since: &startTime,
 	}
