@@ -1,6 +1,7 @@
 package main
 
 import (
+	"slices"
 	"strings"
 
 	"github.com/nbd-wtf/go-nostr/nip19"
@@ -19,11 +20,12 @@ func nPubsToPubkeys(nPubs string) []string {
 	pubkeys := make([]string, 0, len(npubs))
 
 	for _, nPub := range npubs {
-		_, v, err := nip19.Decode(nPub)
-		if err != nil {
-			panic(err)
-		}
-		pubkeys = append(pubkeys, v.(string))
+		pubkeys = append(pubkeys, nPubToPubkey(nPub))
 	}
 	return pubkeys
+}
+
+// isOwner checks if the given pubkey is in the comma-separated list of owner npubs
+func isOwner(ownerNpubs string, pubkey string) bool {
+	return slices.Contains(nPubsToPubkeys(ownerNpubs), pubkey)
 }
