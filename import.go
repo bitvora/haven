@@ -28,11 +28,11 @@ func ensureImportRelays() {
 	if nErrors == 0 {
 		slog.Info("✅ All relays connected successfully")
 	} else if nErrors == len(config.ImportSeedRelays) {
-		slog.Error("🚫 Unable to connect to any import relayss, check your connectivity and relays_info.json file")
+		slog.Error("🚫 Unable to connect to any import relays, check your connectivity and relays_import.json file")
 		os.Exit(1)
 	} else {
 		slog.Warn("⚠️ Some relays failed to connect, proceeding, but this may cause issues")
-		slog.Info("ℹ️ If you always see this message during startup, consider removing the relays that are not working from your relays_info.json file")
+		slog.Info("ℹ️ If you always see this message during startup, consider removing the relays that are not working from your relays_import.json file")
 	}
 }
 
@@ -66,18 +66,17 @@ func importOwnerNotes() {
 			defer cancel()
 			batchImportedNotes := 0
 
-			pool.FetchManyReplaceable(ctx, config.ImportSeedRelays, filter).Range(func(_ nostr.ReplaceableKey, ev *nostr.Event) bool {
+			events := pool.FetchMany(ctx, config.ImportSeedRelays, filter)
+			for ev := range events {
 				if ctx.Err() != nil {
-					return false // Stop the loop on timeout
+					break // Stop the loop on timeout
 				}
-				if err := wdb.Publish(ctx, *ev); err != nil {
+				if err := wdb.Publish(ctx, *ev.Event); err != nil {
 					log.Println("🚫  error importing note", ev.ID, ":", err)
 					nFailedImportNotes++
-					return true
 				}
 				batchImportedNotes++
-				return true
-			})
+			}
 			done <- batchImportedNotes
 			close(done)
 		}()
@@ -127,12 +126,13 @@ func importTaggedNotes() {
 	log.Println("📦 importing inbox notes, please wait up to", timeout)
 
 	go func() {
-		pool.FetchManyReplaceable(ctx, config.ImportSeedRelays, filter).Range(func(_ nostr.ReplaceableKey, ev *nostr.Event) bool {
+		events := pool.FetchMany(ctx, config.ImportSeedRelays, filter)
+		for ev := range events {
 			if ctx.Err() != nil {
-				return false // Stop the loop on timeout
+				break // Stop the loop on timeout
 			}
 			if !wotMap[ev.PubKey] && ev.Kind != nostr.KindGiftWrap {
-				return true
+				continue
 			}
 			for tag := range ev.Tags.FindAll("p") {
 				if len(tag) < 2 {
@@ -143,16 +143,13 @@ func importTaggedNotes() {
 					if ev.Kind == nostr.KindGiftWrap {
 						dbToWrite = wdbChat
 					}
-					if err := dbToWrite.Publish(ctx, *ev); err != nil {
+					if err := dbToWrite.Publish(ctx, *ev.Event); err != nil {
 						log.Println("🚫 error importing tagged note", ev.ID, ":", err)
-						return true
 					}
 					taggedImportedNotes++
 				}
 			}
-
-			return true
-		})
+		}
 		close(done)
 	}()
 

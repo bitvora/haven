@@ -29,14 +29,13 @@ func refreshTrustNetwork() {
 		Kinds:   []int{nostr.KindFollowList},
 	}
 
-	pool.FetchManyReplaceable(timeoutCtx, config.ImportSeedRelays, filter).Range(func(_ nostr.ReplaceableKey, ev *nostr.Event) bool {
-		for contact := range ev.Tags.FindAll("p") {
+	events := pool.FetchMany(timeoutCtx, config.ImportSeedRelays, filter)
+	for ev := range events {
+		for contact := range ev.Event.Tags.FindAll("p") {
 			pubkeyFollowerCount[contact[1]]++
 			appendOneHopNetwork(contact[1])
 		}
-
-		return true
-	})
+	}
 
 	log.Println("🌐 building web of trust graph")
 	nPubkeys := uint(0)
@@ -57,7 +56,8 @@ func refreshTrustNetwork() {
 		go func() {
 			defer cancel()
 
-			pool.FetchManyReplaceable(timeoutCtx, config.ImportSeedRelays, filter).Range(func(_ nostr.ReplaceableKey, ev *nostr.Event) bool {
+			events := pool.FetchMany(timeoutCtx, config.ImportSeedRelays, filter)
+			for ev := range events {
 				nPubkeys++
 				for contact := range ev.Tags.FindAll("p") {
 					if len(contact) > 1 {
@@ -68,9 +68,7 @@ func refreshTrustNetwork() {
 				for relay := range ev.Tags.FindAll("r") {
 					appendRelay(relay[1])
 				}
-
-				return true
-			})
+			}
 			close(done)
 		}()
 
