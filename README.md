@@ -80,8 +80,9 @@ cp relays_blastr.example.json relays_blastr.json
 
 The JSON should contain an array of relay URLs, which default to wss:// if you don't explicitly specify the protocol.
 
-### 4. Create a Systemd Service
+### 4. Run on System Startup
 
+### Linux - Create a Systemd Service
 To have the relay run as a service, create a systemd unit file. Make sure to limit the memory usage to less than your system's total memory to prevent the relay from crashing the system.
 Replace the values for `ExecStart` and `WorkingDirectory` with the actual paths where you installed Haven and stored the `.env` file.
 
@@ -127,6 +128,28 @@ sudo systemctl start haven
 ```bash
 sudo systemctl enable haven
 ```
+
+### MacOS - Create a login item App
+To have the relay run on boot, create a script that will open terminal and run the haven binary, the termainal will remain open and the relay running with it. Be sure the download /haven directory is locacted in the MacOS home folder ~/
+
+1. Create the App: Open Script Editor
+
+2. Add the following contents:
+
+```ini
+tell application "Terminal"
+  activate
+  do script "cd \"$HOME/haven\"; ./haven; exec $SHELL"
+end tell
+```
+3. Save in Applications folder
+
+4. Open System Settings - General - Login Items
+   Hit the plus, add run_haven from Applications folder
+
+5. Reboot - On initial restart and terminal auto-open choose “allow”
+
+6. Reboot again to test login item
 
 ### 5. Serving over nginx (optional)
 
