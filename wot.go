@@ -22,10 +22,9 @@ func refreshTrustNetwork() {
 	timeoutCtx, cancel := context.WithTimeout(ctx, timeout)
 
 	defer cancel()
-	ownerPubkey := nPubToPubkey(config.OwnerNpub)
 
 	filter := nostr.Filter{
-		Authors: []string{ownerPubkey},
+		Authors: nPubsToPubkeys(config.OwnerNpub),
 		Kinds:   []int{nostr.KindFollowList},
 	}
 
