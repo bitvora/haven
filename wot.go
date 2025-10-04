@@ -40,9 +40,6 @@ func refreshTrustNetwork() {
 	log.Println("🌐 building web of trust graph")
 	nPubkeys := uint(0)
 	for i := 0; i < len(oneHopNetwork); i += 100 {
-		timeoutCtx, cancel = context.WithTimeout(ctx, timeout)
-		done := make(chan struct{})
-
 		end := i + 100
 		if end > len(oneHopNetwork) {
 			end = len(oneHopNetwork)
@@ -53,7 +50,12 @@ func refreshTrustNetwork() {
 			Kinds:   []int{nostr.KindFollowList, nostr.KindRelayListMetadata},
 		}
 
-		go func() {
+		// this does not need to be a goroutine, since we
+		// were waiting for "done" before moving to the next batch
+		// making it syncronous ends the race condition with pubkeyFollowerCount
+		func() {
+			// make sure the timeout is not already cancelled
+			timeoutCtx, cancel = context.WithTimeout(ctx, timeout)
 			defer cancel()
 
 			events := pool.FetchMany(timeoutCtx, config.ImportSeedRelays, filter)
@@ -69,15 +71,9 @@ func refreshTrustNetwork() {
 					appendRelay(relay[1])
 				}
 			}
-			close(done)
 		}()
 
-		select {
-		case <-done:
-			log.Println("🕸️ analysed", nPubkeys, "followed pubkeys so far")
-		case <-timeoutCtx.Done():
-			log.Println("🚫Timeout while fetching pubkeys, moving to the next batch")
-		}
+		log.Println("🕸️ analysed", nPubkeys, "followed pubkeys so far")
 	}
 	log.Println("🫂 total network size:", len(pubkeyFollowerCount))
 	log.Println("🔗 relays discovered:", len(wotRelays))
