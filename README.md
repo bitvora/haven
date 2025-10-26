@@ -151,7 +151,7 @@ end tell
 
 6. Reboot again to test login item
 
-### 5. Serving over nginx (optional)
+### 5. Serving over nginx or apache (optional)
 
 To have a domain name (example: relay.domain.com) point to your machine, you will need to setup an nginx.
 
