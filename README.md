@@ -188,7 +188,7 @@ server {
 ```
 
 For Apache:
-```
+```apache
 <VirtualHost *:80>
         ServerName yourdomain.com
 
