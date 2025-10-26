@@ -303,7 +303,7 @@ After installing Certbot, run the following command to generate an SSL certifica
 sudo certbot --nginx
 ```
 
-Certbot should also work with apache:
+Apache:
 
 ```bash
 sudo certbot --apache
