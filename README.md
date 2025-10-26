@@ -305,7 +305,9 @@ sudo certbot --nginx
 
 Certbot should also work with apache:
 
-```sudo certbot --apache```
+```bash
+sudo certbot --apache
+```
 
 Follow the instructions to generate the certificate.
 
