@@ -166,7 +166,7 @@ sudo apt-get install nginx
 
 3. Create new default config: `sudo nano /etc/nginx/sites-available/default` 
 
-4. Add new reverse proxy config by adding the following configuration to your nginx or apache configuration file:
+4. Add new reverse proxy config by adding the following configuration to your nginx configuration file:
 
 ```nginx
 server {
@@ -187,7 +187,7 @@ server {
 }
 ```
 
-For Apache:
+Or apache configuration file:
 ```apache
 <VirtualHost *:80>
         ServerName yourdomain.com
