@@ -103,7 +103,7 @@ After=network.target
 [Service]
 ExecStart=/home/ubuntu/haven/haven #Edit path to point to where you installed Haven
 WorkingDirectory=/home/ubuntu/haven #Edit path to point to where you installed Haven
-MemoryLimit=1000M  # Example, Limit memory usage to 1000 MB | Edit this to fit your machine
+MemoryMax=1000M  # Example, Limit memory usage to 1000 MB | Edit this to fit your machine
 Restart=always
 
 [Install]
