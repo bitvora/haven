@@ -36,16 +36,18 @@ The easiest way to get started with Haven is to download pre-built binaries from
 
 #### Installation Steps:
 
-1. **Download the appropriate binary** for your system from the releases page
+1. **Download the appropriate binary** for your system from the releases page.
+   - **MacOS**: Download `HavenApp.zip` for the native desktop experience.
+   - **Linux/Others**: Download the server-only binary.
 2. **Verify the download (optional)**: See our [Verification Documentation](docs/verify.md) for 
 instructions on how to verify the authenticity of the binaries using GPG signatures and checksums.
-3. **Create a haven directory** and extract the downloaded file:
-   ```bash
-   mkdir haven
-   # For Linux/macOS:
-   tar -xzf haven_[Platform]_[Architecture].tar.gz -C haven
-   # For Windows: extract the .zip file to this directory
-   ```
+3. **Install**:
+   - **MacOS**: Unzip `HavenApp.zip` and drag `HavenApp.app` to your Applications folder.
+   - **Linux**: Create a `haven` directory and extract the binary:
+     ```bash
+     mkdir haven
+     tar -xzf haven_[Platform]_[Architecture].tar.gz -C haven
+     ```
 ### Option 2: Build from Source
 
 If you prefer to build Haven from source or need to customize the build, please see the [Build Documentation](docs/build.md).
@@ -129,27 +131,17 @@ sudo systemctl start haven
 sudo systemctl enable haven
 ```
 
-### MacOS - Create a login item App
-To have the relay run on boot, create a script that will open terminal and run the haven binary, the termainal will remain open and the relay running with it. Be sure the download /haven directory is locacted in the MacOS home folder ~/
+### MacOS - Haven Native App (Recommended)
 
-1. Create the App: Open Script Editor
+The native Haven Mac app provides a graphical interface to manage your relay, view logs, and monitor statistics.
 
-2. Add the following contents:
+1. **Download**: Get the latest `HavenApp.zip` from the [Releases](https://github.com/bitvora/haven/releases/) page.
+2. **Install**: Unzip and drag `HavenApp.app` to your **Applications** folder.
+3. **Open**: Double-click to launch. 
+   - *Note*: If you see a warning about an "Unidentified Developer", Right-Click `HavenApp.app` and select **Open**, then click **Open** again in the dialog.
+4. **Setup**: Follow the on-screen Setup Wizard to configure your relay in seconds.
 
-```ini
-tell application "Terminal"
-  activate
-  do script "cd \"$HOME/haven\"; ./haven; exec $SHELL"
-end tell
-```
-3. Save in Applications folder
-
-4. Open System Settings - General - Login Items
-   Hit the plus, add run_haven from Applications folder
-
-5. Reboot - On initial restart and terminal auto-open choose “allow”
-
-6. Reboot again to test login item
+The app automatically handles starting the relay backend, managing configuration files, and keeping your templates up to date.
 
 ### 5. Serving over nginx or apache (optional)
 

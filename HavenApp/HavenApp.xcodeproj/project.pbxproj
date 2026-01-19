@@ -1,0 +1,423 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 60;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		AAAA0001 /* HavenApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = FFFF0001 /* HavenApp.swift */; };
+		AAAA0002 /* HavenConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = FFFF0002 /* HavenConfig.swift */; };
+		AAAA0003 /* NostrEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = FFFF0003 /* NostrEvent.swift */; };
+		AAAA0004 /* MediaItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = FFFF0004 /* MediaItem.swift */; };
+		AAAA0005 /* ConfigService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FFFF0005 /* ConfigService.swift */; };
+		AAAA0006 /* RelayProcessManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FFFF0006 /* RelayProcessManager.swift */; };
+		AAAA0007 /* WebSocketClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = FFFF0007 /* WebSocketClient.swift */; };
+		AAAA0008 /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FFFF0008 /* DashboardView.swift */; };
+		AAAA0009 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FFFF0009 /* SettingsView.swift */; };
+		AAAA0010 /* SetupWizardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FFFF0010 /* SetupWizardView.swift */; };
+		AAAA0011 /* ViewerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FFFF0011 /* ViewerView.swift */; };
+		AAAA0012 /* MenuBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FFFF0012 /* MenuBarView.swift */; };
+		AAAA0013 /* RelayListEditor.swift in Sources */ = {isa = PBXBuildFile; fileRef = FFFF0013 /* RelayListEditor.swift */; };
+		AAAA0014 /* LogsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FFFF0014 /* LogsView.swift */; };
+		AAAA0015 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = FFFF0015 /* Assets.xcassets */; };
+		AAAA0016 /* haven in Resources */ = {isa = PBXBuildFile; fileRef = FFFF0016 /* haven */; };
+		AAAA0017 /* templates in Resources */ = {isa = PBXBuildFile; fileRef = FFFF0017 /* templates */; };
+		AAAA0018 /* ColorExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = FFFF0018 /* ColorExtension.swift */; };
+		AAAA0019 /* AnimatedImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = FFFF0019 /* AnimatedImage.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		FFFF0001 /* HavenApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HavenApp.swift; sourceTree = "<group>"; };
+		FFFF0002 /* HavenConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HavenConfig.swift; sourceTree = "<group>"; };
+		FFFF0003 /* NostrEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NostrEvent.swift; sourceTree = "<group>"; };
+		FFFF0004 /* MediaItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaItem.swift; sourceTree = "<group>"; };
+		FFFF0005 /* ConfigService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigService.swift; sourceTree = "<group>"; };
+		FFFF0006 /* RelayProcessManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RelayProcessManager.swift; sourceTree = "<group>"; };
+		FFFF0007 /* WebSocketClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebSocketClient.swift; sourceTree = "<group>"; };
+		FFFF0008 /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
+		FFFF0009 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		FFFF0010 /* SetupWizardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupWizardView.swift; sourceTree = "<group>"; };
+		FFFF0011 /* ViewerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewerView.swift; sourceTree = "<group>"; };
+		FFFF0012 /* MenuBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarView.swift; sourceTree = "<group>"; };
+		FFFF0013 /* RelayListEditor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RelayListEditor.swift; sourceTree = "<group>"; };
+		FFFF0014 /* LogsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogsView.swift; sourceTree = "<group>"; };
+		FFFF0015 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		FFFF0016 /* haven */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; path = haven; sourceTree = "<group>"; };
+		FFFF0017 /* templates */ = {isa = PBXFileReference; lastKnownFileType = folder; path = templates; sourceTree = "<group>"; };
+		FFFF0018 /* ColorExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorExtension.swift; sourceTree = "<group>"; };
+		FFFF0019 /* AnimatedImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnimatedImage.swift; sourceTree = "<group>"; };
+		FFFF0020 /* HavenApp.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = HavenApp.entitlements; sourceTree = "<group>"; };
+		FFFF0099 /* HavenApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HavenApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		GGGG0001 = {
+			isa = PBXGroup;
+			children = (
+				GGGG0002 /* HavenApp/App */,
+				GGGG0003 /* HavenApp/Models */,
+				GGGG0004 /* HavenApp/Services */,
+				GGGG0005 /* HavenApp/Views */,
+				GGGG0006 /* HavenApp/Resources */,
+				GGGG0099 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		GGGG0002 /* HavenApp/App */ = {
+			isa = PBXGroup;
+			children = (
+				FFFF0001 /* HavenApp.swift */,
+				FFFF0020 /* HavenApp.entitlements */,
+			);
+			path = HavenApp/App;
+			sourceTree = "<group>";
+		};
+		GGGG0003 /* HavenApp/Models */ = {
+			isa = PBXGroup;
+			children = (
+				FFFF0002 /* HavenConfig.swift */,
+				FFFF0003 /* NostrEvent.swift */,
+				FFFF0004 /* MediaItem.swift */,
+			);
+			path = HavenApp/Models;
+			sourceTree = "<group>";
+		};
+		GGGG0004 /* HavenApp/Services */ = {
+			isa = PBXGroup;
+			children = (
+				FFFF0005 /* ConfigService.swift */,
+				FFFF0006 /* RelayProcessManager.swift */,
+				FFFF0007 /* WebSocketClient.swift */,
+			);
+			path = HavenApp/Services;
+			sourceTree = "<group>";
+		};
+		GGGG0005 /* HavenApp/Views */ = {
+			isa = PBXGroup;
+			children = (
+				FFFF0008 /* DashboardView.swift */,
+				FFFF0009 /* SettingsView.swift */,
+				FFFF0010 /* SetupWizardView.swift */,
+				FFFF0011 /* ViewerView.swift */,
+				FFFF0012 /* MenuBarView.swift */,
+				FFFF0013 /* RelayListEditor.swift */,
+				FFFF0014 /* LogsView.swift */,
+				FFFF0019 /* AnimatedImage.swift */,
+			);
+			path = HavenApp/Views;
+			sourceTree = "<group>";
+		};
+		GGGG0006 /* HavenApp/Resources */ = {
+			isa = PBXGroup;
+			children = (
+				FFFF0015 /* Assets.xcassets */,
+				FFFF0016 /* haven */,
+				FFFF0017 /* templates */,
+				FFFF0018 /* ColorExtension.swift */,
+			);
+			path = HavenApp/Resources;
+			sourceTree = "<group>";
+		};
+		GGGG0099 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				FFFF0099 /* HavenApp.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		TTTT0001 /* HavenApp */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = CCCC0001 /* Build configuration list for PBXNativeTarget "HavenApp" */;
+			buildPhases = (
+				PPPP0001 /* Sources */,
+				PPPP0002 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = HavenApp;
+			productName = HavenApp;
+			productReference = FFFF0099 /* HavenApp.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		PPPP9999 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastSwiftUpdateCheck = 1510;
+				LastUpgradeCheck = 1510;
+				TargetAttributes = {
+					TTTT0001 = {
+						CreatedOnToolsVersion = 15.0;
+					};
+				};
+			};
+			buildConfigurationList = CCCC9999 /* Build configuration list for PBXProject "HavenApp" */;
+			compatibilityVersion = "Xcode 15.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = GGGG0001;
+			productRefGroup = GGGG0099 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				TTTT0001 /* HavenApp */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		PPPP0002 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AAAA0015 /* Assets.xcassets in Resources */,
+				AAAA0016 /* haven in Resources */,
+				AAAA0017 /* templates in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		PPPP0001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AAAA0001 /* HavenApp.swift in Sources */,
+				AAAA0002 /* HavenConfig.swift in Sources */,
+				AAAA0003 /* NostrEvent.swift in Sources */,
+				AAAA0004 /* MediaItem.swift in Sources */,
+				AAAA0005 /* ConfigService.swift in Sources */,
+				AAAA0006 /* RelayProcessManager.swift in Sources */,
+				AAAA0007 /* WebSocketClient.swift in Sources */,
+				AAAA0008 /* DashboardView.swift in Sources */,
+				AAAA0009 /* SettingsView.swift in Sources */,
+				AAAA0010 /* SetupWizardView.swift in Sources */,
+				AAAA0011 /* ViewerView.swift in Sources */,
+				AAAA0012 /* MenuBarView.swift in Sources */,
+				AAAA0013 /* RelayListEditor.swift in Sources */,
+				AAAA0014 /* LogsView.swift in Sources */,
+				AAAA0019 /* AnimatedImage.swift in Sources */,
+				AAAA0018 /* ColorExtension.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		CCCC0002 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_HARDENED_RUNTIME = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_STRING_CATALOG_SYMBOL_GENERATION = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		CCCC0003 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_HARDENED_RUNTIME = NO;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_STRING_CATALOG_SYMBOL_GENERATION = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+			};
+			name = Release;
+		};
+		CCCC0004 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 2;
+				DEVELOPMENT_TEAM = KAD7WNBGH2;
+				ENABLE_HARDENED_RUNTIME = NO;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_LSUIElement = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0.1;
+				PRODUCT_BUNDLE_IDENTIFIER = com.bitvora.HavenApp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		CCCC0005 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 2;
+				DEVELOPMENT_TEAM = KAD7WNBGH2;
+				ENABLE_HARDENED_RUNTIME = NO;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_LSUIElement = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0.1;
+				PRODUCT_BUNDLE_IDENTIFIER = com.bitvora.HavenApp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		CCCC0001 /* Build configuration list for PBXNativeTarget "HavenApp" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				CCCC0004 /* Debug */,
+				CCCC0005 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		CCCC9999 /* Build configuration list for PBXProject "HavenApp" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				CCCC0002 /* Debug */,
+				CCCC0003 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = PPPP9999 /* Project object */;
+}
