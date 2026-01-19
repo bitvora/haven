@@ -3,21 +3,34 @@ package main
 import (
 	"context"
 	"log"
+	"sync"
 	"time"
 
 	"github.com/nbd-wtf/go-nostr"
 )
+
+type Wot struct {
+	Set   map[string]struct{}
+	Mutex sync.Mutex
+}
+
+func (wt *Wot) Has(pubkey string) bool {
+	wt.Mutex.Lock()
+	_, ok := wt.Set[pubkey]
+	wt.Mutex.Unlock()
+
+	return ok
+}
 
 var (
 	pubkeyFollowerCount = make(map[string]int)
 	oneHopNetwork       []string
 	wot                 []string
 	wotRelays           []string
-	wotMap              map[string]bool
+	wotMap              Wot
 )
 
-func refreshTrustNetwork() {
-	ctx := context.Background()
+func refreshTrustNetwork(ctx context.Context) {
 	timeout := time.Duration(config.WotFetchTimeoutSeconds) * time.Second
 	timeoutCtx, cancel := context.WithTimeout(ctx, timeout)
 
@@ -122,15 +135,18 @@ func appendOneHopNetwork(pubkey string) {
 }
 
 func updateWoTMap() {
-	wotMapTmp := make(map[string]bool)
+	wotTmp := make(map[string]struct{}, len(pubkeyFollowerCount))
 
 	for pubkey, count := range pubkeyFollowerCount {
 		if count >= config.ChatRelayMinimumFollowers {
-			wotMapTmp[pubkey] = true
+			wotTmp[pubkey] = struct{}{}
 			appendPubkeyToWoT(pubkey)
 		}
 	}
 
-	wotMap = wotMapTmp
-	log.Println("🌐 pubkeys with minimum followers: ", len(wotMap), "keys")
+	wotMap.Mutex.Lock()
+	wotMap.Set = wotTmp
+	wotMap.Mutex.Unlock()
+
+	log.Println("🌐 pubkeys with minimum followers: ", len(wotMap.Set), "keys")
 }
