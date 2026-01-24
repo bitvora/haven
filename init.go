@@ -372,10 +372,7 @@ func initRelays() {
 		}
 		return nil
 	})
-	bl.LoadBlob = append(bl.LoadBlob, func(ctx context.Context, sha256 string, ext string) (io.ReadSeeker, error) {
-		slog.Debug("loading blob", "sha256", sha256, "ext", ext)
-		return fs.Open(config.BlossomPath + sha256)
-	})
+	bl.LoadBlob = append(bl.LoadBlob, loadBlob)
 	bl.DeleteBlob = append(bl.DeleteBlob, func(ctx context.Context, sha256 string, ext string) error {
 		slog.Debug("deleting blob", "sha256", sha256, "ext", ext)
 		return fs.Remove(config.BlossomPath + sha256)
