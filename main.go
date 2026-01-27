@@ -8,8 +8,6 @@ import (
 	"log"
 	"log/slog"
 	"net/http"
-	"sync"
-	"time"
 
 	"github.com/fiatjaf/khatru"
 	"github.com/nbd-wtf/go-nostr"
@@ -43,11 +41,8 @@ func main() {
 	defer cancel()
 
 	go func() {
-		var refreshMutex sync.Mutex
-
 		ensureImportRelays()
 
-		// Runs synchronously so no need to use mutex
 		refreshTrustNetwork(refreshCtx)
 
 		if *importFlag {
@@ -59,20 +54,7 @@ func main() {
 
 		go subscribeInboxAndChat()
 		go backupDatabase()
-
-		ticker := time.NewTicker(config.ChatRelayWotRefreshInterval)
-		defer ticker.Stop()
-
-		for {
-			select {
-			case <-refreshCtx.Done():
-				return
-			case <-ticker.C:
-				refreshMutex.Lock()
-				refreshTrustNetwork(refreshCtx)
-				refreshMutex.Unlock()
-			}
-		}
+		go periodicRefreshWot(refreshCtx)
 	}()
 
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("templates/static"))))

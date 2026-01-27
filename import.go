@@ -132,7 +132,7 @@ func importTaggedNotes() {
 				break // Stop the loop on timeout
 			}
 
-			if !wotMap.Has(ev.Event.PubKey) && ev.Kind != nostr.KindGiftWrap {
+			if !Get().Has(ev.Event.PubKey) && ev.Kind != nostr.KindGiftWrap {
 				continue
 			}
 			for tag := range ev.Tags.FindAll("p") {
@@ -179,7 +179,7 @@ func subscribeInboxAndChat() {
 	log.Println("📢 subscribing to inbox")
 
 	for ev := range pool.SubscribeMany(ctx, config.ImportSeedRelays, filter) {
-		if !wotMap.Has(ev.Event.PubKey) && ev.Event.Kind != nostr.KindGiftWrap {
+		if !Get().Has(ev.Event.PubKey) && ev.Event.Kind != nostr.KindGiftWrap {
 			continue
 		}
 		for tag := range ev.Event.Tags.FindAll("p") {

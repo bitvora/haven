@@ -12,8 +12,6 @@ import (
 	"github.com/joho/godotenv"
 )
 
-const DEFAULT_WOT_REFRESH_INTERVAL time.Duration = 24 * time.Hour
-
 type AwsConfig struct {
 	AccessKeyID     string `json:"access"`
 	SecretAccessKey string `json:"secret"`
@@ -52,7 +50,7 @@ type Config struct {
 	ChatRelayDescription                 string        `json:"chat_relay_description"`
 	ChatRelayIcon                        string        `json:"chat_relay_icon"`
 	ChatRelayWotDepth                    int           `json:"chat_relay_wot_depth"`
-	ChatRelayWotRefreshInterval          time.Duration `json:"chat_relay_wot_refresh_interval"`
+	WotRefreshInterval                   time.Duration `json:"wot_refresh_interval"`
 	ChatRelayMinimumFollowers            int           `json:"chat_relay_minimum_followers"`
 	OutboxRelayName                      string        `json:"outbox_relay_name"`
 	OutboxRelayNpub                      string        `json:"outbox_relay_npub"`
@@ -81,12 +79,6 @@ type Config struct {
 func loadConfig() Config {
 	_ = godotenv.Load(".env")
 
-	wotRefreshIntervalEnv := getEnv("CHAT_RELAY_WOT_REFRESH_INTERVAL")
-	wotRefreshInterval, err := time.ParseDuration(wotRefreshIntervalEnv)
-	if err != nil {
-		wotRefreshInterval = DEFAULT_WOT_REFRESH_INTERVAL
-	}
-
 	return Config{
 		OwnerNpub:                            getEnv("OWNER_NPUB"),
 		DBEngine:                             getEnvString("DB_ENGINE", "lmdb"),
@@ -106,7 +98,6 @@ func loadConfig() Config {
 		ChatRelayDescription:                 getEnv("CHAT_RELAY_DESCRIPTION"),
 		ChatRelayIcon:                        getEnv("CHAT_RELAY_ICON"),
 		ChatRelayWotDepth:                    getEnvInt("CHAT_RELAY_WOT_DEPTH", 0),
-		ChatRelayWotRefreshInterval:          wotRefreshInterval,
 		ChatRelayMinimumFollowers:            getEnvInt("CHAT_RELAY_MINIMUM_FOLLOWERS", 0),
 		OutboxRelayName:                      getEnv("OUTBOX_RELAY_NAME"),
 		OutboxRelayNpub:                      getEnv("OUTBOX_RELAY_NPUB"),
@@ -125,6 +116,7 @@ func loadConfig() Config {
 		BackupProvider:                       getEnv("BACKUP_PROVIDER"),
 		BackupIntervalHours:                  getEnvInt("BACKUP_INTERVAL_HOURS", 24),
 		WotFetchTimeoutSeconds:               getEnvInt("WOT_FETCH_TIMEOUT_SECONDS", 30),
+		WotRefreshInterval:                   getEnvDuration("WOT_REFRESH_INTERVAL", 24*time.Hour),
 		LogLevel:                             getEnvString("HAVEN_LOG_LEVEL", "INFO"),
 		BlastrRelays:                         getRelayListFromFile(getEnv("BLASTR_RELAYS_FILE")),
 		AwsConfig:                            getAwsConfig(),
@@ -249,6 +241,17 @@ func getEnvBool(key string, defaultValue bool) bool {
 			panic(err)
 		}
 		return boolValue
+	}
+	return defaultValue
+}
+
+func getEnvDuration(key string, defaultValue time.Duration) time.Duration {
+	if value, ok := os.LookupEnv(key); ok {
+		durationValue, err := time.ParseDuration(value)
+		if err != nil {
+			panic(err)
+		}
+		return durationValue
 	}
 	return defaultValue
 }
