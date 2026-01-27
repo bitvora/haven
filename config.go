@@ -50,7 +50,6 @@ type Config struct {
 	ChatRelayDescription                 string        `json:"chat_relay_description"`
 	ChatRelayIcon                        string        `json:"chat_relay_icon"`
 	ChatRelayWotDepth                    int           `json:"chat_relay_wot_depth"`
-	WotRefreshInterval                   time.Duration `json:"wot_refresh_interval"`
 	ChatRelayMinimumFollowers            int           `json:"chat_relay_minimum_followers"`
 	OutboxRelayName                      string        `json:"outbox_relay_name"`
 	OutboxRelayNpub                      string        `json:"outbox_relay_npub"`
@@ -69,6 +68,7 @@ type Config struct {
 	BackupProvider                       string        `json:"backup_provider"`
 	BackupIntervalHours                  int           `json:"backup_interval_hours"`
 	WotFetchTimeoutSeconds               int           `json:"wot_fetch_timeout_seconds"`
+	WotRefreshInterval                   time.Duration `json:"wot_refresh_interval"`
 	LogLevel                             string        `json:"log_level"`
 	BlastrRelays                         []string      `json:"blastr_relays"`
 	AwsConfig                            *AwsConfig    `json:"aws_config"`
