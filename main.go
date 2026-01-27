@@ -54,7 +54,7 @@ func main() {
 
 		go subscribeInboxAndChat()
 		go backupDatabase()
-		go periodicRefreshWot(refreshCtx)
+		go periodicRefreshWot(refreshCtx, config.WotRefreshInterval)
 	}()
 
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("templates/static"))))

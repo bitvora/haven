@@ -128,8 +128,8 @@ func refreshTrustNetwork(ctx context.Context) {
 	wotInstance.Store(wt)
 }
 
-func periodicRefreshWot(ctx context.Context) {
-	ticker := time.NewTicker(config.WotRefreshInterval)
+func periodicRefreshWot(ctx context.Context, interval time.Duration) {
+	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
 
 	for {
