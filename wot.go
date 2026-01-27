@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"log"
+	"maps"
+	"slices"
 	"sync/atomic"
 	"time"
 
@@ -98,15 +100,8 @@ func refreshTrustNetwork(ctx context.Context) {
 	}
 
 	// Split analysis into batches of 100 pubkeys
-	batch := make([]string, 0, 100)
-	for key := range oneHopNetworkMap {
-		batch = append(batch, key)
-		if len(batch) == 100 {
-			processBatch(batch)
-			batch = make([]string, 0, 100)
-		}
-	}
-	if len(batch) > 0 {
+	keys := slices.Collect(maps.Keys(oneHopNetworkMap))
+	for batch := range slices.Chunk(keys, 100) {
 		processBatch(batch)
 	}
 
