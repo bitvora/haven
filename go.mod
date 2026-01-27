@@ -9,6 +9,7 @@ require (
 	github.com/joho/godotenv v1.5.1
 	github.com/minio/minio-go/v7 v7.0.90
 	github.com/nbd-wtf/go-nostr v0.52.0
+	github.com/puzpuzpuz/xsync/v4 v4.4.0
 	github.com/spf13/afero v1.11.0
 )
 
