@@ -15,6 +15,8 @@ import (
 	"github.com/fiatjaf/khatru/blossom"
 	"github.com/fiatjaf/khatru/policies"
 	"github.com/nbd-wtf/go-nostr"
+
+	"github.com/bitvora/haven/wot"
 )
 
 var (
@@ -222,7 +224,7 @@ func initRelays() {
 	chatRelay.RejectFilter = append(chatRelay.RejectFilter, func(ctx context.Context, filter nostr.Filter) (bool, string) {
 		authenticatedUser := khatru.GetAuthed(ctx)
 
-		if !Get().Has(authenticatedUser) {
+		if !wot.GetInstance().Has(authenticatedUser) {
 			return true, "you must be in the web of trust to chat with the relay owner"
 		}
 
@@ -429,7 +431,7 @@ func initRelays() {
 	inboxRelay.ReplaceEvent = append(inboxRelay.ReplaceEvent, inboxDB.ReplaceEvent)
 
 	inboxRelay.RejectEvent = append(inboxRelay.RejectEvent, func(ctx context.Context, event *nostr.Event) (bool, string) {
-		if !Get().Has(event.PubKey) {
+		if !wot.GetInstance().Has(event.PubKey) {
 			return true, "you must be in the web of trust to post to this relay"
 		}
 

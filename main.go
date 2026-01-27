@@ -12,6 +12,8 @@ import (
 	"github.com/fiatjaf/khatru"
 	"github.com/nbd-wtf/go-nostr"
 	"github.com/spf13/afero"
+
+	"github.com/bitvora/haven/wot"
 )
 
 var (
@@ -37,13 +39,18 @@ func main() {
 
 	initRelays()
 
-	refreshCtx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
 	go func() {
 		ensureImportRelays()
 
-		refreshTrustNetwork(refreshCtx)
+		wotModel := wot.NewSimpleInMemory(
+			pool,
+			nPubToPubkey(config.OwnerNpub),
+			config.ImportSeedRelays,
+			config.WotFetchTimeoutSeconds,
+			config.ChatRelayMinimumFollowers,
+		)
+
+		wot.Initialize(wotModel)
 
 		if *importFlag {
 			log.Println("📦 importing notes")
@@ -54,7 +61,7 @@ func main() {
 
 		go subscribeInboxAndChat()
 		go backupDatabase()
-		go periodicRefreshWot(refreshCtx, config.WotRefreshInterval)
+		go wot.PeriodicRefresh(config.WotRefreshInterval)
 	}()
 
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("templates/static"))))

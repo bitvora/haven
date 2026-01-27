@@ -1,4 +1,4 @@
-package main
+package wot
 
 import (
 	"context"
@@ -12,50 +12,59 @@ import (
 	"github.com/puzpuzpuz/xsync/v4"
 )
 
-type Wot interface {
-	Has(pubkey string) bool
+type SimpleInMemory struct {
+	pubkeys atomic.Pointer[map[string]bool]
+
+	// Dependencies for Refresh
+	Pool            *nostr.SimplePool
+	OwnerPubkey     string
+	SeedRelays      []string
+	WotFetchTimeout int
+	MinFollowers    int
 }
 
-var wotInstance atomic.Value
-
-func Get() Wot {
-	return wotInstance.Load().(Wot)
-}
-
-type InMemoryWot struct {
-	pubkeys map[string]struct{}
-}
-
-func (wt *InMemoryWot) Has(pubkey string) bool {
-	_, ok := wt.pubkeys[pubkey]
-	return ok
-}
-
-func refreshTrustNetwork(ctx context.Context) {
-	wt := &InMemoryWot{
-		pubkeys: make(map[string]struct{}),
+func NewSimpleInMemory(pool *nostr.SimplePool, ownerPubkey string, seedRelays []string, wotFetchTimeout int, minFollowers int) *SimpleInMemory {
+	return &SimpleInMemory{
+		Pool:            pool,
+		OwnerPubkey:     ownerPubkey,
+		SeedRelays:      seedRelays,
+		WotFetchTimeout: wotFetchTimeout,
+		MinFollowers:    minFollowers,
 	}
-	pubkeyFollowerCount := xsync.NewMapOf[string, *atomic.Int64]()
-	relaysDiscovered := xsync.NewMapOf[string, struct{}]()
-	oneHopNetworkMap := make(map[string]struct{})
+}
 
-	timeout := time.Duration(config.WotFetchTimeoutSeconds) * time.Second
+func (wt *SimpleInMemory) Has(pubkey string) bool {
+	m := wt.pubkeys.Load()
+	if m == nil {
+		return false
+	}
+	return (*m)[pubkey]
+}
+
+func (wt *SimpleInMemory) Init() {
+	wt.Refresh(context.Background())
+}
+
+func (wt *SimpleInMemory) Refresh(ctx context.Context) {
+	pubkeyFollowerCount := xsync.NewMap[string, *atomic.Int64]()
+	relaysDiscovered := xsync.NewMap[string, bool]()
+	oneHopNetwork := make(map[string]bool)
+
+	timeout := time.Duration(wt.WotFetchTimeout) * time.Second
 	timeoutCtx, cancel := context.WithTimeout(ctx, timeout)
-
 	defer cancel()
-	ownerPubkey := nPubToPubkey(config.OwnerNpub)
 
 	filter := nostr.Filter{
-		Authors: []string{ownerPubkey},
+		Authors: []string{wt.OwnerPubkey},
 		Kinds:   []int{nostr.KindFollowList},
 	}
 
-	events := pool.FetchMany(timeoutCtx, config.ImportSeedRelays, filter)
+	events := wt.Pool.FetchMany(timeoutCtx, wt.SeedRelays, filter)
 	for ev := range events {
 		for contact := range ev.Event.Tags.FindAll("p") {
 			val, _ := pubkeyFollowerCount.LoadOrStore(contact[1], &atomic.Int64{})
 			val.Add(1)
-			oneHopNetworkMap[contact[1]] = struct{}{}
+			oneHopNetwork[contact[1]] = true
 		}
 	}
 
@@ -74,7 +83,7 @@ func refreshTrustNetwork(ctx context.Context) {
 		go func() {
 			defer cancel()
 
-			events := pool.FetchMany(timeoutCtx, config.ImportSeedRelays, filter)
+			events := wt.Pool.FetchMany(timeoutCtx, wt.SeedRelays, filter)
 			for ev := range events {
 				eventsAnalysed.Add(1)
 				for contact := range ev.Tags.FindAll("p") {
@@ -85,7 +94,7 @@ func refreshTrustNetwork(ctx context.Context) {
 				}
 
 				for relay := range ev.Tags.FindAll("r") {
-					relaysDiscovered.Store(relay[1], struct{}{})
+					relaysDiscovered.Store(relay[1], true)
 				}
 			}
 			close(done)
@@ -100,7 +109,7 @@ func refreshTrustNetwork(ctx context.Context) {
 	}
 
 	// Split analysis into batches of 100 pubkeys
-	keys := slices.Collect(maps.Keys(oneHopNetworkMap))
+	keys := slices.Collect(maps.Keys(oneHopNetwork))
 	for batch := range slices.Chunk(keys, 100) {
 		processBatch(batch)
 	}
@@ -109,30 +118,16 @@ func refreshTrustNetwork(ctx context.Context) {
 	log.Println("🔗 relays discovered:", relaysDiscovered.Size())
 
 	// Filter out pubkeys with less than minimum followers
-	minimumFollowers := int64(config.ChatRelayMinimumFollowers)
+	newPubkeys := make(map[string]bool)
+	minimumFollowers := int64(wt.MinFollowers)
 	pubkeyFollowerCount.Range(func(pubkey string, count *atomic.Int64) bool {
 		if count.Load() >= minimumFollowers {
-			wt.pubkeys[pubkey] = struct{}{}
+			newPubkeys[pubkey] = true
 		}
 		return true
 	})
 
-	log.Println("🌐 pubkeys with minimum followers: ", len(wt.pubkeys), "keys")
+	log.Println("🌐 pubkeys with minimum followers: ", len(newPubkeys), "keys")
 
-	// Atomic replacement is safe
-	wotInstance.Store(wt)
-}
-
-func periodicRefreshWot(ctx context.Context, interval time.Duration) {
-	ticker := time.NewTicker(interval)
-	defer ticker.Stop()
-
-	for {
-		select {
-		case <-ctx.Done():
-			return
-		case <-ticker.C:
-			refreshTrustNetwork(ctx)
-		}
-	}
+	wt.pubkeys.Store(&newPubkeys)
 }
