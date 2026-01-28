@@ -2,7 +2,7 @@ package wot
 
 import (
 	"context"
-	"log"
+	"log/slog"
 	"maps"
 	"slices"
 	"sync/atomic"
@@ -68,7 +68,7 @@ func (wt *SimpleInMemory) Refresh(ctx context.Context) {
 		}
 	}
 
-	log.Println("🌐 building web of trust graph")
+	slog.Info("🛜 fetching Nostr events to build WoT")
 	var eventsAnalysed atomic.Int64
 
 	processBatch := func(pubkeys []string) {
@@ -102,9 +102,9 @@ func (wt *SimpleInMemory) Refresh(ctx context.Context) {
 
 		select {
 		case <-done:
-			log.Println("🕸️ analysed", eventsAnalysed.Load(), "Nostr events so far")
+			slog.Info("🕸️ analysing Nostr events", "count", eventsAnalysed.Load())
 		case <-timeoutCtx.Done():
-			log.Println("🚫Timeout while fetching events, moving to the next batch")
+			slog.Error("🚫 timeout while fetching events, moving to the next batch")
 		}
 	}
 
@@ -114,8 +114,7 @@ func (wt *SimpleInMemory) Refresh(ctx context.Context) {
 		processBatch(batch)
 	}
 
-	log.Println("🫂 total network size:", pubkeyFollowerCount.Size())
-	log.Println("🔗 relays discovered:", relaysDiscovered.Size())
+	slog.Info("📈 totals", "🫂pubkeys", pubkeyFollowerCount.Size(), "🔗relays", relaysDiscovered.Size())
 
 	// Filter out pubkeys with less than minimum followers
 	newPubkeys := make(map[string]bool)
@@ -127,7 +126,7 @@ func (wt *SimpleInMemory) Refresh(ctx context.Context) {
 		return true
 	})
 
-	log.Println("🌐 pubkeys with minimum followers: ", len(newPubkeys), "keys")
+	slog.Info("🫥 eliminating pubkeys without minimum followers", "minimum", wt.MinFollowers, "kept", len(newPubkeys))
 
 	wt.pubkeys.Store(&newPubkeys)
 }

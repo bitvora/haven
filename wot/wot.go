@@ -2,7 +2,8 @@ package wot
 
 import (
 	"context"
-	"log"
+	"fmt"
+	"log/slog"
 	"sync/atomic"
 	"time"
 )
@@ -32,9 +33,9 @@ func GetInstance() Model {
 func Initialize(model Model) {
 	wotInstance.Store(model)
 	if initializer, ok := model.(Initializer); ok {
-		log.Printf("🌐 Initializing WoT (%T)...\n", model)
+		slog.Info("🌐 Initializing WoT", "model", fmt.Sprintf("%T", model))
 		initializer.Init()
-		log.Println("✅ WoT initialized")
+		slog.Info("✅ WoT initialized")
 	}
 }
 
@@ -50,9 +51,9 @@ func PeriodicRefresh(interval time.Duration) {
 		case <-ticker.C:
 			instance := GetInstance()
 			if refresher, ok := instance.(Refresher); ok {
-				log.Println("🌐 Refreshing WoT...")
+				slog.Info("🌐 Refreshing WoT")
 				refresher.Refresh(ctx)
-				log.Println("✅ WoT refreshed")
+				slog.Info("✅ WoT refreshed")
 			}
 		}
 	}
