@@ -10,6 +10,8 @@ import (
 
 	"github.com/fiatjaf/eventstore"
 	"github.com/nbd-wtf/go-nostr"
+
+	"github.com/bitvora/haven/wot"
 )
 
 const layout = "2006-01-02"
@@ -131,7 +133,8 @@ func importTaggedNotes() {
 			if ctx.Err() != nil {
 				break // Stop the loop on timeout
 			}
-			if !wotMap[ev.PubKey] && ev.Kind != nostr.KindGiftWrap {
+
+			if !wot.GetInstance().Has(ev.Event.PubKey) && ev.Kind != nostr.KindGiftWrap {
 				continue
 			}
 			for tag := range ev.Tags.FindAll("p") {
@@ -178,7 +181,7 @@ func subscribeInboxAndChat() {
 	log.Println("📢 subscribing to inbox")
 
 	for ev := range pool.SubscribeMany(ctx, config.ImportSeedRelays, filter) {
-		if !wotMap[ev.Event.PubKey] && ev.Event.Kind != nostr.KindGiftWrap {
+		if !wot.GetInstance().Has(ev.Event.PubKey) && ev.Event.Kind != nostr.KindGiftWrap {
 			continue
 		}
 		for tag := range ev.Event.Tags.FindAll("p") {
