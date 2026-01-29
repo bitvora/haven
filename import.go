@@ -55,7 +55,7 @@ func importOwnerNotes(ctx context.Context) {
 		endTimestamp := nostr.Timestamp(endTime.Unix())
 
 		filter := nostr.Filter{
-			Authors: []string{nPubToPubkey(config.OwnerNpub)},
+			Authors: []string{config.OwnerNpubKey},
 			Since:   &startTimestamp,
 			Until:   &endTimestamp,
 		}
@@ -121,7 +121,7 @@ func importTaggedNotes(ctx context.Context) {
 	wdbChat := eventstore.RelayWrapper{Store: chatDB}
 	filter := nostr.Filter{
 		Tags: nostr.TagMap{
-			"p": {nPubToPubkey(config.OwnerNpub)},
+			"p": {config.OwnerNpubKey},
 		},
 	}
 
@@ -141,7 +141,7 @@ func importTaggedNotes(ctx context.Context) {
 				if len(tag) < 2 {
 					continue
 				}
-				if tag[1] == nPubToPubkey(config.OwnerNpub) {
+				if tag[1] == config.OwnerNpubKey {
 					dbToWrite := wdbInbox
 					if ev.Kind == nostr.KindGiftWrap {
 						dbToWrite = wdbChat
@@ -172,7 +172,7 @@ func subscribeInboxAndChat(ctx context.Context) {
 	startTime := nostr.Timestamp(time.Now().Add(-time.Minute * 5).Unix())
 	filter := nostr.Filter{
 		Tags: nostr.TagMap{
-			"p": {nPubToPubkey(config.OwnerNpub)},
+			"p": {config.OwnerNpubKey},
 		},
 		Since: &startTime,
 	}
@@ -187,7 +187,7 @@ func subscribeInboxAndChat(ctx context.Context) {
 			if len(tag) < 2 {
 				continue
 			}
-			if tag[1] == nPubToPubkey(config.OwnerNpub) {
+			if tag[1] == config.OwnerNpubKey {
 				dbToPublish := wdbInbox
 				if ev.Event.Kind == nostr.KindGiftWrap {
 					dbToPublish = wdbChat

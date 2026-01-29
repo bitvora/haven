@@ -47,7 +47,7 @@ func main() {
 
 		wotModel := wot.NewSimpleInMemory(
 			pool,
-			nPubToPubkey(config.OwnerNpub),
+			config.OwnerNpubKey,
 			config.ImportSeedRelays,
 			config.WotFetchTimeoutSeconds,
 			config.ChatRelayMinimumFollowers,

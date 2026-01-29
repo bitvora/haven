@@ -141,7 +141,7 @@ func initRelays(ctx context.Context) {
 
 	privateRelay.RejectFilter = append(privateRelay.RejectFilter, func(ctx context.Context, filter nostr.Filter) (bool, string) {
 		authenticatedUser := khatru.GetAuthed(ctx)
-		if authenticatedUser == nPubToPubkey(config.OwnerNpub) {
+		if authenticatedUser == config.OwnerNpubKey {
 			return false, ""
 		}
 
@@ -151,7 +151,7 @@ func initRelays(ctx context.Context) {
 	privateRelay.RejectEvent = append(privateRelay.RejectEvent, func(ctx context.Context, event *nostr.Event) (bool, string) {
 		authenticatedUser := khatru.GetAuthed(ctx)
 
-		if authenticatedUser == nPubToPubkey(config.OwnerNpub) {
+		if authenticatedUser == config.OwnerNpubKey {
 			return false, ""
 		}
 
@@ -332,7 +332,7 @@ func initRelays(ctx context.Context) {
 	outboxRelay.ReplaceEvent = append(outboxRelay.ReplaceEvent, outboxDB.ReplaceEvent)
 
 	outboxRelay.RejectEvent = append(outboxRelay.RejectEvent, func(ctx context.Context, event *nostr.Event) (bool, string) {
-		if event.PubKey == nPubToPubkey(config.OwnerNpub) {
+		if event.PubKey == config.OwnerNpubKey {
 			return false, ""
 		}
 		return true, "only notes signed by the owner of this relay are allowed"
@@ -382,7 +382,7 @@ func initRelays(ctx context.Context) {
 		return fs.Remove(config.BlossomPath + sha256)
 	})
 	bl.RejectUpload = append(bl.RejectUpload, func(ctx context.Context, event *nostr.Event, size int, ext string) (bool, string, int) {
-		if event.PubKey == nPubToPubkey(config.OwnerNpub) {
+		if event.PubKey == config.OwnerNpubKey {
 			return false, ext, size
 		}
 
