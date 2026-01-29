@@ -14,7 +14,7 @@ import (
 	"github.com/minio/minio-go/v7/pkg/credentials"
 )
 
-func backupDatabase() {
+func backupDatabase(ctx context.Context) {
 	if config.BackupProvider == "none" || config.BackupProvider == "" {
 		log.Println("🚫 no backup provider set")
 		return
@@ -26,6 +26,9 @@ func backupDatabase() {
 	zipFileName := "db.zip"
 	for {
 		select {
+		case <-ctx.Done():
+			return
+
 		case <-ticker.C:
 			if err := ZipDirectory("db", zipFileName); err != nil {
 				log.Println("🚫 error zipping database folder:", err)
@@ -33,11 +36,11 @@ func backupDatabase() {
 			}
 			switch config.BackupProvider {
 			case "s3":
-				S3Upload(zipFileName)
+				S3Upload(ctx, zipFileName)
 			case "aws":
-				AwsUpload(zipFileName)
+				AwsUpload(ctx, zipFileName)
 			case "gcp":
-				GCPBucketUpload(zipFileName)
+				GCPBucketUpload(ctx, zipFileName)
 			default:
 				log.Println("🚫 we only support AWS, GCP, and S3 at this time")
 			}
@@ -48,14 +51,12 @@ func backupDatabase() {
 // Deprecated: Use S3Upload instead
 //
 //goland:noinspection GoUnhandledErrorResult
-func GCPBucketUpload(zipFileName string) {
+func GCPBucketUpload(ctx context.Context, zipFileName string) {
 	if config.GcpConfig == nil {
 		log.Fatal("🚫 GCP specified as backup provider but no GCP config found. Check environment variables.")
 	}
 
 	bucket := config.GcpConfig.Bucket
-
-	ctx := context.Background()
 
 	client, err := storage.NewClient(ctx)
 	if err != nil {
@@ -94,12 +95,13 @@ func GCPBucketUpload(zipFileName string) {
 // Deprecated: Use S3Upload instead
 //
 //goland:noinspection GoUnhandledErrorResult
-func AwsUpload(zipFileName string) {
+func AwsUpload(ctx context.Context, zipFileName string) {
 	if config.AwsConfig == nil {
 		log.Fatal("🚫 AWS specified as backup provider but no AWS config found. Check environment variables.")
 	}
 
 	s3UploadShared(
+		ctx,
 		zipFileName,
 		config.AwsConfig.AccessKeyID,
 		config.AwsConfig.SecretAccessKey,
@@ -110,12 +112,13 @@ func AwsUpload(zipFileName string) {
 	)
 }
 
-func S3Upload(zipFileName string) {
+func S3Upload(ctx context.Context, zipFileName string) {
 	if config.S3Config == nil {
 		log.Fatal("🚫 S3 specified as backup provider but no S3 config found. Check environment variables.")
 	}
 
 	s3UploadShared(
+		ctx,
 		zipFileName,
 		config.S3Config.AccessKeyID,
 		config.S3Config.SecretKey,
@@ -127,6 +130,7 @@ func S3Upload(zipFileName string) {
 }
 
 func s3UploadShared(
+	ctx context.Context,
 	zipFileName string,
 	accessKey string,
 	secret string,
@@ -164,7 +168,7 @@ func s3UploadShared(
 	}
 
 	_, err = client.PutObject(
-		context.Background(),
+		ctx,
 		bucketName,
 		zipFileName,
 		file,

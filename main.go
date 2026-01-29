@@ -17,7 +17,7 @@ import (
 )
 
 var (
-	pool   = nostr.NewSimplePool(context.Background(), nostr.WithPenaltyBox())
+	pool   = nostr.NewSimplePool(context.TODO(), nostr.WithPenaltyBox())
 	config = loadConfig()
 	fs     afero.Fs
 )
@@ -37,7 +37,10 @@ func main() {
 		log.Fatal("🚫 error creating blossom path:", err)
 	}
 
-	initRelays()
+	mainCtx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	initRelays(mainCtx)
 
 	go func() {
 		ensureImportRelays()
@@ -50,18 +53,18 @@ func main() {
 			config.ChatRelayMinimumFollowers,
 		)
 
-		wot.Initialize(wotModel)
+		wot.Initialize(mainCtx, wotModel)
 
 		if *importFlag {
 			log.Println("📦 importing notes")
-			importOwnerNotes()
-			importTaggedNotes()
+			importOwnerNotes(mainCtx)
+			importTaggedNotes(mainCtx)
 			return
 		}
 
-		go subscribeInboxAndChat()
-		go backupDatabase()
-		go wot.PeriodicRefresh(config.WotRefreshInterval)
+		go subscribeInboxAndChat(mainCtx)
+		go backupDatabase(mainCtx)
+		go wot.PeriodicRefresh(mainCtx, config.WotRefreshInterval)
 	}()
 
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("templates/static"))))

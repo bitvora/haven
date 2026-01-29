@@ -9,7 +9,7 @@ import (
 )
 
 type Model interface {
-	Has(pubkey string) bool
+	Has(ctx context.Context, pubkey string) bool
 }
 
 type Refresher interface {
@@ -17,7 +17,7 @@ type Refresher interface {
 }
 
 type Initializer interface {
-	Init()
+	Init(ctx context.Context)
 }
 
 var wotInstance atomic.Value
@@ -30,17 +30,16 @@ func GetInstance() Model {
 	return val.(Model)
 }
 
-func Initialize(model Model) {
+func Initialize(ctx context.Context, model Model) {
 	wotInstance.Store(model)
 	if initializer, ok := model.(Initializer); ok {
 		slog.Info("🌐 Initializing WoT", "model", fmt.Sprintf("%T", model))
-		initializer.Init()
+		initializer.Init(ctx)
 		slog.Info("✅ WoT initialized")
 	}
 }
 
-func PeriodicRefresh(interval time.Duration) {
-	ctx := context.Background()
+func PeriodicRefresh(ctx context.Context, interval time.Duration) {
 	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
 

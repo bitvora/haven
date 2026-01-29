@@ -73,7 +73,7 @@ func newLMDBBackend(path string) *lmdb.LMDBBackend {
 	}
 }
 
-func initRelays() {
+func initRelays(ctx context.Context) {
 	if err := privateDB.Init(); err != nil {
 		panic(err)
 	}
@@ -225,7 +225,7 @@ func initRelays() {
 	chatRelay.RejectFilter = append(chatRelay.RejectFilter, func(ctx context.Context, filter nostr.Filter) (bool, string) {
 		authenticatedUser := khatru.GetAuthed(ctx)
 
-		if !wot.GetInstance().Has(authenticatedUser) {
+		if !wot.GetInstance().Has(ctx, authenticatedUser) {
 			return true, "you must be in the web of trust to chat with the relay owner"
 		}
 
@@ -323,7 +323,7 @@ func initRelays() {
 	)
 
 	outboxRelay.StoreEvent = append(outboxRelay.StoreEvent, outboxDB.SaveEvent, func(ctx context.Context, event *nostr.Event) error {
-		go blast(event)
+		go blast(ctx, event)
 		return nil
 	})
 	outboxRelay.QueryEvents = append(outboxRelay.QueryEvents, outboxDB.QueryEvents)
@@ -388,7 +388,7 @@ func initRelays() {
 
 		return true, "only notes signed by the owner of this relay are allowed", 403
 	})
-	migrateBlossomMetadata(bl)
+	migrateBlossomMetadata(ctx, bl)
 
 	inboxRelay.Info.Name = config.InboxRelayName
 	inboxRelay.Info.PubKey = nPubToPubkey(config.InboxRelayNpub)
@@ -430,7 +430,7 @@ func initRelays() {
 	inboxRelay.ReplaceEvent = append(inboxRelay.ReplaceEvent, inboxDB.ReplaceEvent)
 
 	inboxRelay.RejectEvent = append(inboxRelay.RejectEvent, func(ctx context.Context, event *nostr.Event) (bool, string) {
-		if !wot.GetInstance().Has(event.PubKey) {
+		if !wot.GetInstance().Has(ctx, event.PubKey) {
 			return true, "you must be in the web of trust to post to this relay"
 		}
 
