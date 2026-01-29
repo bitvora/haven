@@ -40,20 +40,19 @@ func main() {
 	mainCtx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
+	wotModel := wot.NewSimpleInMemory(
+		pool,
+		config.OwnerNpubKey,
+		config.ImportSeedRelays,
+		config.WotFetchTimeoutSeconds,
+		config.ChatRelayMinimumFollowers,
+	)
+	wot.Initialize(mainCtx, wotModel)
+
 	initRelays(mainCtx)
 
 	go func() {
 		ensureImportRelays()
-
-		wotModel := wot.NewSimpleInMemory(
-			pool,
-			config.OwnerNpubKey,
-			config.ImportSeedRelays,
-			config.WotFetchTimeoutSeconds,
-			config.ChatRelayMinimumFollowers,
-		)
-
-		wot.Initialize(mainCtx, wotModel)
 
 		if *importFlag {
 			log.Println("📦 importing notes")
