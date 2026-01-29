@@ -6,7 +6,6 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
-	"slices"
 	"text/template"
 	"time"
 
@@ -232,36 +231,36 @@ func initRelays(ctx context.Context) {
 		return false, ""
 	})
 
-	allowedKinds := []int{
+	allowedKinds := map[int]struct{}{
 		// Regular kinds
-		nostr.KindSimpleGroupChatMessage,
-		nostr.KindSimpleGroupThreadedReply,
-		nostr.KindSimpleGroupThread,
-		nostr.KindSimpleGroupReply,
-		nostr.KindChannelMessage,
-		nostr.KindChannelHideMessage,
+		nostr.KindSimpleGroupChatMessage: struct{}{},
+		nostr.KindSimpleGroupThreadedReply: struct{}{},
+		nostr.KindSimpleGroupThread: struct{}{},
+		nostr.KindSimpleGroupReply: struct{}{},
+		nostr.KindChannelMessage: struct{}{},
+		nostr.KindChannelHideMessage: struct{}{},
 
-		nostr.KindGiftWrap,
+		nostr.KindGiftWrap: struct{}{},
 
-		nostr.KindSimpleGroupPutUser,
-		nostr.KindSimpleGroupRemoveUser,
-		nostr.KindSimpleGroupEditMetadata,
-		nostr.KindSimpleGroupDeleteEvent,
-		nostr.KindSimpleGroupCreateGroup,
-		nostr.KindSimpleGroupDeleteGroup,
-		nostr.KindSimpleGroupCreateInvite,
-		nostr.KindSimpleGroupJoinRequest,
-		nostr.KindSimpleGroupLeaveRequest,
+		nostr.KindSimpleGroupPutUser: struct{}{},
+		nostr.KindSimpleGroupRemoveUser: struct{}{},
+		nostr.KindSimpleGroupEditMetadata: struct{}{},
+		nostr.KindSimpleGroupDeleteEvent: struct{}{},
+		nostr.KindSimpleGroupCreateGroup: struct{}{},
+		nostr.KindSimpleGroupDeleteGroup: struct{}{},
+		nostr.KindSimpleGroupCreateInvite: struct{}{},
+		nostr.KindSimpleGroupJoinRequest: struct{}{},
+		nostr.KindSimpleGroupLeaveRequest: struct{}{},
 
 		// Addressable kinds
-		nostr.KindSimpleGroupMetadata,
-		nostr.KindSimpleGroupAdmins,
-		nostr.KindSimpleGroupMembers,
-		nostr.KindSimpleGroupRoles,
+		nostr.KindSimpleGroupMetadata: struct{}{},
+		nostr.KindSimpleGroupAdmins: struct{}{},
+		nostr.KindSimpleGroupMembers: struct{}{},
+		nostr.KindSimpleGroupRoles: struct{}{},
 	}
 
 	chatRelay.RejectEvent = append(chatRelay.RejectEvent, func(ctx context.Context, event *nostr.Event) (bool, string) {
-		if slices.Contains(allowedKinds, event.Kind) {
+		if _, has := allowedKinds[event.Kind]; has {
 			return false, ""
 		}
 
