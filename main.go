@@ -79,15 +79,16 @@ func dynamicRelayHandler(w http.ResponseWriter, r *http.Request) {
 	var relay *khatru.Relay
 	relayType := r.URL.Path
 
-	if relayType == "" {
-		relay = outboxRelay
-	} else if relayType == "/private" {
+	switch relayType {
+	case "/private":
 		relay = privateRelay
-	} else if relayType == "/chat" {
+	case "/chat":
 		relay = chatRelay
-	} else if relayType == "/inbox" {
+	case "/inbox":
 		relay = inboxRelay
-	} else {
+	case "":
+		relay = outboxRelay
+	default:
 		relay = outboxRelay
 	}
 

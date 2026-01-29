@@ -6,6 +6,7 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
+	"slices"
 	"text/template"
 	"time"
 
@@ -260,10 +261,8 @@ func initRelays() {
 	}
 
 	chatRelay.RejectEvent = append(chatRelay.RejectEvent, func(ctx context.Context, event *nostr.Event) (bool, string) {
-		for _, kind := range allowedKinds {
-			if event.Kind == kind {
-				return false, ""
-			}
+		if slices.Contains(allowedKinds, event.Kind) {
+			return false, ""
 		}
 
 		return true, "only chat related events are allowed"
