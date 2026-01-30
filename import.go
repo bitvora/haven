@@ -163,7 +163,7 @@ func importTaggedNotes(ctx context.Context) {
 		log.Println("🚫 Timeout after", timeout, "while importing tagged notes")
 	}
 
-	log.Println("✅ tagged import complete. please restart the relay")
+	log.Println("✅ tagged import complete")
 }
 
 func subscribeInboxAndChat(ctx context.Context) {

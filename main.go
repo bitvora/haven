@@ -17,7 +17,7 @@ import (
 )
 
 var (
-	pool   = nostr.NewSimplePool(context.TODO(), nostr.WithPenaltyBox())
+	pool   *nostr.SimplePool
 	config = loadConfig()
 	fs     afero.Fs
 )
@@ -40,6 +40,10 @@ func main() {
 	mainCtx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
+	pool = nostr.NewSimplePool(mainCtx, nostr.WithPenaltyBox())
+
+	ensureImportRelays()
+
 	wotModel := wot.NewSimpleInMemory(
 		pool,
 		config.OwnerNpubKey,
@@ -51,16 +55,15 @@ func main() {
 
 	initRelays(mainCtx)
 
+	if *importFlag {
+		log.Println("📦 importing notes")
+		importOwnerNotes(mainCtx)
+		importTaggedNotes(mainCtx)
+		log.Println("🔌 HAVEN is shutting down")
+		return
+	}
+
 	go func() {
-		ensureImportRelays()
-
-		if *importFlag {
-			log.Println("📦 importing notes")
-			importOwnerNotes(mainCtx)
-			importTaggedNotes(mainCtx)
-			return
-		}
-
 		go subscribeInboxAndChat(mainCtx)
 		go backupDatabase(mainCtx)
 		go wot.PeriodicRefresh(mainCtx, config.WotRefreshInterval)
