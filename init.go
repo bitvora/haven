@@ -72,7 +72,7 @@ func newLMDBBackend(path string) *lmdb.LMDBBackend {
 	}
 }
 
-func initRelays() {
+func initRelays(ctx context.Context) {
 	if err := privateDB.Init(); err != nil {
 		panic(err)
 	}
@@ -140,7 +140,7 @@ func initRelays() {
 
 	privateRelay.RejectFilter = append(privateRelay.RejectFilter, func(ctx context.Context, filter nostr.Filter) (bool, string) {
 		authenticatedUser := khatru.GetAuthed(ctx)
-		if authenticatedUser == nPubToPubkey(config.OwnerNpub) {
+		if authenticatedUser == config.OwnerNpubKey {
 			return false, ""
 		}
 
@@ -150,7 +150,7 @@ func initRelays() {
 	privateRelay.RejectEvent = append(privateRelay.RejectEvent, func(ctx context.Context, event *nostr.Event) (bool, string) {
 		authenticatedUser := khatru.GetAuthed(ctx)
 
-		if authenticatedUser == nPubToPubkey(config.OwnerNpub) {
+		if authenticatedUser == config.OwnerNpubKey {
 			return false, ""
 		}
 
@@ -224,46 +224,44 @@ func initRelays() {
 	chatRelay.RejectFilter = append(chatRelay.RejectFilter, func(ctx context.Context, filter nostr.Filter) (bool, string) {
 		authenticatedUser := khatru.GetAuthed(ctx)
 
-		if !wot.GetInstance().Has(authenticatedUser) {
+		if !wot.GetInstance().Has(ctx, authenticatedUser) {
 			return true, "you must be in the web of trust to chat with the relay owner"
 		}
 
 		return false, ""
 	})
 
-	allowedKinds := []int{
+	allowedKinds := map[int]struct{}{
 		// Regular kinds
-		nostr.KindSimpleGroupChatMessage,
-		nostr.KindSimpleGroupThreadedReply,
-		nostr.KindSimpleGroupThread,
-		nostr.KindSimpleGroupReply,
-		nostr.KindChannelMessage,
-		nostr.KindChannelHideMessage,
+		nostr.KindSimpleGroupChatMessage: struct{}{},
+		nostr.KindSimpleGroupThreadedReply: struct{}{},
+		nostr.KindSimpleGroupThread: struct{}{},
+		nostr.KindSimpleGroupReply: struct{}{},
+		nostr.KindChannelMessage: struct{}{},
+		nostr.KindChannelHideMessage: struct{}{},
 
-		nostr.KindGiftWrap,
+		nostr.KindGiftWrap: struct{}{},
 
-		nostr.KindSimpleGroupPutUser,
-		nostr.KindSimpleGroupRemoveUser,
-		nostr.KindSimpleGroupEditMetadata,
-		nostr.KindSimpleGroupDeleteEvent,
-		nostr.KindSimpleGroupCreateGroup,
-		nostr.KindSimpleGroupDeleteGroup,
-		nostr.KindSimpleGroupCreateInvite,
-		nostr.KindSimpleGroupJoinRequest,
-		nostr.KindSimpleGroupLeaveRequest,
+		nostr.KindSimpleGroupPutUser: struct{}{},
+		nostr.KindSimpleGroupRemoveUser: struct{}{},
+		nostr.KindSimpleGroupEditMetadata: struct{}{},
+		nostr.KindSimpleGroupDeleteEvent: struct{}{},
+		nostr.KindSimpleGroupCreateGroup: struct{}{},
+		nostr.KindSimpleGroupDeleteGroup: struct{}{},
+		nostr.KindSimpleGroupCreateInvite: struct{}{},
+		nostr.KindSimpleGroupJoinRequest: struct{}{},
+		nostr.KindSimpleGroupLeaveRequest: struct{}{},
 
 		// Addressable kinds
-		nostr.KindSimpleGroupMetadata,
-		nostr.KindSimpleGroupAdmins,
-		nostr.KindSimpleGroupMembers,
-		nostr.KindSimpleGroupRoles,
+		nostr.KindSimpleGroupMetadata: struct{}{},
+		nostr.KindSimpleGroupAdmins: struct{}{},
+		nostr.KindSimpleGroupMembers: struct{}{},
+		nostr.KindSimpleGroupRoles: struct{}{},
 	}
 
 	chatRelay.RejectEvent = append(chatRelay.RejectEvent, func(ctx context.Context, event *nostr.Event) (bool, string) {
-		for _, kind := range allowedKinds {
-			if event.Kind == kind {
-				return false, ""
-			}
+		if _, has := allowedKinds[event.Kind]; has {
+			return false, ""
 		}
 
 		return true, "only chat related events are allowed"
@@ -324,7 +322,7 @@ func initRelays() {
 	)
 
 	outboxRelay.StoreEvent = append(outboxRelay.StoreEvent, outboxDB.SaveEvent, func(ctx context.Context, event *nostr.Event) error {
-		go blast(event)
+		go blast(ctx, event)
 		return nil
 	})
 	outboxRelay.QueryEvents = append(outboxRelay.QueryEvents, outboxDB.QueryEvents)
@@ -333,7 +331,7 @@ func initRelays() {
 	outboxRelay.ReplaceEvent = append(outboxRelay.ReplaceEvent, outboxDB.ReplaceEvent)
 
 	outboxRelay.RejectEvent = append(outboxRelay.RejectEvent, func(ctx context.Context, event *nostr.Event) (bool, string) {
-		if event.PubKey == nPubToPubkey(config.OwnerNpub) {
+		if event.PubKey == config.OwnerNpubKey {
 			return false, ""
 		}
 		return true, "only notes signed by the owner of this relay are allowed"
@@ -383,13 +381,13 @@ func initRelays() {
 		return fs.Remove(config.BlossomPath + sha256)
 	})
 	bl.RejectUpload = append(bl.RejectUpload, func(ctx context.Context, event *nostr.Event, size int, ext string) (bool, string, int) {
-		if event.PubKey == nPubToPubkey(config.OwnerNpub) {
+		if event.PubKey == config.OwnerNpubKey {
 			return false, ext, size
 		}
 
 		return true, "only notes signed by the owner of this relay are allowed", 403
 	})
-	migrateBlossomMetadata(bl)
+	migrateBlossomMetadata(ctx, bl)
 
 	inboxRelay.Info.Name = config.InboxRelayName
 	inboxRelay.Info.PubKey = nPubToPubkey(config.InboxRelayNpub)
@@ -431,7 +429,7 @@ func initRelays() {
 	inboxRelay.ReplaceEvent = append(inboxRelay.ReplaceEvent, inboxDB.ReplaceEvent)
 
 	inboxRelay.RejectEvent = append(inboxRelay.RejectEvent, func(ctx context.Context, event *nostr.Event) (bool, string) {
-		if !wot.GetInstance().Has(event.PubKey) {
+		if !wot.GetInstance().Has(ctx, event.PubKey) {
 			return true, "you must be in the web of trust to post to this relay"
 		}
 

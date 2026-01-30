@@ -7,13 +7,13 @@ import (
 	"github.com/fiatjaf/khatru/blossom"
 )
 
-func migrateBlossomMetadata(bl *blossom.BlossomServer) {
+func migrateBlossomMetadata(ctx context.Context, bl *blossom.BlossomServer) {
 	// Create a temporary Blossom dbWrapper for the migration
 	outboxDBWrapper := blossom.EventStoreBlobIndexWrapper{Store: outboxDB, ServiceURL: "https://" + config.RelayURL}
 
 	// List all BlobDescriptor for the relay owner pubkey
 	ownerPubkey := nPubToPubkey(config.OwnerNpub)
-	blobsChan, err := outboxDBWrapper.List(context.Background(), ownerPubkey)
+	blobsChan, err := outboxDBWrapper.List(ctx, ownerPubkey)
 	if err != nil {
 		slog.Error("🚫 Failed to list blobs", "error", err)
 		return
@@ -40,13 +40,13 @@ func migrateBlossomMetadata(bl *blossom.BlossomServer) {
 			blob.Type = "application/octet-stream"
 		}
 
-		err := bl.Store.Keep(context.Background(), blob, ownerPubkey)
+		err := bl.Store.Keep(ctx, blob, ownerPubkey)
 		if err != nil {
 			slog.Error("🚫 Failed to store blob in Blossom DB", "sha256", blob.SHA256, "error", err)
 			continue
 		}
 
-		err = outboxDBWrapper.Delete(context.Background(), blob.SHA256, ownerPubkey)
+		err = outboxDBWrapper.Delete(ctx, blob.SHA256, ownerPubkey)
 		if err != nil {
 			slog.Error("🚫 Failed to delete blob from outbox DB", "sha256", blob.SHA256, "error", err)
 		}

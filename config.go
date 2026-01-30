@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/joho/godotenv"
+	"github.com/nbd-wtf/go-nostr/nip19"
 )
 
 type AwsConfig struct {
@@ -33,6 +34,7 @@ type S3Config struct {
 
 type Config struct {
 	OwnerNpub                            string        `json:"owner_npub"`
+	OwnerNpubKey                         string        `json:"owner_npub_key"`
 	DBEngine                             string        `json:"db_engine"`
 	LmdbMapSize                          int64         `json:"lmdb_map_size"`
 	BlossomPath                          string        `json:"blossom_path"`
@@ -81,6 +83,7 @@ func loadConfig() Config {
 
 	return Config{
 		OwnerNpub:                            getEnv("OWNER_NPUB"),
+		OwnerNpubKey:                         nPubToPubkey(getEnv("OWNER_NPUB")),
 		DBEngine:                             getEnvString("DB_ENGINE", "lmdb"),
 		LmdbMapSize:                          getEnvInt64("LMDB_MAPSIZE", 0),
 		BlossomPath:                          getEnvString("BLOSSOM_PATH", "blossom"),
@@ -254,6 +257,14 @@ func getEnvDuration(key string, defaultValue time.Duration) time.Duration {
 		return durationValue
 	}
 	return defaultValue
+}
+
+func nPubToPubkey(nPub string) string {
+	_, v, err := nip19.Decode(nPub)
+	if err != nil {
+		panic(err)
+	}
+	return v.(string)
 }
 
 var art = `

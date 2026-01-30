@@ -8,8 +8,7 @@ import (
 	"github.com/nbd-wtf/go-nostr"
 )
 
-func blast(ev *nostr.Event) {
-	ctx := context.Background()
+func blast(ctx context.Context, ev *nostr.Event) {
 	for _, url := range config.BlastrRelays {
 		ctx, cancel := context.WithTimeout(ctx, time.Second*5)
 		relay, err := pool.EnsureRelay(url)

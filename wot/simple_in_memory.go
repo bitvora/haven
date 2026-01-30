@@ -33,7 +33,7 @@ func NewSimpleInMemory(pool *nostr.SimplePool, ownerPubkey string, seedRelays []
 	}
 }
 
-func (wt *SimpleInMemory) Has(pubkey string) bool {
+func (wt *SimpleInMemory) Has(_ context.Context, pubkey string) bool {
 	m := wt.pubkeys.Load()
 	if m == nil {
 		return false
@@ -41,8 +41,8 @@ func (wt *SimpleInMemory) Has(pubkey string) bool {
 	return (*m)[pubkey]
 }
 
-func (wt *SimpleInMemory) Init() {
-	wt.Refresh(context.Background())
+func (wt *SimpleInMemory) Init(ctx context.Context) {
+	wt.Refresh(ctx)
 }
 
 func (wt *SimpleInMemory) Refresh(ctx context.Context) {

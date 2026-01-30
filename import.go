@@ -38,7 +38,7 @@ func ensureImportRelays() {
 	}
 }
 
-func importOwnerNotes() {
+func importOwnerNotes(ctx context.Context) {
 	ownerImportedNotes := 0
 	nFailedImportNotes := 0
 	wdb := eventstore.RelayWrapper{Store: outboxDB}
@@ -55,14 +55,14 @@ func importOwnerNotes() {
 		endTimestamp := nostr.Timestamp(endTime.Unix())
 
 		filter := nostr.Filter{
-			Authors: []string{nPubToPubkey(config.OwnerNpub)},
+			Authors: []string{config.OwnerNpubKey},
 			Since:   &startTimestamp,
 			Until:   &endTimestamp,
 		}
 
 		done := make(chan int, 1)
 		timeout := time.Duration(config.ImportOwnerNotesFetchTimeoutSeconds) * time.Second
-		ctx, cancel := context.WithTimeout(context.Background(), timeout)
+		ctx, cancel := context.WithTimeout(ctx, timeout)
 
 		go func() {
 			defer cancel()
@@ -110,18 +110,18 @@ func importOwnerNotes() {
 	}
 }
 
-func importTaggedNotes() {
+func importTaggedNotes(ctx context.Context) {
 	taggedImportedNotes := 0
 	done := make(chan struct{}, 1)
 	timeout := time.Duration(config.ImportTaggedNotesFetchTimeoutSeconds) * time.Second
-	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
 	wdbInbox := eventstore.RelayWrapper{Store: inboxDB}
 	wdbChat := eventstore.RelayWrapper{Store: chatDB}
 	filter := nostr.Filter{
 		Tags: nostr.TagMap{
-			"p": {nPubToPubkey(config.OwnerNpub)},
+			"p": {config.OwnerNpubKey},
 		},
 	}
 
@@ -134,14 +134,14 @@ func importTaggedNotes() {
 				break // Stop the loop on timeout
 			}
 
-			if !wot.GetInstance().Has(ev.Event.PubKey) && ev.Kind != nostr.KindGiftWrap {
+			if !wot.GetInstance().Has(ctx, ev.Event.PubKey) && ev.Kind != nostr.KindGiftWrap {
 				continue
 			}
 			for tag := range ev.Tags.FindAll("p") {
 				if len(tag) < 2 {
 					continue
 				}
-				if tag[1] == nPubToPubkey(config.OwnerNpub) {
+				if tag[1] == config.OwnerNpubKey {
 					dbToWrite := wdbInbox
 					if ev.Kind == nostr.KindGiftWrap {
 						dbToWrite = wdbChat
@@ -166,14 +166,13 @@ func importTaggedNotes() {
 	log.Println("✅ tagged import complete. please restart the relay")
 }
 
-func subscribeInboxAndChat() {
-	ctx := context.Background()
+func subscribeInboxAndChat(ctx context.Context) {
 	wdbInbox := eventstore.RelayWrapper{Store: inboxDB}
 	wdbChat := eventstore.RelayWrapper{Store: chatDB}
 	startTime := nostr.Timestamp(time.Now().Add(-time.Minute * 5).Unix())
 	filter := nostr.Filter{
 		Tags: nostr.TagMap{
-			"p": {nPubToPubkey(config.OwnerNpub)},
+			"p": {config.OwnerNpubKey},
 		},
 		Since: &startTime,
 	}
@@ -181,14 +180,14 @@ func subscribeInboxAndChat() {
 	log.Println("📢 subscribing to inbox")
 
 	for ev := range pool.SubscribeMany(ctx, config.ImportSeedRelays, filter) {
-		if !wot.GetInstance().Has(ev.Event.PubKey) && ev.Event.Kind != nostr.KindGiftWrap {
+		if !wot.GetInstance().Has(ctx, ev.Event.PubKey) && ev.Event.Kind != nostr.KindGiftWrap {
 			continue
 		}
 		for tag := range ev.Event.Tags.FindAll("p") {
 			if len(tag) < 2 {
 				continue
 			}
-			if tag[1] == nPubToPubkey(config.OwnerNpub) {
+			if tag[1] == config.OwnerNpubKey {
 				dbToPublish := wdbInbox
 				if ev.Event.Kind == nostr.KindGiftWrap {
 					dbToPublish = wdbChat
