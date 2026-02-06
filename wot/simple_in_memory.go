@@ -46,7 +46,7 @@ func (wt *SimpleInMemory) Init(ctx context.Context) {
 }
 
 func (wt *SimpleInMemory) Refresh(ctx context.Context) {
-	pubkeyFollowerCount := xsync.NewMap[string, *atomic.Int64]()
+	pubkeyFollowers := xsync.NewMap[string, *xsync.Map[string, bool]]()
 	relaysDiscovered := xsync.NewMap[string, bool]()
 	oneHopNetwork := make(map[string]bool)
 
@@ -62,8 +62,8 @@ func (wt *SimpleInMemory) Refresh(ctx context.Context) {
 	events := wt.Pool.FetchMany(timeoutCtx, wt.SeedRelays, filter)
 	for ev := range events {
 		for contact := range ev.Event.Tags.FindAll("p") {
-			val, _ := pubkeyFollowerCount.LoadOrStore(contact[1], &atomic.Int64{})
-			val.Add(1)
+			followers, _ := pubkeyFollowers.LoadOrStore(contact[1], xsync.NewMap[string, bool]())
+			followers.Store(ev.Event.PubKey, true)
 			oneHopNetwork[contact[1]] = true
 		}
 	}
@@ -88,8 +88,8 @@ func (wt *SimpleInMemory) Refresh(ctx context.Context) {
 				eventsAnalysed.Add(1)
 				for contact := range ev.Tags.FindAll("p") {
 					if len(contact) > 1 {
-						pubkeyFollowersCount, _ := pubkeyFollowerCount.LoadOrStore(contact[1], &atomic.Int64{})
-						pubkeyFollowersCount.Add(1)
+						followers, _ := pubkeyFollowers.LoadOrStore(contact[1], xsync.NewMap[string, bool]())
+						followers.Store(ev.PubKey, true)
 					}
 				}
 
@@ -118,15 +118,15 @@ func (wt *SimpleInMemory) Refresh(ctx context.Context) {
 
 	// Filter out pubkeys with less than minimum followers
 	newPubkeys := make(map[string]bool)
-	minimumFollowers := int64(wt.MinFollowers)
-	pubkeyFollowerCount.Range(func(pubkey string, count *atomic.Int64) bool {
-		if count.Load() >= minimumFollowers {
+	minimumFollowers := wt.MinFollowers
+	pubkeyFollowers.Range(func(pubkey string, followers *xsync.Map[string, bool]) bool {
+		if followers.Size() >= minimumFollowers {
 			newPubkeys[pubkey] = true
 		}
 		return true
 	})
 
-	slog.Info("🫥 eliminating pubkeys without minimum followers", "minimum", wt.MinFollowers, "kept", len(newPubkeys))
+	slog.Info("🫥 eliminated pubkeys without minimum followers", "minimum", wt.MinFollowers, "kept", len(newPubkeys))
 
 	wt.pubkeys.Store(&newPubkeys)
 }
