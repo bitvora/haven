@@ -1,7 +1,9 @@
 package wot
 
 import (
+	"cmp"
 	"context"
+	"fmt"
 	"log/slog"
 	"maps"
 	"slices"
@@ -114,7 +116,52 @@ func (wt *SimpleInMemory) Refresh(ctx context.Context) {
 		processBatch(batch)
 	}
 
-	slog.Info("📈 totals", "🫂pubkeys", pubkeyFollowerCount.Size(), "🔗relays", relaysDiscovered.Size())
+	slog.Info("📈 totals", "🫂pubkeys", pubkeyFollowers.Size(), "🔗relays", relaysDiscovered.Size())
+
+	// Log Top N pubkeys by follower count for debugging purposes
+	if slog.Default().Enabled(ctx, slog.LevelDebug) {
+		type pubkeyCount struct {
+			pubkey string
+			count  int
+		}
+		const topN = 20
+
+		h := make([]pubkeyCount, 0, topN+1)
+
+		pubkeyFollowers.Range(func(pubkey string, followers *xsync.Map[string, bool]) bool {
+			count := followers.Size()
+			if len(h) < topN {
+				h = append(h, pubkeyCount{pubkey, count})
+				if len(h) == topN {
+					slices.SortFunc(h, func(a, b pubkeyCount) int {
+						if n := cmp.Compare(a.count, b.count); n != 0 {
+							return n
+						}
+						return cmp.Compare(b.pubkey, a.pubkey)
+					})
+				}
+			} else if count > h[0].count || (count == h[0].count && pubkey < h[0].pubkey) {
+				h[0] = pubkeyCount{pubkey, count}
+				// Keep it sorted or use a proper heap. For a small value of N, keeping it sorted is simple.
+				// Since we only replaced the smallest element, we can just "bubble up" that element to restore order.
+				for i := 0; i < len(h)-1; i++ {
+					if h[i].count > h[i+1].count || (h[i].count == h[i+1].count && h[i].pubkey < h[i+1].pubkey) {
+						h[i], h[i+1] = h[i+1], h[i]
+					} else {
+						break
+					}
+				}
+			}
+			return true
+		})
+
+		slices.Reverse(h)
+
+		slog.Debug(fmt.Sprintf("📊 WoT top %d pubkeys by follower count", topN))
+		for _, c := range h {
+			slog.Debug("👤", "pubkey", c.pubkey, "count", c.count)
+		}
+	}
 
 	// Filter out pubkeys with less than minimum followers
 	newPubkeys := make(map[string]bool)
