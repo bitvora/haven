@@ -48,6 +48,9 @@ func (wt *SimpleInMemory) Init(ctx context.Context) {
 }
 
 func (wt *SimpleInMemory) Refresh(ctx context.Context) {
+	slog.Info("🛜 fetching Nostr events to build WoT")
+
+	var eventsAnalysed atomic.Int64
 	pubkeyFollowers := xsync.NewMap[string, *xsync.Map[string, bool]]()
 	relaysDiscovered := xsync.NewMap[string, bool]()
 	oneHopNetwork := make(map[string]bool)
@@ -62,16 +65,15 @@ func (wt *SimpleInMemory) Refresh(ctx context.Context) {
 	}
 
 	events := wt.Pool.FetchMany(timeoutCtx, wt.SeedRelays, filter)
-	for ev := range events {
-		for contact := range ev.Event.Tags.FindAll("p") {
+	for ev := range latestEventByKindAndPubkey(timeoutCtx, events, &eventsAnalysed) {
+		for contact := range ev.Tags.FindAll("p") {
 			followers, _ := pubkeyFollowers.LoadOrStore(contact[1], xsync.NewMap[string, bool]())
-			followers.Store(ev.Event.PubKey, true)
+			followers.Store(ev.PubKey, true)
 			oneHopNetwork[contact[1]] = true
 		}
 	}
 
-	slog.Info("🛜 fetching Nostr events to build WoT")
-	var eventsAnalysed atomic.Int64
+	slog.Info("🕸️ analysing Nostr events", "count", eventsAnalysed.Load())
 
 	processBatch := func(pubkeys []string) {
 		timeoutCtx, cancel := context.WithTimeout(ctx, timeout)
@@ -86,8 +88,7 @@ func (wt *SimpleInMemory) Refresh(ctx context.Context) {
 			defer cancel()
 
 			events := wt.Pool.FetchMany(timeoutCtx, wt.SeedRelays, filter)
-			for ev := range events {
-				eventsAnalysed.Add(1)
+			for ev := range latestEventByKindAndPubkey(timeoutCtx, events, &eventsAnalysed) {
 				for contact := range ev.Tags.FindAll("p") {
 					if len(contact) > 1 {
 						followers, _ := pubkeyFollowers.LoadOrStore(contact[1], xsync.NewMap[string, bool]())
@@ -176,4 +177,32 @@ func (wt *SimpleInMemory) Refresh(ctx context.Context) {
 	slog.Info("🫥 eliminated pubkeys without minimum followers", "minimum", wt.MinFollowers, "kept", len(newPubkeys))
 
 	wt.pubkeys.Store(&newPubkeys)
+}
+
+func latestEventByKindAndPubkey(ctx context.Context, events <-chan nostr.RelayEvent, counter *atomic.Int64) <-chan nostr.RelayEvent {
+	ch := make(chan nostr.RelayEvent)
+	go func() {
+		defer close(ch)
+		latestEvents := make(map[string]nostr.RelayEvent)
+		for ev := range events {
+			select {
+			case <-ctx.Done():
+				return
+			default:
+				counter.Add(1)
+				key := fmt.Sprintf("%d:%s", ev.Kind, ev.PubKey)
+				if old, ok := latestEvents[key]; !ok || ev.CreatedAt > old.CreatedAt {
+					latestEvents[key] = ev
+				}
+			}
+		}
+		for _, ev := range latestEvents {
+			select {
+			case <-ctx.Done():
+				return
+			case ch <- ev:
+			}
+		}
+	}()
+	return ch
 }
