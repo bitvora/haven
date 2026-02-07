@@ -214,6 +214,8 @@ func (wt *SimpleInMemory) Refresh(ctx context.Context) {
 		}
 	}
 
+	slog.Debug("🫥 pruning pubkeys without minimum common followers", "minimum", wt.MinFollowers)
+
 	// Filter out pubkeys with less than minimum followers
 	minimumFollowers := wt.MinFollowers
 	pubkeyFollowers.Range(func(pubkey string, followers *xsync.Map[string, bool]) bool {
@@ -223,7 +225,7 @@ func (wt *SimpleInMemory) Refresh(ctx context.Context) {
 		return true
 	})
 
-	slog.Info("🫥 eliminated pubkeys without minimum followers", "minimum", wt.MinFollowers, "kept", len(newWot))
+	slog.Info("🫥 pruning completed", "🫂kept", len(newWot), "🗑️eliminated", pubkeyFollowers.Size()-len(newWot))
 
 	wt.pubkeys.Store(&newWot)
 }
