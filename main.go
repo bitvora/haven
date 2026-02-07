@@ -48,8 +48,9 @@ func main() {
 		pool,
 		config.OwnerNpubKey,
 		config.ImportSeedRelays,
-		config.WotFetchTimeoutSeconds,
+		config.WotDepth,
 		config.ChatRelayMinimumFollowers,
+		config.WotFetchTimeoutSeconds,
 	)
 	wot.Initialize(mainCtx, wotModel)
 

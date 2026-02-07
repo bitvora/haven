@@ -16,7 +16,11 @@ HAVEN (High Availability Vault for Events on Nostr) is the most sovereign person
 
 ## Not So Dumb Relay Features
 
-**Web of Trust**: Protected from DM and Inbox spam by using a web of trust.
+**Web of Trust**: Protected from DM and Inbox spam by using a Web of Trust (WoT). The WoT depth can be configured using the `WOT_DEPTH` environment variable:
+- **Level 0**: Disabled. The relay is public, and anyone can write to the Inbox and Chat relays.
+- **Level 1**: Private. Only the relay owner can write to the Inbox and Chat relays.
+- **Level 2**: Following. Only the relay owner and the people they follow directly can write to the Inbox and Chat relays.
+- **Level 3**: Connection of Connections. The relay owner, the people they follow, and the people followed by them (with a minimum number of common followers) can write to the Inbox and Chat relays. This is the default setting.
 
 **Inbox Relay**: Notes are pulled from other relays and stored in the inbox relay.
 

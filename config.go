@@ -51,7 +51,6 @@ type Config struct {
 	ChatRelayNpub                        string        `json:"chat_relay_npub"`
 	ChatRelayDescription                 string        `json:"chat_relay_description"`
 	ChatRelayIcon                        string        `json:"chat_relay_icon"`
-	ChatRelayWotDepth                    int           `json:"chat_relay_wot_depth"`
 	ChatRelayMinimumFollowers            int           `json:"chat_relay_minimum_followers"`
 	OutboxRelayName                      string        `json:"outbox_relay_name"`
 	OutboxRelayNpub                      string        `json:"outbox_relay_npub"`
@@ -69,6 +68,7 @@ type Config struct {
 	ImportSeedRelays                     []string      `json:"import_seed_relays"`
 	BackupProvider                       string        `json:"backup_provider"`
 	BackupIntervalHours                  int           `json:"backup_interval_hours"`
+	WotDepth                             int           `json:"wot_depth"`
 	WotFetchTimeoutSeconds               int           `json:"wot_fetch_timeout_seconds"`
 	WotRefreshInterval                   time.Duration `json:"wot_refresh_interval"`
 	LogLevel                             string        `json:"log_level"`
@@ -100,7 +100,6 @@ func loadConfig() Config {
 		ChatRelayNpub:                        getEnv("CHAT_RELAY_NPUB"),
 		ChatRelayDescription:                 getEnv("CHAT_RELAY_DESCRIPTION"),
 		ChatRelayIcon:                        getEnv("CHAT_RELAY_ICON"),
-		ChatRelayWotDepth:                    getEnvInt("CHAT_RELAY_WOT_DEPTH", 0),
 		ChatRelayMinimumFollowers:            getEnvInt("CHAT_RELAY_MINIMUM_FOLLOWERS", 0),
 		OutboxRelayName:                      getEnv("OUTBOX_RELAY_NAME"),
 		OutboxRelayNpub:                      getEnv("OUTBOX_RELAY_NPUB"),
@@ -118,6 +117,7 @@ func loadConfig() Config {
 		ImportSeedRelays:                     getRelayListFromFile(getEnv("IMPORT_SEED_RELAYS_FILE")),
 		BackupProvider:                       getEnv("BACKUP_PROVIDER"),
 		BackupIntervalHours:                  getEnvInt("BACKUP_INTERVAL_HOURS", 24),
+		WotDepth:                             getEnvInt("WOT_DEPTH", 3),
 		WotFetchTimeoutSeconds:               getEnvInt("WOT_FETCH_TIMEOUT_SECONDS", 30),
 		WotRefreshInterval:                   getEnvDuration("WOT_REFRESH_INTERVAL", 24*time.Hour),
 		LogLevel:                             getEnvString("HAVEN_LOG_LEVEL", "INFO"),

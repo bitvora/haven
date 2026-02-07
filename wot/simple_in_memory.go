@@ -14,6 +14,8 @@ import (
 	"github.com/puzpuzpuz/xsync/v4"
 )
 
+const DefaultWotLevel = 3
+
 type SimpleInMemory struct {
 	pubkeys atomic.Pointer[map[string]bool]
 
@@ -21,21 +23,26 @@ type SimpleInMemory struct {
 	Pool            *nostr.SimplePool
 	OwnerPubkey     string
 	SeedRelays      []string
-	WotFetchTimeout int
+	WotDepth        int
 	MinFollowers    int
+	WotFetchTimeout int
 }
 
-func NewSimpleInMemory(pool *nostr.SimplePool, ownerPubkey string, seedRelays []string, wotFetchTimeout int, minFollowers int) *SimpleInMemory {
+func NewSimpleInMemory(pool *nostr.SimplePool, ownerPubkey string, seedRelays []string, wotDepth int, minFollowers int, wotFetchTimeout int) *SimpleInMemory {
 	return &SimpleInMemory{
 		Pool:            pool,
 		OwnerPubkey:     ownerPubkey,
 		SeedRelays:      seedRelays,
-		WotFetchTimeout: wotFetchTimeout,
+		WotDepth:        wotDepth,
 		MinFollowers:    minFollowers,
+		WotFetchTimeout: wotFetchTimeout,
 	}
 }
 
 func (wt *SimpleInMemory) Has(_ context.Context, pubkey string) bool {
+	if wt.WotDepth == 0 {
+		return true
+	}
 	m := wt.pubkeys.Load()
 	if m == nil {
 		return false
@@ -44,16 +51,44 @@ func (wt *SimpleInMemory) Has(_ context.Context, pubkey string) bool {
 }
 
 func (wt *SimpleInMemory) Init(ctx context.Context) {
+	switch wt.WotDepth {
+	case 0:
+		slog.Info("Web of Trust Level 0 -> Disabled (Public Relay)")
+	case 1:
+		slog.Info("Web of Trust Level 1 -> Private Relay for the Owner")
+	case 2:
+		slog.Info("Web of Trust Level 2 -> Only pubkeys that the relay Owner is following directly can write to Inbox and Chat relays")
+	case 3:
+		slog.Info("Web of Trust Level 3 -> Connection of Connections (owner, follows, and their follows) with", "minFollowers", wt.MinFollowers)
+	default:
+		slog.Error("🚫 Web of Trust level not supported, must be between 0 and 3", "level", wt.WotDepth)
+		slog.Info("Using default Web of Trust Level")
+		wt.WotDepth = DefaultWotLevel
+		slog.Info("Web of Trust Level 3 -> Connection of Connections (owner, follows, and their follows) with", "minFollowers", wt.MinFollowers)
+
+	}
 	wt.Refresh(ctx)
 }
 
 func (wt *SimpleInMemory) Refresh(ctx context.Context) {
-	slog.Info("🛜 fetching Nostr events to build WoT")
+	if wt.WotDepth == 0 {
+		return
+	}
 
 	var eventsAnalysed atomic.Int64
 	pubkeyFollowers := xsync.NewMap[string, *xsync.Map[string, bool]]()
 	relaysDiscovered := xsync.NewMap[string, bool]()
 	oneHopNetwork := make(map[string]bool)
+	newWot := make(map[string]bool)
+
+	if wt.WotDepth >= 1 {
+		newWot[wt.OwnerPubkey] = true
+	}
+
+	if wt.WotDepth == 1 {
+		wt.pubkeys.Store(&newWot)
+		return
+	}
 
 	timeout := time.Duration(wt.WotFetchTimeout) * time.Second
 	timeoutCtx, cancel := context.WithTimeout(ctx, timeout)
@@ -64,13 +99,28 @@ func (wt *SimpleInMemory) Refresh(ctx context.Context) {
 		Kinds:   []int{nostr.KindFollowList},
 	}
 
+	slog.Info("🛜 fetching Nostr events to build WoT")
+
 	events := wt.Pool.FetchMany(timeoutCtx, wt.SeedRelays, filter)
 	for ev := range latestEventByKindAndPubkey(timeoutCtx, events, &eventsAnalysed) {
 		for contact := range ev.Tags.FindAll("p") {
-			followers, _ := pubkeyFollowers.LoadOrStore(contact[1], xsync.NewMap[string, bool]())
-			followers.Store(ev.PubKey, true)
-			oneHopNetwork[contact[1]] = true
+			if len(contact) > 1 {
+				if wt.WotDepth == 2 {
+					newWot[contact[1]] = true
+				} else {
+					followers, _ := pubkeyFollowers.LoadOrStore(contact[1], xsync.NewMap[string, bool]())
+					followers.Store(ev.PubKey, true)
+					oneHopNetwork[contact[1]] = true
+				}
+			}
 		}
+	}
+
+	if wt.WotDepth == 2 {
+		slog.Info("🕸️ analysed Nostr events", "count", eventsAnalysed.Load())
+		slog.Info("📈 Found direct followers in import relays", "🫂pubkeys", len(newWot), "🔗relays", len(wt.SeedRelays))
+		wt.pubkeys.Store(&newWot)
+		return
 	}
 
 	slog.Info("🕸️ analysing Nostr events", "count", eventsAnalysed.Load())
@@ -165,18 +215,17 @@ func (wt *SimpleInMemory) Refresh(ctx context.Context) {
 	}
 
 	// Filter out pubkeys with less than minimum followers
-	newPubkeys := make(map[string]bool)
 	minimumFollowers := wt.MinFollowers
 	pubkeyFollowers.Range(func(pubkey string, followers *xsync.Map[string, bool]) bool {
 		if followers.Size() >= minimumFollowers {
-			newPubkeys[pubkey] = true
+			newWot[pubkey] = true
 		}
 		return true
 	})
 
-	slog.Info("🫥 eliminated pubkeys without minimum followers", "minimum", wt.MinFollowers, "kept", len(newPubkeys))
+	slog.Info("🫥 eliminated pubkeys without minimum followers", "minimum", wt.MinFollowers, "kept", len(newWot))
 
-	wt.pubkeys.Store(&newPubkeys)
+	wt.pubkeys.Store(&newWot)
 }
 
 func latestEventByKindAndPubkey(ctx context.Context, events <-chan nostr.RelayEvent, counter *atomic.Int64) <-chan nostr.RelayEvent {
