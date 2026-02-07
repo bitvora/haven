@@ -118,7 +118,7 @@ func (wt *SimpleInMemory) Refresh(ctx context.Context) {
 
 	if wt.WotDepth == 2 {
 		slog.Info("🕸️ analysed Nostr events", "count", eventsAnalysed.Load())
-		slog.Info("📈 Found direct followers in import relays", "🫂pubkeys", len(newWot), "🔗relays", len(wt.SeedRelays))
+		slog.Info("📈 direct followers in import relays", "🫂pubkeys", len(newWot), "🔗relays", len(wt.SeedRelays))
 		wt.pubkeys.Store(&newWot)
 		return
 	}

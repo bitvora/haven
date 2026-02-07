@@ -49,7 +49,7 @@ func main() {
 		config.OwnerNpubKey,
 		config.ImportSeedRelays,
 		config.WotDepth,
-		config.ChatRelayMinimumFollowers,
+		config.WotMinimumFollowers,
 		config.WotFetchTimeoutSeconds,
 	)
 	wot.Initialize(mainCtx, wotModel)
