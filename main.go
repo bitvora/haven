@@ -23,7 +23,10 @@ var (
 )
 
 func main() {
+	defer log.Println("🔌 HAVEN is shutting down")
 	importFlag := flag.Bool("import", false, "Run the importNotes function after initializing relays")
+	importJSONLFlag := flag.Bool("import-jsonl", false, "Import relay data from a jsonl zip file")
+	exportFlag := flag.Bool("export-jsonl", false, "Export all relay data to a jsonl zip file")
 	flag.Parse()
 
 	nostr.InfoLogger = log.New(io.Discard, "", 0)
@@ -60,7 +63,16 @@ func main() {
 		log.Println("📦 importing notes")
 		importOwnerNotes(mainCtx)
 		importTaggedNotes(mainCtx)
-		log.Println("🔌 HAVEN is shutting down")
+		return
+	}
+
+	if *importJSONLFlag {
+		importJSONL(mainCtx)
+		return
+	}
+
+	if *exportFlag {
+		exportJSONL(mainCtx)
 		return
 	}
 
