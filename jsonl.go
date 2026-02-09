@@ -3,12 +3,15 @@ package main
 import (
 	"archive/zip"
 	"bufio"
+	"cmp"
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"log/slog"
 	"os"
+	"slices"
 	"time"
 
 	"github.com/fiatjaf/eventstore"
@@ -56,10 +59,10 @@ func importJSONL(ctx context.Context) {
 
 		if err := importDB(ctx, db, rc); err != nil {
 			slog.Error("❌ error importing", "file", file.Name, "error", err)
-			rc.Close()
+			_ = rc.Close()
 			return
 		}
-		rc.Close()
+		_ = rc.Close()
 	}
 
 	slog.Info("✅ import complete", "file", zipFileName)
@@ -117,10 +120,20 @@ func exportJSONL(ctx context.Context) {
 		slog.Error("❌ error creating zip file", "error", err)
 		return
 	}
-	defer zipFile.Close()
+	defer func(zipFile *os.File) {
+		err := zipFile.Close()
+		if err != nil {
+			slog.Error("❌ error closing zip file", "error", err)
+		}
+	}(zipFile)
 
 	zipWriter := zip.NewWriter(zipFile)
-	defer zipWriter.Close()
+	defer func(zipWriter *zip.Writer) {
+		err := zipWriter.Close()
+		if err != nil {
+			slog.Error("❌ error closing zip writer", "error", err)
+		}
+	}(zipWriter)
 
 	for _, entry := range dbs {
 		slog.Info("📦 exporting db to file", "file", entry.name)
@@ -143,18 +156,26 @@ func exportJSONL(ctx context.Context) {
 		}
 	}
 
-	if err := zipWriter.Close(); err != nil {
-		slog.Error("❌ error closing zip writer", "error", err)
-		return
-	}
-
 	slog.Info("✅ export complete", "file", zipFileName)
 }
 
 func exportDB(ctx context.Context, db DBBackend, w io.Writer) error {
+	const limit = 1000
 	var lastTimestamp nostr.Timestamp
-	var lastID string
-	limit := 1000
+	count := 0
+
+	var eventBuffer []*nostr.Event
+
+	flushBuffer := func() error {
+		for _, e := range eventBuffer {
+			if _, err := fmt.Fprintln(w, e); err != nil {
+				return err
+			}
+			count++
+		}
+		eventBuffer = eventBuffer[:0]
+		return nil
+	}
 
 	for {
 		filter := nostr.Filter{
@@ -169,43 +190,48 @@ func exportDB(ctx context.Context, db DBBackend, w io.Writer) error {
 			return err
 		}
 
-		count := 0
-		var currentLastEvent *nostr.Event
-		foundLastID := (lastID == "")
+		initialCount := count
+		initialBufferSize := len(eventBuffer)
 
 		for event := range events {
-			if !foundLastID {
-				if event.ID == lastID {
-					slog.Debug("🔍 found last ID", "id", lastID)
-					foundLastID = true
-				} else {
-					slog.Debug("⏭️ skipping event", "id", event.ID, "lastID", lastID)
+			if len(eventBuffer) > 0 && event.CreatedAt != eventBuffer[0].CreatedAt {
+				if err := flushBuffer(); err != nil {
+					return err
 				}
-				continue
 			}
 
-			line, err := json.Marshal(event)
-			if err != nil {
-				return err
-			}
-			if _, err := w.Write(line); err != nil {
-				return err
-			}
-			if _, err := w.Write([]byte("\n")); err != nil {
-				return err
+			// Insert into eventBuffer maintaining ID order and skipping duplicates.
+			// This works around eventstore LMDB backend that don't guarantee NIP-01
+			// REQ order when paginating with a limit.
+			//
+			// This ensures that:
+			// 1. Identical JSONL exports are produced (checksum guarantee) regardless of the
+			//    underlying DB implementation.
+			// 2. Roundtrip consistency is maintained when importing back into a DB, even
+			//    if the original source had duplicates (e.g. due to bugs in older versions
+			//    of eventstore and khatru).
+			pos, found := slices.BinarySearchFunc(eventBuffer, event, func(a, b *nostr.Event) int {
+				return cmp.Compare(a.ID, b.ID)
+			})
+			if !found {
+				eventBuffer = slices.Insert(eventBuffer, pos, event)
+			} else {
+				slog.Debug("⏭️ skipping duplicated event", "id", event.ID)
 			}
 
-			currentLastEvent = event
-			count++
+			lastTimestamp = event.CreatedAt
 		}
 
-		if count == 0 {
+		if count == initialCount && len(eventBuffer) == initialBufferSize {
 			break
 		}
-
-		lastTimestamp = currentLastEvent.CreatedAt
-		lastID = currentLastEvent.ID
 	}
+
+	if err := flushBuffer(); err != nil {
+		return err
+	}
+
+	slog.Info("📤 exported events", "count", count)
 
 	return nil
 }
