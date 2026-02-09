@@ -26,6 +26,8 @@ HAVEN (High Availability Vault for Events on Nostr) is the most sovereign person
 
 **Import Old Notes**: Import your old notes and notes you're tagged in from other relays.
 
+**JSONL Export/Import**: It is your data, export to JSONL at any time. See the [JSONL Documentation](docs/jsonl.md) for more details.
+
 ## Installation
 
 ### Option 1: Download Pre-built Binaries (Recommended)
@@ -324,23 +326,7 @@ sudo systemctl stop haven
 sudo systemctl start haven
 ```
 
-### 9. Export and Import JSONL (optional)
-
-If you want to export all relay data to a JSONL zip file, run the following command:
-
-```bash
-./haven --export-jsonl
-```
-
-This will create a `haven_export.zip` file in your current directory.
-
-To import data from a `haven_export.zip` file, run:
-
-```bash
-./haven --import-jsonl
-```
-
-### 10. Access the relay
+### 9. Access the relay
 
 Once everything is set up, the relay will be running on `localhost:3355` with the following endpoints:
 
