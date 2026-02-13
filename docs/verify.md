@@ -71,8 +71,6 @@ If you encounter any issues during verification, please:
 2. Check that you've imported the PGP keys correctly
 3. Verify that you're using the correct commands for your operating system
 
-Here’s a cleaned-up version of your session with some grammar, spelling, flow, and clarity improvements while keeping your technical tone and structure intact.
-
 ---
 
 ### GPG trust and the "not certified with a trusted signature" warning
@@ -123,7 +121,7 @@ attestations.
     gpg --keyserver hkps://keys.openpgp.org --recv-keys 19243581B019B2452DA2F82870FF859890221E23
     ```
 
-2Sign Haven’s key with your own key:
+2. Sign Haven’s key with your own key:
 
     ```bash
     gpg --local-user YOUR_SIGNING_KEY_ID --sign-key 19243581B019B2452DA2F82870FF859890221E23
