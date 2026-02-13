@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"log"
 	"log/slog"
@@ -36,6 +37,23 @@ func ensureImportRelays() {
 		slog.Warn("⚠️ Some relays failed to connect, proceeding, but this may cause issues")
 		slog.Info("ℹ️ If you always see this message during startup, consider removing the relays that are not working from your relays_import.json file")
 	}
+}
+
+func runImport(ctx context.Context) {
+	importCmd := flag.NewFlagSet("import", flag.ExitOnError)
+	importCmd.Usage = func() {
+		_, _ = fmt.Fprintf(os.Stderr, "Usage of import:\n")
+		importCmd.PrintDefaults()
+	}
+	err := importCmd.Parse(os.Args[2:])
+	if err != nil {
+		log.Fatal("🚫 failed to parse import command:", err)
+		return
+	}
+
+	log.Println("📦 importing notes")
+	importOwnerNotes(ctx)
+	importTaggedNotes(ctx)
 }
 
 func importOwnerNotes(ctx context.Context) {

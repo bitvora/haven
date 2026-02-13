@@ -114,7 +114,7 @@ func loadConfig() Config {
 		ImportTaggedNotesFetchTimeoutSeconds: getEnvInt("IMPORT_TAGGED_NOTES_FETCH_TIMEOUT_SECONDS", 120),
 		ImportQueryIntervalSeconds:           getEnvInt("IMPORT_QUERY_INTERVAL_SECONDS", 360000),
 		ImportSeedRelays:                     getRelayListFromFile(getEnv("IMPORT_SEED_RELAYS_FILE")),
-		BackupProvider:                       getEnv("BACKUP_PROVIDER"),
+		BackupProvider:                       getEnvString("BACKUP_PROVIDER", "none"),
 		BackupIntervalHours:                  getEnvInt("BACKUP_INTERVAL_HOURS", 24),
 		WotDepth:                             getEnvInt("WOT_DEPTH", 3),
 		WotMinimumFollowers:                  getEnvInt("WOT_MINIMUM_FOLLOWERS", 0),
@@ -137,7 +137,7 @@ func getVersion() string {
 }
 
 func getAwsConfig() *AwsConfig {
-	backupProvider := getEnv("BACKUP_PROVIDER")
+	backupProvider := getEnvString("BACKUP_PROVIDER", "none")
 
 	if backupProvider == "aws" {
 		return &AwsConfig{
@@ -152,7 +152,7 @@ func getAwsConfig() *AwsConfig {
 }
 
 func getS3Config() *S3Config {
-	backupProvider := getEnv("BACKUP_PROVIDER")
+	backupProvider := getEnvString("BACKUP_PROVIDER", "none")
 
 	if backupProvider == "s3" {
 		return &S3Config{
@@ -168,7 +168,7 @@ func getS3Config() *S3Config {
 }
 
 func getGcpConfig() *GcpConfig {
-	backupProvider := getEnv("BACKUP_PROVIDER")
+	backupProvider := getEnvString("BACKUP_PROVIDER", "none")
 
 	if backupProvider == "gcp" {
 		return &GcpConfig{

@@ -8,6 +8,7 @@ import (
 	"log"
 	"log/slog"
 	"net/http"
+	"os"
 
 	"github.com/fiatjaf/khatru"
 	"github.com/nbd-wtf/go-nostr"
@@ -24,10 +25,6 @@ var (
 
 func main() {
 	defer log.Println("🔌 HAVEN is shutting down")
-	importFlag := flag.Bool("import", false, "Run the importNotes function after initializing relays")
-	importJSONLFlag := flag.Bool("import-jsonl", false, "Import relay data from a jsonl zip file")
-	exportFlag := flag.Bool("export-jsonl", false, "Export all relay data to a jsonl zip file")
-	flag.Parse()
 
 	nostr.InfoLogger = log.New(io.Discard, "", 0)
 	slog.SetLogLoggerLevel(getLogLevelFromConfig())
@@ -35,13 +32,14 @@ func main() {
 	reset := "\033[0m"
 	fmt.Println(green + art + reset)
 	log.Println("🚀 HAVEN", config.RelayVersion, "is booting up")
+
+	mainCtx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
 	fs = afero.NewOsFs()
 	if err := fs.MkdirAll(config.BlossomPath, 0755); err != nil {
 		log.Fatal("🚫 error creating blossom path:", err)
 	}
-
-	mainCtx, cancel := context.WithCancel(context.Background())
-	defer cancel()
 
 	pool = nostr.NewSimplePool(mainCtx, nostr.WithPenaltyBox())
 
@@ -59,26 +57,41 @@ func main() {
 
 	initRelays(mainCtx)
 
-	if *importFlag {
-		log.Println("📦 importing notes")
-		importOwnerNotes(mainCtx)
-		importTaggedNotes(mainCtx)
-		return
+	if len(os.Args) > 1 {
+		switch os.Args[1] {
+		case "backup":
+			runBackup(mainCtx)
+			return
+		case "restore":
+			runRestore(mainCtx)
+			return
+		case "import":
+			runImport(mainCtx)
+			return
+		case "help":
+			fmt.Println("usage: haven [backup|restore|import|help]")
+			fmt.Println("  backup  - backup the database")
+			fmt.Println("  restore - restore the database")
+			fmt.Println("  import  - import notes from seed relays")
+			fmt.Println("  help    - show this help message")
+			return
+		}
+
+		if os.Args[1] == "-h" || os.Args[1] == "--help" {
+			fmt.Println("usage: haven [backup|restore|import|help]")
+			fmt.Println("  backup  - backup the database")
+			fmt.Println("  restore - restore the database")
+			fmt.Println("  import  - import notes from seed relays")
+			fmt.Println("  help    - show this help message")
+			return
+		}
 	}
 
-	if *importJSONLFlag {
-		importJSONL(mainCtx)
-		return
-	}
-
-	if *exportFlag {
-		exportJSONL(mainCtx)
-		return
-	}
+	flag.Parse()
 
 	go func() {
 		go subscribeInboxAndChat(mainCtx)
-		go backupDatabase(mainCtx)
+		go startPeriodicCloudBackups(mainCtx)
 		go wot.PeriodicRefresh(mainCtx, config.WotRefreshInterval)
 	}()
 

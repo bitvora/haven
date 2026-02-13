@@ -1,12 +1,12 @@
 package main
 
 import (
-	"archive/zip"
 	"context"
+	"flag"
 	"io"
 	"log"
 	"os"
-	"path/filepath"
+	"strings"
 	"time"
 
 	"cloud.google.com/go/storage"
@@ -14,7 +14,142 @@ import (
 	"github.com/minio/minio-go/v7/pkg/credentials"
 )
 
-func backupDatabase(ctx context.Context) {
+func runBackup(ctx context.Context) {
+	backupCmd := flag.NewFlagSet("backup", flag.ExitOnError)
+	relay := backupCmd.String("relay", "", "Relay name (use then the file parameter ends in jsonl)")
+	relayShort := backupCmd.String("r", "", "Relay name (shorthand)")
+	output := backupCmd.String("output", "", "Output file (shorthand)")
+	outputShort := backupCmd.String("o", "", "Output file (shorthand)")
+
+	args := os.Args[2:]
+	var flags []string
+	var positionals []string
+	for i := 0; i < len(args); i++ {
+		arg := args[i]
+		if strings.HasPrefix(arg, "-") {
+			flags = append(flags, arg)
+			// Check if it's a flag that takes a value
+			// In our case, all flags (relay, r, output, o) take values.
+			if !strings.Contains(arg, "=") && i+1 < len(args) && !strings.HasPrefix(args[i+1], "-") {
+				flags = append(flags, args[i+1])
+				i++
+			}
+		} else {
+			positionals = append(positionals, arg)
+		}
+	}
+
+	err := backupCmd.Parse(append(flags, positionals...))
+
+	if err != nil {
+		log.Fatal("🚫 failed to parse backup command:", err)
+		return
+	}
+
+	targetRelay := *relay
+	if targetRelay == "" {
+		targetRelay = *relayShort
+	}
+
+	parsedArgs := backupCmd.Args()
+	fileName := "haven_backup.zip"
+	if len(parsedArgs) > 0 {
+		fileName = parsedArgs[0]
+	}
+
+	targetOutput := *output
+	if targetOutput == "" {
+		targetOutput = *outputShort
+	}
+	if targetOutput != "" {
+		fileName = targetOutput
+	}
+
+	if strings.HasSuffix(fileName, ".jsonl") {
+		if targetRelay == "" {
+			log.Fatal("🚫 --relay parameter is required when exporting to .jsonl")
+		}
+		if err := exportToJSONL(ctx, targetRelay, fileName); err != nil {
+			log.Fatal("🚫 export failed:", err)
+		}
+	} else {
+		if err := exportToZip(ctx, fileName); err != nil {
+			log.Fatal("🚫 backup failed:", err)
+		}
+	}
+}
+
+func runRestore(ctx context.Context) {
+	restoreCmd := flag.NewFlagSet("restore", flag.ExitOnError)
+	relay := restoreCmd.String("relay", "", "Relay name (use then the file parameter ends in jsonl)")
+	relayShort := restoreCmd.String("r", "", "Relay name (shorthand)")
+	input := restoreCmd.String("input", "", "Input file (shorthand)")
+	inputShort := restoreCmd.String("i", "", "Input file (shorthand)")
+
+	args := os.Args[2:]
+	var flags []string
+	var positionals []string
+	for i := 0; i < len(args); i++ {
+		arg := args[i]
+		if strings.HasPrefix(arg, "-") {
+			flags = append(flags, arg)
+			if !strings.Contains(arg, "=") && i+1 < len(args) && !strings.HasPrefix(args[i+1], "-") {
+				flags = append(flags, args[i+1])
+				i++
+			}
+		} else {
+			positionals = append(positionals, arg)
+		}
+	}
+
+	err := restoreCmd.Parse(append(flags, positionals...))
+
+	if err != nil {
+		log.Fatal("🚫 failed to parse restore command:", err)
+		return
+	}
+
+	targetRelay := *relay
+	if targetRelay == "" {
+		targetRelay = *relayShort
+	}
+
+	parsedArgs := restoreCmd.Args()
+	if len(parsedArgs) == 0 && *input == "" && *inputShort == "" {
+		log.Fatal("🚫 usage: haven restore <file> or haven restore -i <file>")
+	}
+
+	fileName := ""
+	if len(parsedArgs) > 0 {
+		fileName = parsedArgs[0]
+	}
+	targetInput := *input
+	if targetInput == "" {
+		targetInput = *inputShort
+	}
+	if targetInput != "" {
+		fileName = targetInput
+	}
+
+	if strings.HasSuffix(fileName, ".jsonl") {
+		if targetRelay == "" {
+			log.Fatal("🚫 --relay parameter is required when restoring from .jsonl")
+		}
+		if err := importFromJSONL(ctx, targetRelay, fileName); err != nil {
+			log.Fatal("🚫 restore failed:", err)
+		}
+	} else {
+		if err := importFromZip(ctx, fileName); err != nil {
+			log.Fatal("🚫 restore failed:", err)
+		}
+	}
+}
+
+// startPeriodicCloudBackups periodically backs up the database to a cloud provider.
+// Supported providers are S3, AWS (deprecated), and GCP (deprecated).
+// The backup interval is defined by the BACKUP_INTERVAL_HOURS environment variable.
+// For more details on configuration, see docs/backup.md#periodic-cloud-backups.
+func startPeriodicCloudBackups(ctx context.Context) {
 	if config.BackupProvider == "none" || config.BackupProvider == "" {
 		log.Println("🚫 no backup provider set")
 		return
@@ -23,15 +158,16 @@ func backupDatabase(ctx context.Context) {
 	ticker := time.NewTicker(time.Duration(config.BackupIntervalHours) * time.Hour)
 	defer ticker.Stop()
 
-	zipFileName := "db.zip"
+	zipFileName := "haven_backup.zip"
 	for {
 		select {
 		case <-ctx.Done():
 			return
 
 		case <-ticker.C:
-			if err := ZipDirectory("db", zipFileName); err != nil {
-				log.Println("🚫 error zipping database folder:", err)
+			log.Println("⏰ starting periodic backup...")
+			if err := exportToZip(ctx, zipFileName); err != nil {
+				log.Println("🚫 error exporting to zip:", err)
 				continue
 			}
 			switch config.BackupProvider {
@@ -139,7 +275,7 @@ func s3UploadShared(
 	bucketName string,
 	secure bool,
 ) {
-	log.Println("🚀 uploading to S3 Bucket...")
+	log.Println("🆙 uploading to S3 Bucket...")
 
 	// Create MinIO client
 	client, err := minio.New(endpoint, &minio.Options{
@@ -188,49 +324,4 @@ func s3UploadShared(
 	if err != nil {
 		log.Fatal(err)
 	}
-}
-
-//goland:noinspection GoUnhandledErrorResult
-func ZipDirectory(sourceDir, zipFileName string) error {
-	log.Println("📦 zipping up the database")
-	file, err := os.Create(zipFileName)
-	if err != nil {
-		panic(err)
-	}
-	defer file.Close()
-
-	w := zip.NewWriter(file)
-	defer w.Close()
-
-	walker := func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-		if info.IsDir() {
-			return nil
-		}
-		file, err := os.Open(path)
-		if err != nil {
-			return err
-		}
-		defer file.Close()
-		f, err := w.Create(path)
-		if err != nil {
-			return err
-		}
-
-		_, err = io.Copy(f, file)
-		if err != nil {
-			return err
-		}
-
-		return nil
-	}
-	err = filepath.Walk(sourceDir, walker)
-	if err != nil {
-		//panic(err)
-	}
-
-	log.Println("📦 database zipped up!")
-	return nil
 }

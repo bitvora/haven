@@ -18,29 +18,88 @@ import (
 	"github.com/nbd-wtf/go-nostr"
 )
 
-func importJSONL(ctx context.Context) {
-	zipFileName := "haven_export.zip"
+func (z *zipWriter) close() {
+	if err := z.w.Close(); err != nil {
+		slog.Error("❌ error closing zip writer", "error", err)
+	}
+	if err := z.f.Close(); err != nil {
+		slog.Error("❌ error closing zip file", "error", err)
+	}
+}
+
+func exportToZip(ctx context.Context, zipFileName string) error {
+	slog.Info("🛫 starting export", "file", zipFileName)
+	f, err := os.Create(zipFileName)
+	if err != nil {
+		return fmt.Errorf("error creating zip file: %w", err)
+	}
+
+	zw := zip.NewWriter(f)
+	z := &zipWriter{f: f, w: zw}
+	defer z.close()
+
+	for _, entry := range getDBs() {
+		slog.Info("📦 exporting db to file", "file", entry.name)
+
+		header := &zip.FileHeader{
+			Name:     entry.name,
+			Method:   zip.Deflate,
+			Modified: time.Now(),
+		}
+
+		writer, err := zw.CreateHeader(header)
+		if err != nil {
+			return fmt.Errorf("error creating zip entry %s: %w", entry.name, err)
+		}
+
+		if err := exportDB(ctx, entry.db, writer); err != nil {
+			return fmt.Errorf("error exporting %s: %w", entry.name, err)
+		}
+	}
+
+	slog.Info("✅ export complete", "file", zipFileName)
+	return nil
+}
+
+func exportToJSONL(ctx context.Context, relayName, jsonlFileName string) error {
+	slog.Info("🛫 starting export", "relay", relayName, "file", jsonlFileName)
+	db, ok := getDBByName(relayName)
+	if !ok {
+		return fmt.Errorf("unknown relay: %s", relayName)
+	}
+
+	f, err := os.Create(jsonlFileName)
+	if err != nil {
+		return fmt.Errorf("error creating jsonl file: %w", err)
+	}
+	defer func() {
+		if err := f.Close(); err != nil {
+			slog.Error("❌ error closing jsonl file", "error", err)
+		}
+	}()
+
+	if err := exportDB(ctx, db, f); err != nil {
+		return fmt.Errorf("error exporting %s: %w", relayName, err)
+	}
+
+	slog.Info("✅ export complete", "file", jsonlFileName)
+	return nil
+}
+
+func importFromZip(ctx context.Context, zipFileName string) error {
 	slog.Info("🛬 starting import", "file", zipFileName)
 
 	zipFile, err := zip.OpenReader(zipFileName)
 	if err != nil {
-		slog.Error("❌ error opening zip file", "error", err)
-		return
+		return fmt.Errorf("error opening zip file: %w", err)
 	}
-	defer func(zipFile *zip.ReadCloser) {
-		err := zipFile.Close()
-		if err != nil {
+	defer func() {
+		if err := zipFile.Close(); err != nil {
 			slog.Error("❌ error closing zip file", "error", err)
 		}
-	}(zipFile)
+	}()
 
-	dbs := map[string]DBBackend{
-		"private.jsonl": privateDB,
-		"chat.jsonl":    chatDB,
-		"outbox.jsonl":  outboxDB,
-		"inbox.jsonl":   inboxDB,
-		"blossom.jsonl": blossomDB,
-	}
+	dbs := getDBMap()
 
 	for _, file := range zipFile.File {
 		db, ok := dbs[file.Name]
@@ -51,21 +110,92 @@ func importJSONL(ctx context.Context) {
 
 		slog.Info("📦 importing file to db", "file", file.Name)
 
-		rc, err := file.Open()
-		if err != nil {
-			slog.Error("❌ error opening zip entry", "file", file.Name, "error", err)
-			return
+		if err := importEntry(ctx, db, file); err != nil {
+			return err
 		}
-
-		if err := importDB(ctx, db, rc); err != nil {
-			slog.Error("❌ error importing", "file", file.Name, "error", err)
-			_ = rc.Close()
-			return
-		}
-		_ = rc.Close()
 	}
 
 	slog.Info("✅ import complete", "file", zipFileName)
+	return nil
+}
+
+func importEntry(ctx context.Context, db DBBackend, file *zip.File) error {
+	rc, err := file.Open()
+	if err != nil {
+		return fmt.Errorf("error opening zip entry %s: %w", file.Name, err)
+	}
+	defer func() {
+		if err := rc.Close(); err != nil {
+			slog.Error("❌ error closing zip entry", "file", file.Name, "error", err)
+		}
+	}()
+
+	if err := importDB(ctx, db, rc); err != nil {
+		return fmt.Errorf("error importing %s: %w", file.Name, err)
+	}
+	return nil
+}
+
+func importFromJSONL(ctx context.Context, relayName, jsonlFileName string) error {
+	slog.Info("🛬 starting import", "relay", relayName, "file", jsonlFileName)
+	db, ok := getDBByName(relayName)
+	if !ok {
+		return fmt.Errorf("unknown relay: %s", relayName)
+	}
+
+	f, err := os.Open(jsonlFileName)
+	if err != nil {
+		return fmt.Errorf("error opening jsonl file: %w", err)
+	}
+	defer func() {
+		if err := f.Close(); err != nil {
+			slog.Error("❌ error closing jsonl file", "error", err)
+		}
+	}()
+
+	if err := importDB(ctx, db, f); err != nil {
+		return fmt.Errorf("error importing %s: %w", relayName, err)
+	}
+
+	slog.Info("✅ import complete", "file", jsonlFileName)
+	return nil
+}
+
+type dbEntry struct {
+	name string
+	db   DBBackend
+}
+
+func getDBs() []dbEntry {
+	return []dbEntry{
+		{"private.jsonl", privateDB},
+		{"chat.jsonl", chatDB},
+		{"outbox.jsonl", outboxDB},
+		{"inbox.jsonl", inboxDB},
+		{"blossom.jsonl", blossomDB},
+	}
+}
+
+func getDBMap() map[string]DBBackend {
+	m := make(map[string]DBBackend)
+	for _, entry := range getDBs() {
+		m[entry.name] = entry.db
+	}
+	return m
+}
+
+func getDBByName(relay string) (DBBackend, bool) {
+	name := relay
+	if len(name) < 6 || name[len(name)-6:] != ".jsonl" {
+		name += ".jsonl"
+	}
+	db, ok := getDBMap()[name]
+	return db, ok
+}
+
+type zipWriter struct {
+	f *os.File
+	w *zip.Writer
 }
 
 func importDB(ctx context.Context, db DBBackend, r io.Reader) error {
@@ -99,64 +229,6 @@ func importDB(ctx context.Context, db DBBackend, r io.Reader) error {
 
 	slog.Info("📥 imported events", "count", count)
 	return nil
-}
-
-func exportJSONL(ctx context.Context) {
-	dbs := []struct {
-		name string
-		db   DBBackend
-	}{
-		{"private.jsonl", privateDB},
-		{"chat.jsonl", chatDB},
-		{"outbox.jsonl", outboxDB},
-		{"inbox.jsonl", inboxDB},
-		{"blossom.jsonl", blossomDB},
-	}
-
-	zipFileName := "haven_export.zip"
-	slog.Info("🛫 starting export", "file", zipFileName)
-	zipFile, err := os.Create(zipFileName)
-	if err != nil {
-		slog.Error("❌ error creating zip file", "error", err)
-		return
-	}
-	defer func(zipFile *os.File) {
-		err := zipFile.Close()
-		if err != nil {
-			slog.Error("❌ error closing zip file", "error", err)
-		}
-	}(zipFile)
-
-	zipWriter := zip.NewWriter(zipFile)
-	defer func(zipWriter *zip.Writer) {
-		err := zipWriter.Close()
-		if err != nil {
-			slog.Error("❌ error closing zip writer", "error", err)
-		}
-	}(zipWriter)
-
-	for _, entry := range dbs {
-		slog.Info("📦 exporting db to file", "file", entry.name)
-
-		header := &zip.FileHeader{
-			Name:     entry.name,
-			Method:   zip.Deflate,
-			Modified: time.Now(),
-		}
-
-		writer, err := zipWriter.CreateHeader(header)
-		if err != nil {
-			slog.Error("❌ error creating zip entry", "file", entry.name, "error", err)
-			return
-		}
-
-		if err := exportDB(ctx, entry.db, writer); err != nil {
-			slog.Error("❌ error exporting", "file", entry.name, "error", err)
-			return
-		}
-	}
-
-	slog.Info("✅ export complete", "file", zipFileName)
 }
 
 func exportDB(ctx context.Context, db DBBackend, w io.Writer) error {

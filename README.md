@@ -20,13 +20,11 @@ HAVEN (High Availability Vault for Events on Nostr) is the most sovereign person
 
 **Inbox Relay**: Notes are pulled from other relays and stored in the inbox relay.
 
-**Cloud Backups**: Notes are backed up in the cloud and can be restored if the relay is lost.
-
 **Blastr**: Notes sent to the outbox are also blasted to other relays.
 
 **Import Old Notes**: Import your old notes and notes you're tagged in from other relays.
 
-**JSONL Export/Import**: It is your data, export to JSONL at any time. See the [JSONL Documentation](docs/jsonl.md) for more details.
+**Backup/Recover**: It is your data, manually export or import data JSONL at any time. Set periodic backups to the cloud for easy recovery if the relay is lost. See [Backup Documentation](docs/backup.md) for more details.
 
 ## Installation
 
@@ -322,7 +320,7 @@ If you want to import your old notes and notes you're tagged in from other relay
 
 ```bash
 sudo systemctl stop haven
-./haven --import
+./haven import
 sudo systemctl start haven
 ```
 
@@ -385,90 +383,7 @@ Media files are stored in the file system based on the `BLOSSOM_PATH` environmen
 
 ## Cloud Backups
 
-The relay automatically backs up your database to a cloud provider of your choice.
-
-### S3-Compatible Object Storage
-
-To back up your database to S3 compatible storage such as [AWS S3](https://aws.amazon.com/s3/), 
-[GCP Cloud Storage] or 
-[DigitalOcean Spaces](https://www.digitalocean.com/products/spaces).
-
-First need to create the bucket on your provider. After creating the Bucket you will be provided with:
-
-- Access Key ID
-- Secret Key
-- URL Endpoint
-- Region
-- Bucket Name
-
-Once you have this data, update your `.env` file with the appropriate information:
-
-```Dotenv
-S3_ACCESS_KEY_ID="your_access_key_id"
-S3_SECRET_KEY="your_secret_key"
-S3_ENDPOINT="your_endpoint"
-S3_REGION="your_region"
-S3_BUCKET_NAME="your_bucket"
-```
-
-Replace `your_access_key_id`, `your_secret_access_key`, `your_region`, and `your_bucket` with your actual credentials.
-
-You may also want to set the `BACKUP_INTERVAL_HOURS` environment variable to specify how often the relay should back up 
-the database.
-
-```Dotenv
-BACKUP_INTERVAL_HOURS=24
-```
-
-Finally, you need to specifiy `s3` as the backup provider:
-
-```Dotenv
-BACKUP_PROVIDER="s3" # s3, none (or leave blank to disable)
-```
-
-#### AWS S3
-
-For AWS S3, set the appropriate endpoint for your region/availability zone:
-
-```Dotenv
-S3_ACCESS_KEY="AKIAIOSFODNN7EXAMPLE"
-S3_SECRET_KEY="wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
-S3_ENDPOINT="s3.us-east-1.amazonaws.com""
-S3_REGION="us-east-1"
-S3_BUCKET_NAME="haven_backup"
-```
-
-#### GCP Cloud Storage
-
-For GCP, you can set `S3_ENDPOINT` to `storage.googleapis.com`. 
-
-`S3_REGION` can be left blank. `S3_ACCESS_KEY_ID` and `S3_SECRET_KEY` needs to be set to a [HMAC key](
-https://cloud.google.com/storage/docs/authentication/hmackeys), see GCP's official documentation on [how to create a HMAC 
-key for a service account](https://cloud.google.com/storage/docs/authentication/managing-hmackeys#create).
-
-```Dotenv
-S3_ACCESS_KEY_ID="GOOGXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
-S3_SECRET_KEY="Yyy+YYY0/yYYYYyyyy0+YyyYyyYyyYyyyyYyyYyy"
-S3_ENDPOINT="storage.googleapis.com"
-S3_REGION=""
-S3_BUCKET_NAME="haven_backup"
-```
-
-#### DigitalOcean Spaces
-
-To back up your database to DigitalOcean Spaces, you'll first need to create a bucket in the DigitalOcean dashboard.
-This can be done in the "Spaces Object Storage" tab or by visiting https://cloud.digitalocean.com/spaces.
-
-Once you have created a bucket you will be shown an access key ID and a secret key. Additionally,
-while creating the bucket you will have selected a region to host this bucket which has a URL. For example,
-if you choose the datacenter region "Amsterdam - Datacenter 3 - AMS3", your region will be `ams3` and
-the endpoint will be `ams3.digitalocean.com`.
-
-### Deprecation warning
-
-The old `aws` and `gcp` backup providers have been deprecated in favor of the new `s3` provider. If you are using the
-old providers, please update your `.env` file to use the new `s3` provider. The old providers will be removed in a future
-release.
+The relay automatically backs up your database to a cloud provider of your choice. See [Backup Documentation](docs/backup.md#periodic-cloud-backups) for more details.
 
 ## License
 
