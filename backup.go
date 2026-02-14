@@ -3,13 +3,11 @@ package main
 import (
 	"context"
 	"flag"
-	"io"
 	"log"
 	"os"
 	"strings"
 	"time"
 
-	"cloud.google.com/go/storage"
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
 )
@@ -153,6 +151,9 @@ func startPeriodicCloudBackups(ctx context.Context) {
 	if config.BackupProvider == "none" || config.BackupProvider == "" {
 		log.Println("🚫 no backup provider set")
 		return
+	} else if config.BackupProvider != "s3" {
+		log.Printf("🚫 backup provider %q not supported", config.BackupProvider)
+		return
 	}
 
 	ticker := time.NewTicker(time.Duration(config.BackupIntervalHours) * time.Hour)
@@ -170,82 +171,9 @@ func startPeriodicCloudBackups(ctx context.Context) {
 				log.Println("🚫 error exporting to zip:", err)
 				continue
 			}
-			switch config.BackupProvider {
-			case "s3":
-				S3Upload(ctx, zipFileName)
-			case "aws":
-				AwsUpload(ctx, zipFileName)
-			case "gcp":
-				GCPBucketUpload(ctx, zipFileName)
-			default:
-				log.Println("🚫 we only support AWS, GCP, and S3 at this time")
-			}
+			S3Upload(ctx, zipFileName)
 		}
 	}
-}
-
-// Deprecated: Use S3Upload instead
-//
-//goland:noinspection GoUnhandledErrorResult
-func GCPBucketUpload(ctx context.Context, zipFileName string) {
-	if config.GcpConfig == nil {
-		log.Fatal("🚫 GCP specified as backup provider but no GCP config found. Check environment variables.")
-	}
-
-	bucket := config.GcpConfig.Bucket
-
-	client, err := storage.NewClient(ctx)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer client.Close()
-
-	// open the zip db file.
-	f, err := os.Open(zipFileName)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer f.Close()
-
-	obj := client.Bucket(bucket).Object(zipFileName)
-
-	// Upload an object with storage.Writer.
-	wc := obj.NewWriter(ctx)
-	if _, err = io.Copy(wc, f); err != nil {
-		log.Fatal(err)
-	}
-
-	if err := wc.Close(); err != nil {
-		log.Fatal(err)
-	}
-
-	log.Printf("✅ Successfully uploaded %q to %q\n", zipFileName, bucket)
-
-	// delete the file.
-	err = os.Remove(zipFileName)
-	if err != nil {
-		log.Fatal(err)
-	}
-}
-
-// Deprecated: Use S3Upload instead
-//
-//goland:noinspection GoUnhandledErrorResult
-func AwsUpload(ctx context.Context, zipFileName string) {
-	if config.AwsConfig == nil {
-		log.Fatal("🚫 AWS specified as backup provider but no AWS config found. Check environment variables.")
-	}
-
-	s3UploadShared(
-		ctx,
-		zipFileName,
-		config.AwsConfig.AccessKeyID,
-		config.AwsConfig.SecretAccessKey,
-		"s3.amazonaws.com",
-		config.AwsConfig.Region,
-		config.AwsConfig.Bucket,
-		true,
-	)
 }
 
 func S3Upload(ctx context.Context, zipFileName string) {

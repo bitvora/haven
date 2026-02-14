@@ -13,17 +13,6 @@ import (
 	"github.com/nbd-wtf/go-nostr/nip19"
 )
 
-type AwsConfig struct {
-	AccessKeyID     string `json:"access"`
-	SecretAccessKey string `json:"secret"`
-	Region          string `json:"region"`
-	Bucket          string `json:"bucket"`
-}
-
-type GcpConfig struct {
-	Bucket string `json:"bucket"`
-}
-
 type S3Config struct {
 	AccessKeyID string `json:"access_key_id"`
 	SecretKey   string `json:"secret_key"`
@@ -73,9 +62,7 @@ type Config struct {
 	WotRefreshInterval                   time.Duration `json:"wot_refresh_interval"`
 	LogLevel                             string        `json:"log_level"`
 	BlastrRelays                         []string      `json:"blastr_relays"`
-	AwsConfig                            *AwsConfig    `json:"aws_config"`
 	S3Config                             *S3Config     `json:"s3_config"`
-	GcpConfig                            *GcpConfig    `json:"gcp_config"`
 }
 
 func loadConfig() Config {
@@ -122,9 +109,7 @@ func loadConfig() Config {
 		WotRefreshInterval:                   getEnvDuration("WOT_REFRESH_INTERVAL", 24*time.Hour),
 		LogLevel:                             getEnvString("HAVEN_LOG_LEVEL", "INFO"),
 		BlastrRelays:                         getRelayListFromFile(getEnv("BLASTR_RELAYS_FILE")),
-		AwsConfig:                            getAwsConfig(),
 		S3Config:                             getS3Config(),
-		GcpConfig:                            getGcpConfig(),
 	}
 }
 
@@ -134,21 +119,6 @@ func getVersion() string {
 		return "(devel)"
 	}
 	return info.Main.Version
-}
-
-func getAwsConfig() *AwsConfig {
-	backupProvider := getEnvString("BACKUP_PROVIDER", "none")
-
-	if backupProvider == "aws" {
-		return &AwsConfig{
-			AccessKeyID:     getEnv("AWS_ACCESS_KEY_ID"),
-			SecretAccessKey: getEnv("AWS_SECRET_ACCESS_KEY"),
-			Region:          getEnv("AWS_REGION"),
-			Bucket:          getEnv("AWS_BUCKET"),
-		}
-	}
-
-	return nil
 }
 
 func getS3Config() *S3Config {
@@ -161,18 +131,6 @@ func getS3Config() *S3Config {
 			Endpoint:    getEnv("S3_ENDPOINT"),
 			BucketName:  getEnv("S3_BUCKET_NAME"),
 			Region:      getEnv("S3_REGION"),
-		}
-	}
-
-	return nil
-}
-
-func getGcpConfig() *GcpConfig {
-	backupProvider := getEnvString("BACKUP_PROVIDER", "none")
-
-	if backupProvider == "gcp" {
-		return &GcpConfig{
-			Bucket: getEnv("GCP_BUCKET_NAME"),
 		}
 	}
 

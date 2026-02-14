@@ -60,11 +60,12 @@ S3_REGION=""
 S3_BUCKET_NAME="haven_backup"
 ```
 
-### Deprecation warning
+> [!WARNING]
+> The old `aws` and `gcp` backup providers have long been deprecated in favour of the new `s3` provider and were fully 
+> removed in *v1.2.0*. If you are still using the old providers, please update your `.env` file to use the new `s3` 
+> provider.
 
-The old `aws` and `gcp` backup providers have been deprecated in favor of the new `s3` provider. If you are using the
-old providers, please update your `.env` file to use the new `s3` provider. The old providers will be removed in a future
-release.
+*
 
 ---
 
