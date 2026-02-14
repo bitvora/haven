@@ -14,6 +14,12 @@ This will create a `haven_backup.zip` file in your current directory. You can sp
 ./haven backup mybackup.zip
 ```
 
+If you want to upload the backup to your cloud provider after creation, use the `--to-cloud` flag:
+
+```bash
+./haven backup --to-cloud
+```
+
 To backup a specific relay to a JSONL file:
 
 ```bash

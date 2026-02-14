@@ -28,7 +28,7 @@ func NewGenericS3Provider(endpoint, accessKey, secret, region string) (*GenericS
 	}, nil
 }
 
-func (s *GenericS3Provider) Upload(ctx context.Context, bucketName string, objectName string, r io.Reader, size int64) error {
+func (s *GenericS3Provider) Upload(ctx context.Context, bucketName string, objectName string, r io.Reader, size int64, contentType string) error {
 	_, err := s.client.PutObject(
 		ctx,
 		bucketName,
@@ -36,7 +36,7 @@ func (s *GenericS3Provider) Upload(ctx context.Context, bucketName string, objec
 		r,
 		size,
 		minio.PutObjectOptions{
-			ContentType: "application/octet-stream",
+			ContentType: contentType,
 		},
 	)
 	if err != nil {

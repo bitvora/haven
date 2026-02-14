@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
 	"log"
 	"os"
 	"strings"
@@ -17,6 +18,7 @@ func runBackup(ctx context.Context) {
 	relayShort := backupCmd.String("r", "", "Relay name (shorthand)")
 	output := backupCmd.String("output", "", "Output file (shorthand)")
 	outputShort := backupCmd.String("o", "", "Output file (shorthand)")
+	toCloud := backupCmd.Bool("to-cloud", false, "Upload backup to cloud storage")
 
 	args := os.Args[2:]
 	var flags []string
@@ -26,7 +28,10 @@ func runBackup(ctx context.Context) {
 		if strings.HasPrefix(arg, "-") {
 			flags = append(flags, arg)
 			// Check if it's a flag that takes a value
-			// In our case, all flags (relay, r, output, o) take values.
+			// In our case, all flags (relay, r, output, o) take values, but to-cloud does not.
+			if arg == "--to-cloud" {
+				continue
+			}
 			if !strings.Contains(arg, "=") && i+1 < len(args) && !strings.HasPrefix(args[i+1], "-") {
 				flags = append(flags, args[i+1])
 				i++
@@ -72,6 +77,16 @@ func runBackup(ctx context.Context) {
 	} else {
 		if err := exportToZip(ctx, fileName); err != nil {
 			log.Fatal("🚫 backup failed:", err)
+		}
+	}
+
+	if *toCloud {
+		cloudProvider, err := getCloudUploader()
+		if err != nil {
+			log.Fatal("🚫 ", err)
+		}
+		if err := uploadBackupToCloud(ctx, cloudProvider, fileName); err != nil {
+			log.Fatal("🚫 ", err)
 		}
 	}
 }
@@ -142,19 +157,11 @@ func runRestore(ctx context.Context) {
 	}
 }
 
-// startPeriodicCloudBackups periodically backs up the database to a cloud provider.
-// Supported providers are S3, AWS (deprecated), and GCP (deprecated).
-// The backup interval is defined by the BACKUP_INTERVAL_HOURS environment variable.
-// For more details on configuration, see docs/backup.md#periodic-cloud-backups.
-func startPeriodicCloudBackups(ctx context.Context) {
+func getCloudUploader() (cloud.Uploader, error) {
 	if config.BackupProvider == "none" || config.BackupProvider == "" {
-		log.Println("🚫 no backup provider set")
-		return
+		return nil, fmt.Errorf("no backup provider set")
 	} else if config.BackupProvider != "s3" {
-		log.Printf("🚫 backup provider %q not supported", config.BackupProvider)
-		return
-	} else if config.S3Config == nil {
-		log.Fatal("🚫 S3 specified as backup provider but no S3 config found. Check environment variables.")
+		return nil, fmt.Errorf("backup provider %q not supported", config.BackupProvider)
 	}
 
 	cloudProvider, err := cloud.NewGenericS3Provider(
@@ -164,7 +171,20 @@ func startPeriodicCloudBackups(ctx context.Context) {
 		config.S3Config.Region,
 	)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
+	}
+	return cloudProvider, nil
+}
+
+// startPeriodicCloudBackups periodically backs up the database to a cloud provider.
+// Supported providers are S3, AWS (deprecated), and GCP (deprecated).
+// The backup interval is defined by the BACKUP_INTERVAL_HOURS environment variable.
+// For more details on configuration, see docs/backup.md#periodic-cloud-backups.
+func startPeriodicCloudBackups(ctx context.Context) {
+	cloudProvider, err := getCloudUploader()
+	if err != nil {
+		log.Printf("⚠️ Cloud backup disabled: %v", err)
+		return
 	}
 
 	ticker := time.NewTicker(time.Duration(config.BackupIntervalHours) * time.Hour)
@@ -182,17 +202,25 @@ func startPeriodicCloudBackups(ctx context.Context) {
 				log.Println("🚫 error exporting to zip:", err)
 				continue
 			}
-			uploadBackupToCloud(ctx, cloudProvider, zipFileName)
+			if err := uploadBackupToCloud(ctx, cloudProvider, zipFileName); err != nil {
+				log.Println("🚫 error uploading to cloud:", err)
+				continue
+			}
+			// delete the file
+			err = os.Remove(zipFileName)
+			if err != nil {
+				log.Println("🚫 error deleting local backup file:", err)
+			}
 		}
 	}
 }
 
-func uploadBackupToCloud(ctx context.Context, uploader cloud.Uploader, zipFileName string) {
+func uploadBackupToCloud(ctx context.Context, uploader cloud.Uploader, fileName string) error {
 	log.Println("🆙 uploading backup to S3 Bucket...")
 
-	file, err := os.Open(zipFileName)
+	file, err := os.Open(fileName)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	defer func(file *os.File) {
 		if err := file.Close(); err != nil {
@@ -202,19 +230,24 @@ func uploadBackupToCloud(ctx context.Context, uploader cloud.Uploader, zipFileNa
 
 	fileInfo, err := file.Stat()
 	if err != nil {
-		log.Fatalf("🚫 failed to load %s: %v", zipFileName, err)
+		return fmt.Errorf("failed to load %s: %w", fileName, err)
 	}
 
-	err = uploader.Upload(ctx, config.S3Config.BucketName, zipFileName, file, fileInfo.Size())
+	err = uploader.Upload(ctx, config.S3Config.BucketName, fileName, file, fileInfo.Size(), getContentType(fileName))
 	if err != nil {
-		log.Fatalf("🚫 failed to upload %s to %s: %v", zipFileName, config.S3Config.BucketName, err)
+		return fmt.Errorf("failed to upload %s to %s: %w", fileName, config.S3Config.BucketName, err)
 	}
 
-	log.Printf("✅ Successfully uploaded %q to %q\n", zipFileName, config.S3Config.BucketName)
+	log.Printf("✅ Successfully uploaded %q to %q\n", fileName, config.S3Config.BucketName)
 
-	// delete the file
-	err = os.Remove(zipFileName)
-	if err != nil {
-		log.Println("🚫 error deleting local backup file:", err)
+	return nil
+}
+
+func getContentType(objectName string) string {
+	if strings.HasSuffix(objectName, ".zip") {
+		return "application/zip"
+	} else if strings.HasSuffix(objectName, ".jsonl") {
+		return "application/jsonl"
 	}
+	return ""
 }
