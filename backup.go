@@ -8,8 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/minio/minio-go/v7"
-	"github.com/minio/minio-go/v7/pkg/credentials"
+	"github.com/bitvora/haven/internal/cloud"
 )
 
 func runBackup(ctx context.Context) {
@@ -154,6 +153,18 @@ func startPeriodicCloudBackups(ctx context.Context) {
 	} else if config.BackupProvider != "s3" {
 		log.Printf("🚫 backup provider %q not supported", config.BackupProvider)
 		return
+	} else if config.S3Config == nil {
+		log.Fatal("🚫 S3 specified as backup provider but no S3 config found. Check environment variables.")
+	}
+
+	cloudProvider, err := cloud.NewGenericS3Provider(
+		config.S3Config.Endpoint,
+		config.S3Config.AccessKeyID,
+		config.S3Config.SecretKey,
+		config.S3Config.Region,
+	)
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	ticker := time.NewTicker(time.Duration(config.BackupIntervalHours) * time.Hour)
@@ -171,51 +182,14 @@ func startPeriodicCloudBackups(ctx context.Context) {
 				log.Println("🚫 error exporting to zip:", err)
 				continue
 			}
-			S3Upload(ctx, zipFileName)
+			uploadBackupToCloud(ctx, cloudProvider, zipFileName)
 		}
 	}
 }
 
-func S3Upload(ctx context.Context, zipFileName string) {
-	if config.S3Config == nil {
-		log.Fatal("🚫 S3 specified as backup provider but no S3 config found. Check environment variables.")
-	}
+func uploadBackupToCloud(ctx context.Context, uploader cloud.Uploader, zipFileName string) {
+	log.Println("🆙 uploading backup to S3 Bucket...")
 
-	s3UploadShared(
-		ctx,
-		zipFileName,
-		config.S3Config.AccessKeyID,
-		config.S3Config.SecretKey,
-		config.S3Config.Endpoint,
-		config.S3Config.Region,
-		config.S3Config.BucketName,
-		true,
-	)
-}
-
-func s3UploadShared(
-	ctx context.Context,
-	zipFileName string,
-	accessKey string,
-	secret string,
-	endpoint string,
-	region string,
-	bucketName string,
-	secure bool,
-) {
-	log.Println("🆙 uploading to S3 Bucket...")
-
-	// Create MinIO client
-	client, err := minio.New(endpoint, &minio.Options{
-		Creds:  credentials.NewStaticV4(accessKey, secret, ""),
-		Region: region,
-		Secure: secure,
-	})
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// Upload the file to the S3 bucket
 	file, err := os.Open(zipFileName)
 	if err != nil {
 		log.Fatal(err)
@@ -228,28 +202,19 @@ func s3UploadShared(
 
 	fileInfo, err := file.Stat()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("🚫 failed to load %s: %v", zipFileName, err)
 	}
 
-	_, err = client.PutObject(
-		ctx,
-		bucketName,
-		zipFileName,
-		file,
-		fileInfo.Size(),
-		minio.PutObjectOptions{
-			ContentType: "application/octet-stream",
-		},
-	)
+	err = uploader.Upload(ctx, config.S3Config.BucketName, zipFileName, file, fileInfo.Size())
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("🚫 failed to upload %s to %s: %v", zipFileName, config.S3Config.BucketName, err)
 	}
 
-	log.Printf("✅ Successfully uploaded %q to %q\n", zipFileName, bucketName)
+	log.Printf("✅ Successfully uploaded %q to %q\n", zipFileName, config.S3Config.BucketName)
 
 	// delete the file
 	err = os.Remove(zipFileName)
 	if err != nil {
-		log.Fatal(err)
+		log.Println("🚫 error deleting local backup file:", err)
 	}
 }
