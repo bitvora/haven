@@ -45,3 +45,12 @@ func (s *GenericS3Provider) Upload(ctx context.Context, bucketName string, objec
 
 	return nil
 }
+
+func (s *GenericS3Provider) Download(ctx context.Context, bucketName string, objectName string) (io.ReadCloser, error) {
+	reader, err := s.client.GetObject(ctx, bucketName, objectName, minio.GetObjectOptions{})
+	if err != nil {
+		return nil, fmt.Errorf("failed to download object from s3: %w", err)
+	}
+
+	return reader, nil
+}

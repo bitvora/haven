@@ -29,7 +29,19 @@ To backup a specific relay to a JSONL file:
 To restore data from a `haven_backup.zip` file, run:
 
 ```bash
-./haven restore haven_backup.zip
+./haven restore
+```
+
+This will look for a `haven_backup.zip` file in your current directory. You can specify a different filename:
+
+```bash
+./haven restore mybackup.zip
+```
+
+To restore from the cloud using the default name:
+
+```bash
+./haven restore --from-cloud
 ```
 
 To restore a specific relay from a JSONL file:
