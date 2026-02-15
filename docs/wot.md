@@ -18,7 +18,6 @@ The WoT depth can be configured using the `WOT_DEPTH` environment variable:
 * **Level 3**: Connections of connections. The relay owner, the people they follow, and the people followed by them can write to the Inbox and Chat relays. This is the default setting.
 
 ```mermaid
-%%{init: {"theme": "default", "layout": "elk"}}%%
 flowchart TD
 %% -------------------------------
 %% Level 0 — Public
@@ -31,7 +30,7 @@ direction TB
         %% -------------------------------
         subgraph L3["Level 3"]
             direction TB
-            Note3([Includes Level 2 + connections with enough common followers])
+            Note3([Includes connections of  connections with enough common followers])
 
             %% -------------------------------
             %% Level 2 — Direct Connections
@@ -43,7 +42,7 @@ direction TB
                 %% Level 1 — Private
                 subgraph L1["Level 1"]
                     direction TB
-                    You((You))
+                    You((Relay Owner))
                 end
 
                 Alice((Alice))
@@ -56,7 +55,6 @@ direction TB
         end
 
         Mallory((Mallory ❌))
-        John((John Doe))
     end
 
     %% -------------------------------
