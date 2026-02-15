@@ -4,10 +4,7 @@ on:
   pull_request:
     types: [opened, synchronize, reopened, edited]
 
-permissions:
-  contents: read
-  pull-requests: write
-  statuses: write
+permissions: write-all
 
 jobs:
   validate-pr-title:
