@@ -76,7 +76,7 @@ func (wt *SimpleInMemory) Refresh(ctx context.Context) {
 	}
 
 	var eventsAnalysed atomic.Int64
-	pubkeyFollowers := xsync.NewMap[string, *xsync.Map[string, bool]]()
+	pubkeyFollowers := xsync.NewMap[string, *atomic.Int64]()
 	relaysDiscovered := xsync.NewMap[string, bool]()
 	oneHopNetwork := make(map[string]bool)
 	newWot := make(map[string]bool)
@@ -108,8 +108,8 @@ func (wt *SimpleInMemory) Refresh(ctx context.Context) {
 				if wt.WotDepth == 2 {
 					newWot[contact[1]] = true
 				} else {
-					followers, _ := pubkeyFollowers.LoadOrStore(contact[1], xsync.NewMap[string, bool]())
-					followers.Store(ev.PubKey, true)
+					followers, _ := pubkeyFollowers.LoadOrStore(contact[1], &atomic.Int64{})
+					followers.Add(1)
 					oneHopNetwork[contact[1]] = true
 				}
 			}
@@ -141,8 +141,8 @@ func (wt *SimpleInMemory) Refresh(ctx context.Context) {
 			for ev := range latestEventByKindAndPubkey(timeoutCtx, events, &eventsAnalysed) {
 				for contact := range ev.Tags.FindAll("p") {
 					if len(contact) > 1 {
-						followers, _ := pubkeyFollowers.LoadOrStore(contact[1], xsync.NewMap[string, bool]())
-						followers.Store(ev.PubKey, true)
+						followers, _ := pubkeyFollowers.LoadOrStore(contact[1], &atomic.Int64{})
+						followers.Add(1)
 					}
 				}
 
@@ -179,8 +179,8 @@ func (wt *SimpleInMemory) Refresh(ctx context.Context) {
 
 		h := make([]pubkeyCount, 0, topN+1)
 
-		pubkeyFollowers.Range(func(pubkey string, followers *xsync.Map[string, bool]) bool {
-			count := followers.Size()
+		pubkeyFollowers.Range(func(pubkey string, followers *atomic.Int64) bool {
+			count := int(followers.Load())
 			if len(h) < topN {
 				h = append(h, pubkeyCount{pubkey, count})
 				if len(h) == topN {
@@ -216,8 +216,8 @@ func (wt *SimpleInMemory) Refresh(ctx context.Context) {
 
 	// Filter out pubkeys with less than minimum followers
 	minimumFollowers := wt.MinFollowers
-	pubkeyFollowers.Range(func(pubkey string, followers *xsync.Map[string, bool]) bool {
-		if followers.Size() >= minimumFollowers {
+	pubkeyFollowers.Range(func(pubkey string, followers *atomic.Int64) bool {
+		if int(followers.Load()) >= minimumFollowers {
 			newWot[pubkey] = true
 		}
 		return true
