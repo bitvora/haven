@@ -1,0 +1,16 @@
+name: PR Conventional Commit Validation
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, edited]
+
+jobs:
+  validate-pr-title:
+    runs-on: ubuntu-latest
+    steps:
+      - name: PR Conventional Commit Validation
+        uses:  ytanikin/pr-conventional-commits@1.5.1
+        with:
+          task_types: '["feat","fix","docs","test","build","ci","refactor","perf","chore","revert"]'
+          custom_labels: '{"feat": "feature", "fix": "fix", "docs": "documentation", "test": "test", "build: "build", "ci": "CI/CD", "refactor": "refactor", "perf": "performance", "chore": "chore", "revert": "revert", "wip": "WIP"}'
+          add_scope_label: 'true'
