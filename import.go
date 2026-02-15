@@ -225,7 +225,7 @@ func subscribeInboxAndChat(ctx context.Context) {
 
 				log.Println("This change should be fine")
 
-				switch ev.Event.Kind { // This one shouldn't
+				switch ev.Kind {
 				case nostr.KindTextNote:
 					log.Println("📰 new note in your inbox")
 				case nostr.KindReaction:
