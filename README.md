@@ -1,7 +1,7 @@
 # HAVEN
 
-![Go Version](https://img.shields.io/badge/Go-1.24.1+-blue.svg)
-![License](https://img.shields.io/badge/license-MIT-green.svg)
+[![Go Version](https://img.shields.io/badge/Go-1.24.1+-blue.svg)](./go.mod#L3)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](./LICENSE)
 [![CI](https://github.com/bitvora/haven/actions/workflows/lint.yml/badge.svg)](https://github.com/bitvora/haven/actions/workflows/lint.yml)
 [![Go Report Card](https://goreportcard.com/badge/github.com/bitvora/haven)](https://goreportcard.com/report/github.com/bitvora/haven)
 
