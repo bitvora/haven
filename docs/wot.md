@@ -1,7 +1,3 @@
-Here’s a revised version that keeps your tone but improves clarity, grammar, and flow:
-
----
-
 # Web of Trust
 
 Thanks to the Outbox model, clients will try to write all messages that tag you, comment on, or otherwise interact with your posts to your Inbox relay. Likewise, clients will try to write all messages to your Chat relays.
@@ -30,7 +26,7 @@ direction TB
         %% -------------------------------
         subgraph L3["Level 3"]
             direction TB
-            Note3([Includes connections of  connections with enough common followers])
+            Note3([Connections of connections with enough common followers])
 
             %% -------------------------------
             %% Level 2 — Direct Connections
