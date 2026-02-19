@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"os"
 	"runtime/debug"
@@ -32,6 +33,7 @@ type Config struct {
 	RelayBindAddress                     string              `json:"relay_bind_address"`
 	RelaySoftware                        string              `json:"relay_software"`
 	RelayVersion                         string              `json:"relay_version"`
+	UserAgent                            string              `json:"user_agent"`
 	PrivateRelayName                     string              `json:"private_relay_name"`
 	PrivateRelayNpub                     string              `json:"private_relay_npub"`
 	PrivateRelayDescription              string              `json:"private_relay_description"`
@@ -66,6 +68,8 @@ type Config struct {
 	S3Config                             *S3Config           `json:"s3_config"`
 }
 
+const relaySoftware = "https://github.com/bitvora/haven"
+
 func loadConfig() Config {
 	_ = godotenv.Load(".env")
 
@@ -78,8 +82,9 @@ func loadConfig() Config {
 		RelayURL:                             getEnv("RELAY_URL"),
 		RelayPort:                            getEnvInt("RELAY_PORT", 3355),
 		RelayBindAddress:                     getEnvString("RELAY_BIND_ADDRESS", "0.0.0.0"),
-		RelaySoftware:                        "https://github.com/bitvora/haven",
+		RelaySoftware:                        relaySoftware,
 		RelayVersion:                         getVersion(),
+		UserAgent:                            fmt.Sprintf("Haven/%s (+%s)", getVersion(), relaySoftware),
 		PrivateRelayName:                     getEnv("PRIVATE_RELAY_NAME"),
 		PrivateRelayNpub:                     getEnv("PRIVATE_RELAY_NPUB"),
 		PrivateRelayDescription:              getEnv("PRIVATE_RELAY_DESCRIPTION"),

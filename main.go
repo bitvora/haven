@@ -38,7 +38,13 @@ func main() {
 		log.Fatal("🚫 error creating blossom path:", err)
 	}
 
-	pool = nostr.NewSimplePool(mainCtx, nostr.WithPenaltyBox())
+	pool = nostr.NewSimplePool(mainCtx,
+		nostr.WithPenaltyBox(),
+		nostr.WithRelayOptions(
+			nostr.WithRequestHeader{
+				"User-Agent": []string{config.UserAgent},
+			}),
+	)
 
 	if len(os.Args) > 1 {
 		switch os.Args[1] {
