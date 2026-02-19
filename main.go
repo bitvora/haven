@@ -55,6 +55,7 @@ func main() {
 			runRestore(mainCtx)
 			return
 		case "import":
+			ensureImportRelays()
 			runImport(mainCtx)
 			return
 		case "help":
