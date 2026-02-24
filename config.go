@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/joho/godotenv"
+	"github.com/nbd-wtf/go-nostr/nip05"
 	"github.com/nbd-wtf/go-nostr/nip19"
 )
 
@@ -23,50 +24,52 @@ type S3Config struct {
 }
 
 type Config struct {
-	OwnerNpub                            string              `json:"owner_npub"`
-	OwnerPubKey                          string              `json:"owner_pubkey"`
-	DBEngine                             string              `json:"db_engine"`
-	LmdbMapSize                          int64               `json:"lmdb_map_size"`
-	BlossomPath                          string              `json:"blossom_path"`
-	RelayURL                             string              `json:"relay_url"`
-	RelayPort                            int                 `json:"relay_port"`
-	RelayBindAddress                     string              `json:"relay_bind_address"`
-	RelaySoftware                        string              `json:"relay_software"`
-	RelayVersion                         string              `json:"relay_version"`
-	UserAgent                            string              `json:"user_agent"`
-	PrivateRelayName                     string              `json:"private_relay_name"`
-	PrivateRelayNpub                     string              `json:"private_relay_npub"`
-	PrivateRelayDescription              string              `json:"private_relay_description"`
-	PrivateRelayIcon                     string              `json:"private_relay_icon"`
-	ChatRelayName                        string              `json:"chat_relay_name"`
-	ChatRelayNpub                        string              `json:"chat_relay_npub"`
-	ChatRelayDescription                 string              `json:"chat_relay_description"`
-	ChatRelayIcon                        string              `json:"chat_relay_icon"`
-	OutboxRelayName                      string              `json:"outbox_relay_name"`
-	OutboxRelayNpub                      string              `json:"outbox_relay_npub"`
-	OutboxRelayDescription               string              `json:"outbox_relay_description"`
-	OutboxRelayIcon                      string              `json:"outbox_relay_icon"`
-	InboxRelayName                       string              `json:"inbox_relay_name"`
-	InboxRelayNpub                       string              `json:"inbox_relay_npub"`
-	InboxRelayDescription                string              `json:"inbox_relay_description"`
-	InboxRelayIcon                       string              `json:"inbox_relay_icon"`
-	InboxPullIntervalSeconds             int                 `json:"inbox_pull_interval_seconds"`
-	ImportStartDate                      string              `json:"import_start_date"`
-	ImportOwnerNotesFetchTimeoutSeconds  int                 `json:"import_owned_notes_fetch_timeout_seconds"`
-	ImportTaggedNotesFetchTimeoutSeconds int                 `json:"import_tagged_fetch_timeout_seconds"`
-	ImportSeedRelays                     []string            `json:"import_seed_relays"`
-	BackupProvider                       string              `json:"backup_provider"`
-	BackupIntervalHours                  int                 `json:"backup_interval_hours"`
-	WotDepth                             int                 `json:"wot_depth"`
-	WotMinimumFollowers                  int                 `json:"wot_minimum_followers"`
-	WotFetchTimeoutSeconds               int                 `json:"wot_fetch_timeout_seconds"`
-	WotRefreshInterval                   time.Duration       `json:"wot_refresh_interval"`
-	WhitelistedPubKeys                   map[string]struct{} `json:"whitelisted_pubkeys"`
-	BlacklistedPubKeys                   map[string]struct{} `json:"blacklisted_pubkeys"`
-	LogLevel                             string              `json:"log_level"`
-	BlastrRelays                         []string            `json:"blastr_relays"`
-	BlastrTimeoutSeconds                 int                 `json:"blastr_timeout_seconds"`
-	S3Config                             *S3Config           `json:"s3_config"`
+	OwnerNpub                            string                   `json:"owner_npub"`
+	OwnerPubKey                          string                   `json:"owner_pubkey"`
+	DBEngine                             string                   `json:"db_engine"`
+	LmdbMapSize                          int64                    `json:"lmdb_map_size"`
+	BlossomPath                          string                   `json:"blossom_path"`
+	RelayURL                             string                   `json:"relay_url"`
+	RelayPort                            int                      `json:"relay_port"`
+	RelayBindAddress                     string                   `json:"relay_bind_address"`
+	RelaySoftware                        string                   `json:"relay_software"`
+	RelayVersion                         string                   `json:"relay_version"`
+	UserAgent                            string                   `json:"user_agent"`
+	PrivateRelayName                     string                   `json:"private_relay_name"`
+	PrivateRelayNpub                     string                   `json:"private_relay_npub"`
+	PrivateRelayDescription              string                   `json:"private_relay_description"`
+	PrivateRelayIcon                     string                   `json:"private_relay_icon"`
+	ChatRelayName                        string                   `json:"chat_relay_name"`
+	ChatRelayNpub                        string                   `json:"chat_relay_npub"`
+	ChatRelayDescription                 string                   `json:"chat_relay_description"`
+	ChatRelayIcon                        string                   `json:"chat_relay_icon"`
+	OutboxRelayName                      string                   `json:"outbox_relay_name"`
+	OutboxRelayNpub                      string                   `json:"outbox_relay_npub"`
+	OutboxRelayDescription               string                   `json:"outbox_relay_description"`
+	OutboxRelayIcon                      string                   `json:"outbox_relay_icon"`
+	InboxRelayName                       string                   `json:"inbox_relay_name"`
+	InboxRelayNpub                       string                   `json:"inbox_relay_npub"`
+	InboxRelayDescription                string                   `json:"inbox_relay_description"`
+	InboxRelayIcon                       string                   `json:"inbox_relay_icon"`
+	InboxPullIntervalSeconds             int                      `json:"inbox_pull_interval_seconds"`
+	ImportStartDate                      string                   `json:"import_start_date"`
+	ImportOwnerNotesFetchTimeoutSeconds  int                      `json:"import_owned_notes_fetch_timeout_seconds"`
+	ImportTaggedNotesFetchTimeoutSeconds int                      `json:"import_tagged_fetch_timeout_seconds"`
+	ImportSeedRelays                     []string                 `json:"import_seed_relays"`
+	BackupProvider                       string                   `json:"backup_provider"`
+	BackupIntervalHours                  int                      `json:"backup_interval_hours"`
+	WotDepth                             int                      `json:"wot_depth"`
+	WotMinimumFollowers                  int                      `json:"wot_minimum_followers"`
+	WotFetchTimeoutSeconds               int                      `json:"wot_fetch_timeout_seconds"`
+	WotRefreshInterval                   time.Duration            `json:"wot_refresh_interval"`
+	WhitelistedPubKeys                   map[string]struct{}      `json:"whitelisted_pubkeys"`
+	BlacklistedPubKeys                   map[string]struct{}      `json:"blacklisted_pubkeys"`
+	NIP05ConfigFile                      string                   `json:"nip05_config_file"`
+	NIP05                                *nip05.WellKnownResponse `json:"nip05_config"`
+	LogLevel                             string                   `json:"log_level"`
+	BlastrRelays                         []string                 `json:"blastr_relays"`
+	BlastrTimeoutSeconds                 int                      `json:"blastr_timeout_seconds"`
+	S3Config                             *S3Config                `json:"s3_config"`
 }
 
 const relaySoftware = "https://github.com/bitvora/haven"
@@ -113,6 +116,7 @@ func loadConfig() Config {
 		WotMinimumFollowers:                  getEnvInt("WOT_MINIMUM_FOLLOWERS", 0),
 		WotFetchTimeoutSeconds:               getEnvInt("WOT_FETCH_TIMEOUT_SECONDS", 30),
 		WotRefreshInterval:                   getEnvDuration("WOT_REFRESH_INTERVAL", 24*time.Hour),
+		NIP05ConfigFile:                      getEnvString("NIP05_CONFIG_FILE", "nostr.json"),
 		WhitelistedPubKeys:                   getNpubsFromFile(getEnvString("WHITELISTED_NPUBS_FILE", "")),
 		BlacklistedPubKeys:                   getNpubsFromFile(getEnvString("BLACKLISTED_NPUBS_FILE", "")),
 		LogLevel:                             getEnvString("HAVEN_LOG_LEVEL", "INFO"),
@@ -124,8 +128,17 @@ func loadConfig() Config {
 	// Relay owner is always whitelisted
 	cfg.WhitelistedPubKeys[cfg.OwnerPubKey] = struct{}{}
 
-	return cfg
+	// Read, parse, and validate NIP-05 config
+	cfg.NIP05 = getNIP05FromFile(cfg.NIP05ConfigFile)
 
+	// Ensure that all hosted NIP-05 identifiers are whitelisted
+	if cfg.NIP05 != nil && cfg.NIP05.Names != nil {
+		for _, pubkey := range cfg.NIP05.Names {
+			cfg.WhitelistedPubKeys[pubkey] = struct{}{}
+		}
+	}
+
+	return cfg
 }
 
 func getVersion() string {
@@ -153,12 +166,17 @@ func getS3Config() *S3Config {
 }
 
 func getRelayListFromFile(filePath string) []string {
+	var relayList []string
+	if filePath == "" {
+		// No pubKeys file, only owner will be whitelisted"
+		return relayList
+	}
+
 	file, err := os.ReadFile(filePath)
 	if err != nil {
 		log.Fatalf("Failed to read file: %s", err)
 	}
 
-	var relayList []string
 	if err := json.Unmarshal(file, &relayList); err != nil {
 		log.Fatalf("Failed to parse JSON: %s", err)
 	}

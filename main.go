@@ -95,6 +95,7 @@ func main() {
 	}()
 
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("templates/static"))))
+	http.HandleFunc("/.well-known/nostr.json", nip05Handler(config.NIP05))
 	http.HandleFunc("/", dynamicRelayHandler)
 
 	addr := fmt.Sprintf("%s:%d", config.RelayBindAddress, config.RelayPort)
