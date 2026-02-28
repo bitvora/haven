@@ -7,7 +7,7 @@ This document provides instructions on how to verify the authenticity of Haven b
 The release binaries, along with `checksums.txt` and `checksums.txt.sig` files, can be downloaded from the official 
 GitHub releases page:
 
-[https://github.com/bitvora/haven/releases](https://github.com/bitvora/haven/releases)
+[https://github.com/barrydeen/haven/releases](https://github.com/barrydeen/haven/releases)
 
 Download the appropriate binary for your system along with the checksum files.
 
@@ -24,7 +24,7 @@ Before verifying the binaries, you need to obtain the Haven PGP keys. You can do
 2. Directly from the Haven repository:
 
     ```bash
-    curl https://raw.githubusercontent.com/bitvora/haven/master/haven.asc -sSL | gpg --import -
+    curl https://raw.githubusercontent.com/barrydeen/haven/master/haven.asc -sSL | gpg --import -
     ```
 
 ## Verifying the Checksums File

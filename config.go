@@ -69,7 +69,7 @@ type Config struct {
 	S3Config                             *S3Config           `json:"s3_config"`
 }
 
-const relaySoftware = "https://github.com/bitvora/haven"
+const relaySoftware = "https://github.com/barrydeen/haven"
 
 func loadConfig() Config {
 	_ = godotenv.Load(".env")

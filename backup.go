@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/bitvora/haven/internal/cloud"
+	"github.com/barrydeen/haven/internal/cloud"
 )
 
 func runBackup(ctx context.Context) {

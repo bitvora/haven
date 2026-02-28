@@ -14,7 +14,7 @@ import (
 	"github.com/fiatjaf/eventstore"
 	"github.com/nbd-wtf/go-nostr"
 
-	"github.com/bitvora/haven/pkg/wot"
+	"github.com/barrydeen/haven/pkg/wot"
 )
 
 const layout = "2006-01-02"
