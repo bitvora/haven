@@ -50,5 +50,7 @@ func TestBadgerTuningOpens(t *testing.T) {
 	if err != nil {
 		t.Fatalf("badger refused the low-memory options: %v", err)
 	}
-	db.Close()
+	if err := db.Close(); err != nil {
+		t.Errorf("closing: %v", err)
+	}
 }
